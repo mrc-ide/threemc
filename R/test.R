@@ -1,4 +1,4 @@
-##' @title Test function for addition
+#' @title Test function for addition
 #' 
 #' @description test
 #' 
