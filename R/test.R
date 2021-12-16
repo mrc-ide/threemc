@@ -8,6 +8,6 @@
 #' @return sum of x and y
 #' @export
 # test function for R
-sum <- function(x, y) {
+test <- function(x, y) {
     return(sum(x, y))
 }
