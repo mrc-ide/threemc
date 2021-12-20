@@ -26,6 +26,7 @@
 #' 
 #' @import dplyr
 #' @import sf
+#' @import threemc
 prepare_survey_data <- function(areas,
                                 survey_circumcision,
                                 survey_individuals,
