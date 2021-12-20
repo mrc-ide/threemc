@@ -36,11 +36,11 @@ create_integration_matrix_agetime <- function(dat,
   # pmin()/pmax() and does not need an unlist() because it will always return 
   # a vector.
   
-  # Integration matrix for cumululative hazard
+  # Integration matrix for cumulative hazard
   dat$time1_cap <- pmin(timecaps[2] - timecaps[1], 
                         pmax(1, as.numeric(dat[[time1]]) - timecaps[1] + 1))
   
-  # Integration matrix for cumululative hazard
+  # Integration matrix for cumulative hazard
   dat$time2_cap <- pmin(timecaps[2] - timecaps[1] + 1, 
                         pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1))
   
