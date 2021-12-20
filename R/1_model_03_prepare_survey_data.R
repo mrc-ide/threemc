@@ -18,8 +18,10 @@
 #' i.e. no circumcisions after 59 years of age).
 #' @param norm_kisk_weights - Set == TRUE to normalise survey weights and 
 #' apply Kish coefficients.
-#' @param strata.norm - See help file for \link[threemc]{normalise_weights_kish}.
-#' @param strata.kish - See help file for \link[threemc]{normalise_weights_kish}.
+#' @param strata.norm - See help file for 
+#' \link[threemc]{normalise_weights_kish}.
+#' @param strata.kish - See help file for 
+#' \link[threemc]{normalise_weights_kish}.
 #' 
 #' @return Survey data with required variables to run circumcision model.
 #' @export
@@ -92,10 +94,10 @@ prepare_survey_data <- function(areas,
       # Final variables for modelling
       mutate(
         # Censoring circumcision status for those circumcised in cens_year,
-        # Assuming the interval censored people were circumcised before cens_year
+        # Assuming interval censored people were circumcised before cens_year
         circ_status = ifelse(yoc >= cens_year & circ_status == 1 & 
                                !is.na(circ_age), 0.0, circ_status),
-        # circ censoring year (or censor year in cens_year - 1) at cens_year - 1
+        # circ censoring year / censor year in cens_year - 1 at cens_year - 1
         yoc = ifelse(yoc == cens_year, cens_year - 1, yoc)
       )
   }
