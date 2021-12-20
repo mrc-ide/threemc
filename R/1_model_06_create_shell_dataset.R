@@ -1,4 +1,4 @@
-#' @title Create Skeleton Dataset for Estimating Empirical Circumcision Rate
+#' @title Create Shell Dataset for Estimating Empirical Circumcision Rate
 #'
 #' @description Create a matrix to estimate the cumulative hazard rate needed
 #' for survival analysis by age and time. The option to include an additional 
@@ -23,11 +23,7 @@
 #' @importFrom tidyr crossing
 
 # function to create skeleton dataset for estimating the empirical circ rate
-
-# survey_circumcision_test <- survey_circumcision
-survey_circumcision <- survey_circumcision_test
-
-create_skeleton_dataset <- function(survey_circumcision, 
+create_shell_dataset <- function(survey_circumcision, 
                                     areas, 
                                     area_lev,
                                     time1  = "time1",
@@ -35,10 +31,25 @@ create_skeleton_dataset <- function(survey_circumcision,
                                     strat  = "space",
                                     age    = "age",
                                     circ   = "indweight_st") {
+  
+  #' !! JE: the area_id field here used the area_id that appeared in the
+  #'        circumcision dataset. If there were some area_id with no
+  #'        observations, then they were dropped, which created a
+  #'        misalignment of the indexing.  Instead, use the areas dataset
+  #'        to construct this output frame to ensure all districts are
+  #'        represented.
+  #'
+  #'        I suspect that we also want the circ_age field to be constructed
+  #'        based on the theoretical maximum circumcision age that we want
+  #'        outputs for, rather than the maximum observed age; but not 100%
+  #'        sure.
+  
+  
   if (missing(area_lev)) {
     warning("area_lev arg missing, taken as maximum area level in areas")
     area_lev <- max(areas$area_level, na.rm = T)
   }
+  # remove spatial elements from areas, take only specified/highest area level
   if ("sf" %in% class(areas)) {
     areas_model <- st_drop_geometry(areas)
   } else areas_model <- areas
@@ -57,7 +68,7 @@ create_skeleton_dataset <- function(survey_circumcision,
     # Sorting dataset
     arrange(space, age, time)
   
-  # Obtain N person years (via calculating agetime integration matrix)
+  # Obtain N person years
   out_int_mat <- create_integration_matrix_agetime(
     dat = survey_circumcision,
     time1 = time1,
@@ -68,13 +79,13 @@ create_skeleton_dataset <- function(survey_circumcision,
   )
   out$N <- as.vector(survey_circumcision$indweight_st %*% out_int_mat)
   
-  # calculate empirical agetime hazard matrices for different circumcision:
+  #' calculate empirical agetime hazard matrices for different circumcision 
+  #' types, and take column sums:
   subsets <- c("event == 1 & type == 'MMC'", # N MMC 
                "event == 1 & type == 'TMC'", # N TMC
                "event == 0", # N censored (i.e. not circumcised)
                "event == 2" # N left-censored (circ at unknown age)
   )
-  
   agetime_hazard_matrices <- lapply(subsets, function(x) {
     create_hazard_matrix_agetime(
       dat = survey_circumcision,
