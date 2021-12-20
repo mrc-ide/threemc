@@ -1,0 +1,38 @@
+#' @title Normalise Survey Weights and apply Kish Coefficients
+#' 
+#' @description Normalise survey weights and apply Kish coefficients.
+#' 
+#' @param survey_circumcision Information on male circumcision status from
+#' surveys containing survey weights.
+#' @param strata.norm Stratification variables for normalising survey weights.
+#' @param strara.kish Stratification vairables for estimating and applying the 
+#' Kish coefficients.
+#'  
+#' @return Survey data with normalised survey weights and required variables to 
+#' run circumcision model.
+#' @export
+#' 
+#' @import dplyr
+
+normalise_weights_kish <- function(survey_circumcision,
+                                   strata.norm = c("survey_id", "area_id"),
+                                   strata.kish = c("survey_id")) {
+  
+  # Preparing survey weights for the model
+  survey_circumcision <- survey_circumcision %>%
+    # Standardising survey weights
+    group_by(across(all_of(strata.norm))) %>%
+    mutate(indweight_st = indweight / mean(indweight, na.rm = TRUE)) %>%
+    ungroup() %>%
+    # Applying Kish coefficient to the survey weights
+    left_join(
+      (survey_circumcision %>% 
+         group_by(across(all_of(strata.kish))) %>% 
+         summarise(
+           N = length(survey_id),
+           Neff = (sum(indweight) ^2) / sum(indweight * indweight),
+           ratio = N / Neff, .groups = "drop"
+         )),
+      by = "survey_id") %>%
+    mutate(indweight_st = indweight_st / ratio)
+}
