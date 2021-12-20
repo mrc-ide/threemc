@@ -1,3 +1,52 @@
+#' @title Function to read in Circumcision Data
+#' 
+#' @description Function to read in circumcision data to fit model. Handles 
+#' csvs with `data.table::fread`, and geographical data with `sf::read_sf` (for
+#' which it also adds unique identifiers for each `area_level`).
+#' 
+#' @param path Path to data.
+#' @param filters Optional named vector, whose values dictate the values 
+#' filtered for in the corresponding column names. Only supports filtering for 
+#' one value for each column.
+#' 
+#' @return relevant data set, filtered as desired.
+#' @export
+#' @import dplyr
+#' @importFrom data.table fread
+#' @importFrom sf read_sf
+#' @importFrom rlang sym
+# imports data.table, sf, dplyr, rlang
+# maybe add a warning for missing "circ" columns for surveys?? And add them in
+# NAs in this situation (look at KEN for this)
+read_circ_data <- function(path, filters = NULL) {
+  
+  # read in data, depending on file type
+  if (grepl(".geojson", path)) {
+    .data <- read_sf(path)
+  } else .data <- as.data.frame(fread(path))
+  
+  # if desired, recursively filter data with provided `filters` vector
+  if (!is.null(filters)) {
+    cols <- names(filters)
+    vals <- as.vector(filters[seq_along(filters)])
+    for (i in seq_along(filters)) {
+      if (!cols[i] %in% names(.data)) next
+      .data <- .data %>% 
+        # change col i to symbol (if present), evaluate corresponding filter
+        dplyr::filter({{ sym(cols[i]) }} == vals[i])
+    }
+  }
+  # for areas, add unique identifier within Admin code and merge to boundaries
+  if ("sf" %in% class(.data)) {
+    .data <- .data %>%
+      group_by(area_level) %>%
+      mutate(space = row_number()) %>%
+      ungroup()
+  }
+  return(.data)
+}
+
+
 #' @title Create Precision Matrix for RWp Process
 #' 
 #' @description Create the precision matrix for a RWp process.
