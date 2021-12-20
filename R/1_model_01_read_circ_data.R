@@ -33,9 +33,8 @@ read_circ_data <- function(path, filters = NULL) {
     vals <- as.vector(filters[seq_along(filters)])
     for (i in seq_along(filters)) {
       if (!cols[i] %in% names(.data)) next
-      .data <- .data %>% 
-        # change col i to symbol (if present), evaluate corresponding filter
-        dplyr::filter({{ sym(cols[i]) }} == vals[i])
+      # change col i to symbol (if present), evaluate corresponding filter
+      .data <- filter(.data, !!sym(cols[i]) == vals[i])
     }
   }
   # for areas, add unique identifier within Admin code and merge to boundaries
