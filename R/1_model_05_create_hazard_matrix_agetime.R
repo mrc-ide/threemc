@@ -1,4 +1,4 @@
-#' @title Create Matrix Selecting Instananeous Hazard Rate
+#' @title Create Matrix Selecting Instantaneous Hazard Rate
 #' 
 #' @description Create a matrix selecting the instantaneous hazard rate needed 
 #' for survival analysis by age and time. The option to include an additional 
@@ -10,14 +10,14 @@
 #' @param time2 Variable name for time circumcised or censored.
 #' @param timecaps Window to fix temporal dimension before and after.
 #' @param Ntime Number of time points (if NULL, function will calculate).
-#' @param age - Variable with age circumcisied or censored.
+#' @param age - Variable with age circumcised or censored.
 #' @param Nage Number of age groups (if NULL, function will calculate).
 #' @param strat Variable to stratify by in using a 3D hazard function.
 #' @param Nstrat Number of stratification groups (if NULL, function will 
 #' calculate).
 #' @param circ Variables with circumcision matrix.
 #' 
-#' @return Matrix for selecting instananeous hazard rate.
+#' @return Matrix for selecting instantaneous hazard rate.
 #' @export
 create_hazard_matrix_agetime <- function(dat,
                                          subset = NULL,
@@ -31,11 +31,11 @@ create_hazard_matrix_agetime <- function(dat,
                                          Nstrat = NULL,
                                          circ = 'circ') {
   
-  # Integration matrix for cumululative hazard
+  # Integration matrix for cumulative hazard
   dat$time1_cap <- pmin(timecaps[2] - timecaps[1] + 1, 
                         pmax(1, as.numeric(dat[[time1]]) - timecaps[1] + 1))
   
-  # Integration matrix for cumululative hazard
+  # Integration matrix for cumulative hazard
   dat$time2_cap <- pmin(timecaps[2] - timecaps[1] + 1, 
                         pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1))
   
