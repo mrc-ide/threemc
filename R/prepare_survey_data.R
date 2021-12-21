@@ -18,17 +18,16 @@
 #' i.e. no circumcisions after 59 years of age).
 #' @param norm_kisk_weights - Set == TRUE to normalise survey weights and 
 #' apply Kish coefficients.
-#' @param strata.norm - See help file for 
-#' \link[threemc]{normalise_weights_kish}.
-#' @param strata.kish - See help file for 
-#' \link[threemc]{normalise_weights_kish}.
+#' @param strata.norm Stratification variables for normalising survey weights.
+#' @param strara.kish Stratification variables for estimating and applying the 
+#' Kish coefficients.
 #' 
 #' @return Survey data with required variables to run circumcision model.
 #' @export
 #' 
 #' @import dplyr
 #' @import sf
-#' @import threemc
+#' @importFrom threemc normalise_weights_kish
 prepare_survey_data <- function(areas,
                                 survey_circumcision,
                                 survey_individuals,

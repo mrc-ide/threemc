@@ -1,8 +1,12 @@
 #' @title Create Shell Dataset for Estimating Empirical Circumcision Rate
 #'
-#' @description Create a matrix to estimate the cumulative hazard rate needed
-#' for survival analysis by age and time. The option to include an additional 
-#' stratification variable is also available, creating a 3D hazard function.
+#' @description  Create a skeleton dataset with a row for every unique area ID, 
+#' area name, year and circumcision age in survey data. Also, computes the 
+#' empirical number of person years until circumcision and number of people 
+#' circumcised for several "types" of circumcision; known medical 
+#' circumcisions, known traditional circumcisions, censored survey entries 
+#' (i.e. where surveyed individuals had not been circumcised) and left-censored
+#'  survey entries (i.e. where circumcision occurred at an unknown age).
 #' 
 #' @param dat Dataset used for modelling.
 #' @param subset Subset for dataset.
@@ -10,13 +14,13 @@
 #' @param time2 Variable name for time circumcised or censored.
 #' @param timecaps Window to fix temporal dimension before and after.
 #' @param Ntime Number of time points (if NULL, function will calculate).
-#' @param age - Variable with age circumcisied or censored.
+#' @param age - Variable with age circumcised or censored.
 #' @param Nage Number of age groups (if NULL, function will calculate).
 #' @param strat Variable to stratify by in using a 3D hazard function.
 #' @param Nstrat Number of stratification groups (if NULL, function will 
 #' calculate).
 #' 
-#' @return Matrix for selecting instananeous hazard rate.
+#' @return Matrix for selecting instantaneous hazard rate.
 #' @export
 #' 
 #' @import dplyr
@@ -80,7 +84,7 @@ create_shell_dataset <- function(survey_circumcision,
   out$N <- as.vector(survey_circumcision$indweight_st %*% out_int_mat)
   
   #' calculate empirical agetime hazard matrices for different circumcision 
-  #' types, and take column sums:
+  #' types, and take column sums (i.e. N empirical circs for each "type):
   subsets <- c("event == 1 & type == 'MMC'", # N MMC 
                "event == 1 & type == 'TMC'", # N TMC
                "event == 0", # N censored (i.e. not circumcised)

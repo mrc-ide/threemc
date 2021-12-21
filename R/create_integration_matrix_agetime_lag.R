@@ -18,7 +18,7 @@
 #' @param Nstrat Number of stratification groups (if NULL, function will 
 #' calculate).
 #' 
-#' @return Matrix for selecting instananeous hazard rate.
+#' @return Matrix for selecting instantaneous hazard rate.
 #' @export
 #' 
 #' #' @importFrom Matrix sparseMatrix

@@ -10,13 +10,13 @@
 #' @param time2 Variable name for time circumcised or censored.
 #' @param timecaps Window to fix temporal dimension before and after.
 #' @param Ntime Number of time points (if NULL, function will calculate).
-#' @param age - Variable with age circumcisied or censored.
+#' @param age - Variable with age circumcised or censored.
 #' @param Nage Number of age groups (if NULL, function will calculate).
 #' @param strat Variable to stratify by in using a 3D hazard function.
 #' @param Nstrat Number of stratification groups (if NULL, function will 
 #' calculate).
 #' 
-#' @return Matrix for selecting instananeous hazard rate.
+#' @return Matrix for selecting instantaneous hazard rate.
 #' @export
 #' 
 #' @importFrom Matrix sparseMatrix
