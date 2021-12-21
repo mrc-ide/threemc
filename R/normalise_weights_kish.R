@@ -5,7 +5,7 @@
 #' @param survey_circumcision Information on male circumcision status from
 #' surveys containing survey weights.
 #' @param strata.norm Stratification variables for normalising survey weights.
-#' @param strara.kish Stratification vairables for estimating and applying the 
+#' @param strara.kish Stratification variables for estimating and applying the 
 #' Kish coefficients.
 #'  
 #' @return Survey data with normalised survey weights and required variables to 

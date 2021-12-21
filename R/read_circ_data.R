@@ -8,7 +8,7 @@
 #' @param path Path to data.
 #' @param filters Optional named vector, whose values dictate the values 
 #' filtered for in the corresponding column names. Only supports filtering for 
-#' one value for each column.
+#' one value for each column. default: NULL
 #' 
 #' @return relevant data set, filtered as desired.
 #' @export

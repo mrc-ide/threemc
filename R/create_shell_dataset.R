@@ -22,15 +22,15 @@
 #' @import dplyr
 #' @importFrom tidyr crossing
 
-# function to create skeleton dataset for estimating the empirical circ rate
+# function to create shell dataset for estimating the empirical circ rate
 create_shell_dataset <- function(survey_circumcision, 
-                                    areas, 
-                                    area_lev,
-                                    time1  = "time1",
-                                    time2  = "time2",
-                                    strat  = "space",
-                                    age    = "age",
-                                    circ   = "indweight_st") {
+                                 areas, 
+                                 area_lev,
+                                 time1  = "time1",
+                                 time2  = "time2",
+                                 strat  = "space",
+                                 age    = "age",
+                                 circ   = "indweight_st") {
   
   #' !! JE: the area_id field here used the area_id that appeared in the
   #'        circumcision dataset. If there were some area_id with no

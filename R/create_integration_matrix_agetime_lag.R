@@ -1,57 +1,3 @@
-#### Modelling Functions ####
-
-#' @title Create Precision Matrix for RWp Process
-#' 
-#' @description Create the precision matrix for a RWp process.
-#' 
-#' @param dim Dimension of the precision matrix.
-#' @param order Order of the random walk.
-#' @param offset.diag Option to offset diagonal by 1E-6.
-#' 
-#' @return RW precision matrix
-#' @export
-create_rw_prec_matrix <- function(dim = NULL,
-                                  order = 1,
-                                  offset.diag = TRUE) {
-  # Creating stucture matrix
-  Q <- diff(diag(dim), differences = order)
-  Q <- t(Q) %*% Q
-  # Adding offset to diagonal if required
-  if (offset.diag) {
-    diag(Q) <- diag(Q) + 1E-6
-  }
-  # Converting to sparse matrix
-  Q <- as(Q, "sparseMatrix")
-  # Returning matrix
-  return(Q)
-}
-
-
-#' @title Create Precision Matrix for ICAR Process
-#' 
-#' @description Create the precision matrix for an ICAR process.
-#' 
-#' @param sf_obj Shapefiles needed for adjacency.
-#' @param row.names Unique IDs for the areas.
-#' 
-#' @return ICAR precision matrix
-#' @export
-create_icar_prec_matrix <- function(sf_obj = NULL,
-                                    row.names = NULL) {
-  # Creating neighbourhood structure
-  Q_space <-  poly2nb(sf_obj, row.names = sf_obj[, row.names])
-  # Converting to adjacency matrix
-  Q_space <- nb2mat(Q_space, style = 'B', zero.policy = TRUE)
-  # Converting to sparse matrix
-  Q_space <- as(Q_space, "sparseMatrix")
-  # Creating precision matrix from adjacency
-  Q_space <- INLA::inla.scale.model(
-    diag(rowSums(Q_space)) - 0.99 * Q_space,
-    constr = list(A = matrix(1, 1, nrow(Q_space)), e = 0)
-  )
-}
-
-
 #' @title Create Matrix to Estimate Lagged Cumulative Hazard Rate
 #'
 #' @description Create a matrix to estimate the lagged cumulative hazard rate 
@@ -74,6 +20,8 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
 #' 
 #' @return Matrix for selecting instananeous hazard rate.
 #' @export
+#' 
+#' #' @importFrom Matrix sparseMatrix
 create_integration_matrix_agetime_lag <- function(dat,
                                                   subset = NULL,
                                                   time1 = 'time1',
