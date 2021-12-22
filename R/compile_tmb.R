@@ -27,11 +27,11 @@ compile_tmb <- function(file,
       message(
         paste("any output from TMB::compile has been redirected to \n",
               logfile, 
-              "\n Please specify 'quiet = FALSE to print to your R console")
+              "\n Please specify 'logfile = NULL' to print to your R console")
       )
     }, error = function(e) {
       stop("TMB::compile has produced an error.\n
-           Please specify `silent = F to return function error messages")
+           Please specify 'logfile = NULL' to return function error messages")
     })
     
   } else {
