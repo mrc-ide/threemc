@@ -45,7 +45,6 @@ create_integration_matrix_agetime <- function(dat,
   dat$time2_cap <- pmin(timecaps[2] - timecaps[1] + 1, 
                         pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1))
   
-  
   # Shifting time points by the time caps
   dat$time1_cap2 <- dat[[time1]] - timecaps[1] + 1
   dat$time2_cap2 <- dat[[time2]] - timecaps[1] + 1
