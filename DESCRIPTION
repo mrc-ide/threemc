@@ -20,7 +20,7 @@ Imports:
     sf (>= 1.0.5),
     rlang (>= 0.4.12),
     INLA (>= 21.06.11),
-    Matrix (>= 1.4.0),
+    Matrix (>= 1.3-4),
     TMB (>= 1.7.22),
     spdep (>= 1.1.13),
     splines (>= 3.6.2),
