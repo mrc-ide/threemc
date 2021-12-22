@@ -27,11 +27,11 @@
 #' @importFrom Matrix sparseMatrix
 create_integration_matrix_agetime_lag <- function(dat,
                                                   subset = NULL,
-                                                  time1 = 'time1',
-                                                  time2 = 'time2',
-                                                  timecaps = c(1,Inf),
+                                                  time1 = "time1",
+                                                  time2 = "time2",
+                                                  timecaps = c(1, Inf),
                                                   Ntime = NULL,
-                                                  age = 'age',
+                                                  age = "age",
                                                   Nage = NULL,
                                                   strat = NULL,
                                                   Nstrat = NULL) {
@@ -47,7 +47,7 @@ create_integration_matrix_agetime_lag <- function(dat,
   dat$time2_cap2 <- dat[[time2]] - timecaps[1] + 1
   
   # Number of dimensions in the hazard function
-  if (is.null(Ntime)) Ntime <- max(dat[,'time1_cap', drop = TRUE])
+  if (is.null(Ntime)) Ntime <- max(dat[, "time1_cap", drop = TRUE])
   if (is.null(Nage)) Nage <- max(dat[age])
   if (!is.null(strat) & is.null(Nstrat)) Nstrat <- max(dat[strat])
   # Subsetting data if necessary
@@ -65,22 +65,30 @@ create_integration_matrix_agetime_lag <- function(dat,
     # column entries for integration matrix
     cols <- apply(dat, 1, function(x) {
       # If circumcised at birth select relevant entry
-      if (as.numeric(x['time1_cap2']) == (as.numeric(x['time2_cap2']))) {
+      if (as.numeric(x["time1_cap2"]) == (as.numeric(x["time2_cap2"]))) {
         test <- min(timecaps[2] - timecaps[1] + 1,
-                    max(1, as.numeric(x['time1_cap2'])))
+                    max(1, as.numeric(x["time1_cap2"])))
       } else {
         # Else just estimate the
-        test <- cumsum(c(max(1, as.numeric(x['time1_cap2'])),
-                         Ntime + (as.numeric(x['time1_cap2']):(as.numeric(x['time2_cap2']) - 1) > 0 & 
-                                    as.numeric(x['time1_cap2']):(as.numeric(x['time2_cap2']) - 1) <= timecaps[2] - timecaps[1])))
+        test <- cumsum(
+          c(
+            max(1, as.numeric(x["time1_cap2"])),
+            Ntime + (as.numeric(x["time1_cap2"]) :
+                       (as.numeric(x["time2_cap2"]) - 1) > 0 &
+                       as.numeric(x["time1_cap2"]) : 
+                       (as.numeric(x["time2_cap2"]) - 1) <= 
+                       timecaps[2] - timecaps[1])
+          )
+        )
       }
-      (test <- test[-length(test)])
+      test <- test[-length(test)]
+      return(test)
     })
     cols <- unlist(cols)
     
     # Row entries for integration matrix
     rows <- apply(dat, 1, function(x) {
-      rep(as.numeric(x['row']), as.numeric(x[time2]) - as.numeric(x[time1]))
+      rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]))
     })
     rows <- unlist(rows)
     
@@ -92,16 +100,21 @@ create_integration_matrix_agetime_lag <- function(dat,
     # column entries for integration matrix
     cols <- apply(dat, 1, FUN = function(x) {
       # If circumcised at birth select relevant entry
-      if (as.numeric(x['time1_cap2']) == (as.numeric(x['time2_cap2']))) {
+      if (as.numeric(x["time1_cap2"]) == (as.numeric(x["time2_cap2"]))) {
         test <- Ntime * Nage * (as.numeric(x[strat]) - 1) +
           min(timecaps[2] - timecaps[1] + 1,
-              max(1, as.numeric(x['time1_cap2'])))
+              max(1, as.numeric(x["time1_cap2"])))
       } else {
         # Else just estimate the ?
-        test <- cumsum(c(Ntime * Nage * (as.numeric(x[strat]) - 1)
-                         + max(1, as.numeric(x['time1_cap2'])),
-                         Ntime + (as.numeric(x['time1_cap2']):(as.numeric(x['time2_cap2']) - 1) > 0 & 
-                                    as.numeric(x['time1_cap2']):(as.numeric(x['time2_cap2']) - 1) <= timecaps[2] - timecaps[1])))
+        test <- cumsum(
+          c(
+            Ntime * Nage * (as.numeric(x[strat]) - 1) + 
+              max(1, as.numeric(x["time1_cap2"])),
+            Ntime + (as.numeric(x["time1_cap2"]) :
+                       (as.numeric(x["time2_cap2"]) - 1) > 0 &
+                       as.numeric(x["time1_cap2"]) : 
+                       (as.numeric(x["time2_cap2"]) - 1) <= 
+                       timecaps[2] - timecaps[1])))
       }
       test <- test[-length(test)]
       return(test)
@@ -110,7 +123,7 @@ create_integration_matrix_agetime_lag <- function(dat,
     
     # Row entries for integration matrix
     rows <- apply(dat, 1, function(x) {
-      rep(as.numeric(x['row']), as.numeric(x[time2]) - as.numeric(x[time1]))
+      rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]))
     })
     rows <- unlist(rows)
     

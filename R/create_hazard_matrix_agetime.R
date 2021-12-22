@@ -83,7 +83,7 @@ create_hazard_matrix_agetime <- function(dat,
     ncol <- Ntime * Nage * Nstrat
   }
   # Outputting sparse matrix
-  A <- sparseMatrix(i = 1:nrow(dat),
+  A <- sparseMatrix(i = seq_len(nrow(dat)),
                     j = cols,
                     x = dat[[circ]],
                     dims = c(nrow(dat), ncol))

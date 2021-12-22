@@ -20,7 +20,7 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
   # Creating neighbourhood structure
   Q_space <-  poly2nb(sf_obj, row.names = sf_obj[, row.names])
   # Converting to adjacency matrix
-  Q_space <- nb2mat(Q_space, style = 'B', zero.policy = TRUE)
+  Q_space <- nb2mat(Q_space, style = "B", zero.policy = TRUE)
   # Converting to sparse matrix
   Q_space <- as(Q_space, "sparseMatrix")
   # Creating precision matrix from adjacency

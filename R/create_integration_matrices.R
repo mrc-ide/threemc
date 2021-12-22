@@ -27,7 +27,8 @@
 #' @rdname create_integration_matrices
 #' @export
 #' 
-#' @importFrom threemc create_integration_matrix_agetime create_integration_matrix_agetime_lag
+#' @importFrom threemc create_integration_matrix_agetime 
+#' @importFrom threemc create_integration_matrix_agetime_lag
 
 create_integration_matrices <- function(out,
                                         time1 = "time1",
