@@ -5,10 +5,11 @@ Authors@R: c(person("First", "Last", role = c("aut", "cre"),
                     email = "email@example.com"),
              person("Imperial College of Science, Technology and Medicine",
                     role = "cph"))
-Description: Functions and datasets to support, and extend to other Sub-Saharan
-African countries, Thomas, M. et. al., 2021, A multi-level model for estimating 
-region-age-time-type specific male circumcision coverage from household survey
-and health system data in South Africa, arXiv:2108.09142v2 [stat.AP].
+Description: Functions and datasets to support, and extend to other Sub-Saharan 
+    African countries, Thomas, M. et. al., 2021, A multi-level model for 
+    estimating region-age-time-type specific male circumcision coverage from 
+    household survey and health system data in South Africa, 
+    arXiv:2108.09142v2 [stat.AP].
 Depends: 
     R (>= 3.5.0)
 LazyData: true
