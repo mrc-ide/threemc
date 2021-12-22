@@ -1,11 +1,14 @@
 Package: threemc
-Title: Package Title Here
+Title: Multi-Level Modelling of Male Circumcision in Sub-Saharan Africa
 Version: 0.1.0
 Authors@R: c(person("First", "Last", role = c("aut", "cre"),
                     email = "email@example.com"),
              person("Imperial College of Science, Technology and Medicine",
                     role = "cph"))
-Description: Description of the pacakge in more than one full sentence.
+Description: Functions and datasets to support, and extend to other Sub-Saharan
+African countries, Thomas, M. et. al., 2021, A multi-level model for estimating 
+region-age-time-type specific male circumcision coverage from household survey
+and health system data in South Africa, arXiv:2108.09142v2 [stat.AP].
 Depends: 
     R (>= 3.5.0)
 LazyData: true
@@ -26,7 +29,9 @@ Imports:
     splines (>= 3.6.2),
     tidyr (>= 1.1.4)
 Suggests:
-    tidyverse (>= 1.3.1)
+    covr (>= 3.5.1),
+    methods,
+    tidyverse (>= 1.3.1),
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Remotes:
