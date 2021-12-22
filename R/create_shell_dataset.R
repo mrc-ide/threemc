@@ -1,6 +1,6 @@
 #' @title Create Shell Dataset for Estimating Empirical Circumcision Rate
 #'
-#' @description  Create a skeleton dataset with a row for every unique area ID, 
+#' @description  Create a shell dataset with a row for every unique area ID, 
 #' area name, year and circumcision age in survey data. Also, computes the 
 #' empirical number of person years until circumcision and number of people 
 #' circumcised for several "types" of circumcision; known medical 
@@ -8,25 +8,31 @@
 #' (i.e. where surveyed individuals had not been circumcised) and left-censored
 #'  survey entries (i.e. where circumcision occurred at an unknown age).
 #' 
-#' @param dat Dataset used for modelling.
-#' @param subset Subset for dataset.
-#' @param time1 Variable name for time of birth.
-#' @param time2 Variable name for time circumcised or censored.
-#' @param timecaps Window to fix temporal dimension before and after.
-#' @param Ntime Number of time points (if NULL, function will calculate).
-#' @param age - Variable with age circumcised or censored.
-#' @param Nage Number of age groups (if NULL, function will calculate).
-#' @param strat Variable to stratify by in using a 3D hazard function.
-#' @param Nstrat Number of stratification groups (if NULL, function will 
-#' calculate).
+#' @param survey_circumcision Information on male circumcision status from 
+#' surveys.
+#' @param areas `sf` shapefiles for specific country/region.
+#' @param area_lev  PSNU area level for specific country. Defaults to the 
+#' maximum area level found in `areas` if not supplied.
+#' @param time1 Variable name for time of birth, Default: "time1"
+#' @param time2 Variable name for time circumcised or censored,
+#' Default: "time2"
+#' @param age - Variable with age circumcised or censored. Default: "age"
+#' @param circ Variables with circumcision matrix, Default: "indweight_st"
+#' @param ...  Further arguments passed to or from other methods.
 #' 
-#' @return Matrix for selecting instantaneous hazard rate.
+#' @seealso 
+#'  \link[threemc]{datapack_psnu_area_level}
+#'  \code{\link[tidyr]{crossing}}
+#'  \code{\link[threemc]{create_integration_matrix_agetime}}
+#'  \code{\link[threemc]{create_hazard_matrix_agetime}}
+#' @return `data.frame` with a row for every unique record in 
+#' `survey_circumcision` for a given area. Also includes empirical estimates 
+#' for circumcision estimates for each unique record.
 #' @export
 #' 
 #' @import dplyr
 #' @importFrom tidyr crossing
 
-# function to create shell dataset for estimating the empirical circ rate
 create_shell_dataset <- function(survey_circumcision, 
                                  areas, 
                                  area_lev,
@@ -34,19 +40,20 @@ create_shell_dataset <- function(survey_circumcision,
                                  time2  = "time2",
                                  strat  = "space",
                                  age    = "age",
-                                 circ   = "indweight_st") {
+                                 circ   = "indweight_st",
+                                 ...) {
   
-  #' !! JE: the area_id field here used the area_id that appeared in the
-  #'        circumcision dataset. If there were some area_id with no
-  #'        observations, then they were dropped, which created a
-  #'        misalignment of the indexing.  Instead, use the areas dataset
-  #'        to construct this output frame to ensure all districts are
-  #'        represented.
-  #'
-  #'        I suspect that we also want the circ_age field to be constructed
-  #'        based on the theoretical maximum circumcision age that we want
-  #'        outputs for, rather than the maximum observed age; but not 100%
-  #'        sure.
+  # !! JE: the area_id field here used the area_id that appeared in the
+  #        circumcision dataset. If there were some area_id with no
+  #        observations, then they were dropped, which created a
+  #        misalignment of the indexing.  Instead, use the areas dataset
+  #        to construct this output frame to ensure all districts are
+  #        represented.
+  #
+  #        I suspect that we also want the circ_age field to be constructed
+  #        based on the theoretical maximum circumcision age that we want
+  #        outputs for, rather than the maximum observed age; but not 100%
+  #        sure.
   
   
   if (missing(area_lev)) {
@@ -61,8 +68,8 @@ create_shell_dataset <- function(survey_circumcision,
     filter(area_level == area_lev) %>%
     select(area_id, area_name, space)
   
-  #' create skeleton dataset with row for every unique area_id, area_name, 
-  #' space, year and circ_age
+  # create skeleton dataset with row for every unique area_id, area_name, 
+  # space, year and circ_age
   out <- crossing(areas_model,
                   year = seq(2006, 2021, by =  1),
                   circ_age = 0 : max(survey_circumcision$circ_age)) %>%
@@ -79,12 +86,13 @@ create_shell_dataset <- function(survey_circumcision,
     time2 = time2,
     strat = strat,
     age   = age,
-    Ntime = length(unique(out$time))
+    Ntime = length(unique(out$time)),
+    ...
   )
   out$N <- as.vector(survey_circumcision$indweight_st %*% out_int_mat)
   
-  #' calculate empirical agetime hazard matrices for different circumcision 
-  #' types, and take column sums (i.e. N empirical circs for each "type):
+  # calculate empirical agetime hazard matrices for different circumcision 
+  # types, and take column sums (i.e. N empirical circs for each "type):
   subsets <- c("event == 1 & type == 'MMC'", # N MMC 
                "event == 1 & type == 'TMC'", # N TMC
                "event == 0", # N censored (i.e. not circumcised)
@@ -99,7 +107,8 @@ create_shell_dataset <- function(survey_circumcision,
       strat = strat,
       age   = age,
       circ  = circ,
-      Ntime = length(unique(out$time))
+      Ntime = length(unique(out$time)),
+      ...
     ) %>%
       colSums()
   })

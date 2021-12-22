@@ -4,8 +4,13 @@
 #' 
 #' @param sf_obj Shapefiles needed for adjacency.
 #' @param row.names Unique IDs for the areas.
+#' @return ICAR precision matrix.
 #' 
-#' @return ICAR precision matrix
+#' @seealso 
+#'  \code{\link[spdep]{poly2nb}}
+#'  \code{\link[spdep]{nb2mat}}
+#'  \code{\link[INLA]{inla.scale.model}}
+#' @rdname create_icar_prec_matrix
 #' @export
 #' 
 #' @importFrom spdep poly2nb nb2mat

@@ -4,7 +4,7 @@
 #' also optionally apply \link[threemc]{normalise_weights_kish}, to 
 #'  normalise survey weights and apply Kish coefficients. 
 #' 
-#' @param area_hierarchy - Hierarchy and metadata of administrative boundaries.
+#' @param area_hierarchy Hierarchy and metadata of administrative boundaries.
 #' @param area_boundaries - SF file with administrative boundaries (shapefiles).
 #' @param survey_circumcision - Information on male circumcision status from 
 #' surveys.
@@ -22,6 +22,8 @@
 #' @param strara.kish Stratification variables for estimating and applying the 
 #' Kish coefficients.
 #' 
+#' @seealso 
+#'  \code{\link[threemc]{normalise_weights_kish}}
 #' @return Survey data with required variables to run circumcision model.
 #' @export
 #' 

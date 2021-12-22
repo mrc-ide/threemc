@@ -1,5 +1,32 @@
-#' function to calculate quantiles for rates and cumulative hazard
-#' maybe add "textProgressBar" to for loop if it's too slow?
+
+#' @title Calculate Quantiles for Rates and Cumulative Hazard
+#' @description Calculate quantiles for samples of rates and cumulative hazard 
+#' outputted from \link[threemc]{circ_sample_tmb}, and add them as columns to 
+#' the shell `data.frame` `out` with estimated empirical circumcision rates.
+#' 
+#' @param out Shell dataset with a row for every unique record in 
+#' circumcision survey data for a given area. Also includes empirical estimates
+#'  for circumcision estimates for each unique record.
+#' @param fit Object containing `samples` list for the (cumulative) incidence 
+#' and hazard rate of circumcision for the region(s) in question. 
+#' @param probs Specific quantiles to be calculated,
+#' Default: c(0.5, 0.025, 0.975)
+#' @param names Parameter with \link[stats]{quantile}: logical; if true, the 
+#' result has a names attribute. Set to FALSE for speedup with many probs,
+#' Default: FALSE
+#' @param ... Further arguments passed to or from other methods.
+#' @return Input `out` `data.frame`, including columns with quantiles for 
+#' hazard rates etc for different circumcision types, and for overall 
+#' circumcision.
+
+#' @seealso 
+#'  \code{\link[threemc]{circ_sample_tmb}}
+#'  \code{\link[stats]{quantile}}
+#' @rdname compute_quantiles
+#' @export
+
+# function to calculate quantiles for rates and cumulative hazard
+# maybe add "textProgressBar" to for loop if it's too slow?
 compute_quantiles <- function(out, 
                               fit, 
                               probs = c(0.5, 0.025, 0.975), 

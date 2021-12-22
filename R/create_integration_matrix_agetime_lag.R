@@ -17,11 +17,14 @@
 #' @param strat Variable to stratify by in using a 3D hazard function.
 #' @param Nstrat Number of stratification groups (if NULL, function will 
 #' calculate).
-#' 
 #' @return Matrix for selecting instantaneous hazard rate.
+#'
+#' @seealso 
+#'  \code{\link[Matrix]{sparseMatrix}}
+#' @rdname create_integration_matrix_agetime_lag
 #' @export
 #' 
-#' #' @importFrom Matrix sparseMatrix
+#' @importFrom Matrix sparseMatrix
 create_integration_matrix_agetime_lag <- function(dat,
                                                   subset = NULL,
                                                   time1 = 'time1',
