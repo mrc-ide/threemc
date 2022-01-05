@@ -16,3 +16,7 @@ docs
 inst/doc
 pkgdown
 threemc.Rproj
+*.md
+.#*
+R/.#*
+modelling.R
