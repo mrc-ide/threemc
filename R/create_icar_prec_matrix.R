@@ -21,8 +21,13 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
   ## Converting to sparse matrix
   Q_space <- as(Q_space, "sparseMatrix")
   ## Creating precision matrix from adjacency
-  Q_space <- INLA::inla.scale.model(
+ #  Q_space <- INLA::inla.scale.model(
+    # diag(rowSums(Q_space)) - 0.99 * Q_space,
+    # constr = list(A = matrix(1, 1, nrow(Q_space)), e = 0)
+ #  )
+ Q_space <- naomi::scale_gmrf_precision(
     diag(rowSums(Q_space)) - 0.99 * Q_space,
-    constr = list(A = matrix(1, 1, nrow(Q_space)), e = 0)
-  )
+    A = matrix(1, 1, nrow(Q_space)), 
+    eps = 0
+ )
 }
