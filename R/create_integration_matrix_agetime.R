@@ -96,7 +96,7 @@ create_integration_matrix_agetime <- function(dat,
     ## Row entries for integration matrix
     rows <- unlist(apply(dat, 1, function(x) {
       rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]) + 1)
-    }), simplify = FALSE)
+    }, simplify = FALSE))
     ## Matrix dimension
     ncol <- Ntime * Nage
   }
