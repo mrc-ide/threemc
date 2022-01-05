@@ -185,9 +185,10 @@ prepare_survey_data <- function(areas,
   
   ## normalise survey weights and apply Kish coefficients, if desired
   if (norm_kisk_weights) {
-      survey_circumcision <- threemc::normalise_weights_kish(survey_circumcision,
-                                                             strata.norm = strata.norm, 
-                                                             strata.kish = strata.kish)
+      survey_circumcision <- threemc::normalise_weights_kish(
+                                          survey_circumcision,
+                                          strata.norm = strata.norm, 
+                                          strata.kish = strata.kish)
   }
   
   ## Returning prepped circumcision datasets

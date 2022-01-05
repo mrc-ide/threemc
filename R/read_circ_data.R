@@ -1,9 +1,9 @@
 #' @title Function to read in Circumcision Data
 #' 
 #' @description Function to read in circumcision data to fit model. Handles 
-#' csv with \link[data.table]{data.table::fread} (but outputs data as a `data.frame`), and 
-#' geographical data with \link[sf]{read_sf} (for which it also adds unique 
-#' identifiers for each `area_level`).
+#' csv with \link[data.table]{data.table::fread} (but outputs data as a
+#' `data.frame`), and geographical data with \link[sf]{read_sf} (for which it
+#' also adds unique identifiers for each `area_level`).
 #' 
 #' @param path Path to data.
 #' @param filters Optional named vector, whose values dictate the values 

@@ -16,6 +16,7 @@ compile_tmb <- function(file,
                         logfile = "/tmp/tmb_logfile.log",
                         ...) {
   if (!is.null(logfile)) { 
+
     if (!file.exists(logfile)) file.create(logfile)
     logfile_redirect <- paste0("&> ", logfile)
     
