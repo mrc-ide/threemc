@@ -24,7 +24,7 @@
 read_circ_data <- function(path, filters = NULL) {
   
   ## read in data, depending on file type
-  if (grepl(".geojson", path)) {
+  if (tools::file_ext(path) == "geojson") {
     .data <- read_sf(path)
   } else .data <- as.data.frame(data.table::fread(path))
   
@@ -39,7 +39,7 @@ read_circ_data <- function(path, filters = NULL) {
     }
   }
   ## for areas, add unique identifier within Admin code and merge to boundaries
-  if ("sf" %in% class(.data)) {
+  if (inherits(.data, "sf")) {
     .data <- .data %>%
       group_by(area_level) %>%
       mutate(space = row_number()) %>%
