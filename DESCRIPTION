@@ -23,7 +23,7 @@ Imports:
     dplyr (>= 1.0.7),
     sf (>= 1.0.5),
     rlang (>= 0.4.12),
-    INLA (>= 21.06.11),
+    INLA,
     Matrix (>= 1.3-4),
     TMB (>= 1.7.22),
     spdep (>= 1.1.13),

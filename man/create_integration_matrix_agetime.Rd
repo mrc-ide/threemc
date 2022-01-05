@@ -49,3 +49,6 @@ Create a matrix to estimate the cumulative hazard rate needed
 for survival analysis by age and time. The option to include an additional
 stratification variable is also available, creating a 3D hazard function.
 }
+\seealso{
+\code{\link[Matrix]{sparseMatrix}}
+}

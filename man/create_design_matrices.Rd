@@ -23,7 +23,7 @@ Create design matrices for fixed effects and temporal, age,
 spatial and random effects, for both medical and traditional circumcision.
 }
 \seealso{
-\code{\link}[threemc]{create_shell_dataset}}
+\code{\link[threemc]{create_shell_dataset}}
 \code{\link[splines]{splineDesign}}
 \code{\link[mgcv]{tensor.prod.model.matrix}}
 \code{\link[Matrix]{sparse.model.matrix}}

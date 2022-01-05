@@ -9,9 +9,9 @@
 #' @param k_dt Age knot spacing in spline definitions, Default: 5
 #' @return List of design matrices for fixed and random effects for medical
 #' and traditional circumcision.
-#
+#'
 #' @seealso
-#'  \code{\link}[threemc]{create_shell_dataset}}
+#'  \code{\link[threemc]{create_shell_dataset}}
 #'  \code{\link[splines]{splineDesign}}
 #'  \code{\link[mgcv]{tensor.prod.model.matrix}}
 #'  \code{\link[Matrix]{sparse.model.matrix}}

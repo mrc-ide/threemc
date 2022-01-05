@@ -16,7 +16,8 @@
 #' @param Nstrat Number of stratification groups (if NULL, function will
 #' calculate).
 #' @return Matrix for selecting instantaneous hazard rate.
-#'
+#' @seealso
+#'   \code{\link[Matrix]{sparseMatrix}}
 #' @rdname create_integration_matrix_agetime
 #' @export
 create_integration_matrix_agetime <- function(dat,
