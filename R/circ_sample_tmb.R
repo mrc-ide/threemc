@@ -19,7 +19,7 @@
 #' @rdname circ_sample_tmb
 #' @export
 #'
-circ_sample_tmb <- function(obj, opt, n_samples = 1000, ...) {
+circ_sample_tmb <- function(obj, opt, nsample = 1000, ...) {
 
   ## Getting the TMB into "Naomi" format to sample from using the NAOMI package
   opt$par.fixed <- opt$par
@@ -31,6 +31,6 @@ circ_sample_tmb <- function(obj, opt, n_samples = 1000, ...) {
   fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
 
   ## Generating samples
-  fit <- naomi::sample_tmb(fit, n_samples = n_samples, ...)
+  fit <- naomi::sample_tmb(fit, nsample = nsample, ...)
   return(fit)
 }
