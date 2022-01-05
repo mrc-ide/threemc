@@ -1,49 +1,49 @@
 #' @title Create Design Matrices
-#' @description Create design matrices for fixed effects and temporal, age, 
+#' @description Create design matrices for fixed effects and temporal, age,
 #' spatial and random effects, for both medical and traditional circumcision.
-#' 
+#'
 #' @param out Shell dataset (outputted by \link[threemc]{create_shell_dataset}
-#' with a row for every unique record in circumcision survey data for a given 
-#' area. Also includes empirical estimates for circumcision estimates for each 
+#' with a row for every unique record in circumcision survey data for a given
+#' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
-#' @param k_dt Age knot spacing in spline definitions, Default: 5 
-#' @return List of design matrices for fixed and random effects for medical 
+#' @param k_dt Age knot spacing in spline definitions, Default: 5
+#' @return List of design matrices for fixed and random effects for medical
 #' and traditional circumcision.
 #
-#' @seealso 
+#' @seealso
 #'  \code{\link}[threemc]{create_shell_dataset}}
 #'  \code{\link[splines]{splineDesign}}
 #'  \code{\link[mgcv]{tensor.prod.model.matrix}}
 #'  \code{\link[Matrix]{sparse.model.matrix}}
 #' @rdname create_design_matrices
-#' @export 
+#' @export
 
 create_design_matrices <- function(out, k_dt = 5) {
-  
+
   ## Spline definitions
-  k_age <- 
+  k_age <-
     k_dt * (floor(min(out$age) / k_dt) - 3):(ceiling(max(out$age) / k_dt) + 3)
-  
+
   ## Design matrix for the fixed effects
   X_fixed <- Matrix::sparse.model.matrix(N ~ 1, data = out)
-  
+
   ## Design matrix for the temporal random effects
   X_time <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(time), data = out)
-  
+
   ## Design matrix for the age random effects
   X_age <- splines::splineDesign(k_age, out$age, outer.ok = TRUE)
   X_age <- as(X_age, "sparseMatrix")
-  
+
   ## Design matrix for the spatial random effects
   X_space <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(space), data = out)
-  
+
   ## Design matrix for the interaction random effects
   X_agetime <- mgcv::tensor.prod.model.matrix(list(X_time, X_age))
   X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))
   X_spacetime <- sparse.model.matrix(
-    N ~ -1 + factor((out %>% 
-                       group_by(space, time) %>%
-                       group_indices())), 
+    N ~ -1 + factor((out %>%
+      group_by(space, time) %>%
+      group_indices())),
     data = out
   )
   ## return design matrices as list
