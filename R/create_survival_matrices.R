@@ -22,9 +22,6 @@
 #'  \code{\link[threemc]{create_hazard_matrix_agetime}}
 #' @rdname create_survival_matrices
 #' @export
-#' 
-#' @importFrom threemc create_hazard_matrix_agetime
-
 create_survival_matrices <- function(
   out, 
   time1 = "time1",
@@ -36,7 +33,7 @@ create_survival_matrices <- function(
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
   
-  # calculate empirical agetime hazard matrices for different circ types
+  ## calculate empirical agetime hazard matrices for different circ types
   circs <- c(
     "obs_mmc", # medical circumcision rate
     "obs_tmc", # traditional circumcision rate
@@ -44,31 +41,24 @@ create_survival_matrices <- function(
     "icens"    # left censored
   )
   hazard_matrices <- lapply(circs, function(x) {
-    create_hazard_matrix_agetime(
+    threemc::create_hazard_matrix_agetime(
       dat = out,
       time1 = time1,
       time2 = time2,
       strat = strat,
       age   = age,
       circ  = x,
-      Ntime = length(unique(out$time))
+      Ntime = length(unique(out$time)),
+      ...
     )
   })
   
-  # Matrix for selecting instantaneous hazard rate for MMC rate
-  A_mmc <- hazard_matrices[[1]]
-  # Matrix for selecting instantaneous hazard rate for TMC rate
-  A_tmc <- hazard_matrices[[2]]
-  # Matrix for selecting instantaneous hazard rate (censored) 
-  B <- hazard_matrices[[3]]
-  # Matrix for selecting instantaneous hazard rate (left censored)
-  C <- hazard_matrices[[4]]
-  
+  ## Matrices for selecting instantaneous hazard rate for:
   output <- list(
-    "A_mmc" = A_mmc,
-    "A_tmc" = A_tmc,
-    "B"     = B,
-    "C"     = C
+    "A_mmc" = hazard_matrices[[1]], # MMC 
+    "A_tmc" = hazard_matrices[[2]], # TMC
+    "B"     = hazard_matrices[[3]], # censored
+    "C"     =  hazard_matrices[[4]] # left-censored
   )
   return(output)
 }

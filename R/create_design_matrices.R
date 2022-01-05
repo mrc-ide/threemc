@@ -17,41 +17,36 @@
 #'  \code{\link[Matrix]{sparse.model.matrix}}
 #' @rdname create_design_matrices
 #' @export 
-#' 
-#' @importFrom splines splineDesign
-#' @importFrom mgcv tensor.prod.model.matrix
-#' @importFrom Matrix sparse.model.matrix
 
-# function to create design matrices
 create_design_matrices <- function(out, k_dt = 5) {
   
-  # Spline definitions
+  ## Spline definitions
   k_age <- 
     k_dt * (floor(min(out$age) / k_dt) - 3):(ceiling(max(out$age) / k_dt) + 3)
   
-  # Design matrix for the fixed effects
-  X_fixed <- sparse.model.matrix(N ~ 1, data = out)
+  ## Design matrix for the fixed effects
+  X_fixed <- Matrix::sparse.model.matrix(N ~ 1, data = out)
   
-  # Design matrix for the temporal random effects
-  X_time <- sparse.model.matrix(N ~ -1 + as.factor(time), data = out)
+  ## Design matrix for the temporal random effects
+  X_time <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(time), data = out)
   
-  # Design matrix for the age random effects
-  X_age <- splineDesign(k_age, out$age, outer.ok = TRUE)
+  ## Design matrix for the age random effects
+  X_age <- splines::splineDesign(k_age, out$age, outer.ok = TRUE)
   X_age <- as(X_age, "sparseMatrix")
   
-  # Design matrix for the spatial random effects
-  X_space <- sparse.model.matrix(N ~ -1 + as.factor(space), data = out)
+  ## Design matrix for the spatial random effects
+  X_space <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(space), data = out)
   
-  # Design matrix for the interaction random effects
-  X_agetime <- tensor.prod.model.matrix(list(X_time, X_age))
-  X_agespace <- tensor.prod.model.matrix(list(X_space, X_age))
+  ## Design matrix for the interaction random effects
+  X_agetime <- mgcv::tensor.prod.model.matrix(list(X_time, X_age))
+  X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))
   X_spacetime <- sparse.model.matrix(
     N ~ -1 + factor((out %>% 
                        group_by(space, time) %>%
                        group_indices())), 
     data = out
   )
-  # return design matrices as list
+  ## return design matrices as list
   output <- list(
     "X_fixed_mmc"     = X_fixed,
     "X_fixed_tmc"     = X_fixed,

@@ -13,18 +13,17 @@
 #' @export
 #' 
 #' @import dplyr
-
 normalise_weights_kish <- function(survey_circumcision,
                                    strata.norm = c("survey_id", "area_id"),
                                    strata.kish = c("survey_id")) {
   
-  # Preparing survey weights for the model
+  ## Preparing survey weights for the model
   survey_circumcision <- survey_circumcision %>%
-    # Standardising survey weights
+    ## Standardising survey weights
     group_by(across(all_of(strata.norm))) %>%
     mutate(indweight_st = indweight / mean(indweight, na.rm = TRUE)) %>%
     ungroup() %>%
-    # Applying Kish coefficient to the survey weights
+    ## Applying Kish coefficient to the survey weights
     left_join(
       (survey_circumcision %>% 
          group_by(across(all_of(strata.kish))) %>% 

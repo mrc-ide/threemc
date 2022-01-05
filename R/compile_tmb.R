@@ -1,4 +1,3 @@
-# wrapper around TMB::compile which silences annoying C++ warning messages
 #' @title Compile TMB model without C++ Warnings
 #' @description Wrapper around \code{\link[TMB]{compile}} which optionally 
 #' redirects C++ compiler output to a logfile, avoiding your R console, since 
@@ -16,14 +15,12 @@
 compile_tmb <- function(file, 
                         logfile = "/tmp/tmb_logfile.log",
                         ...) {
-  if (!is.null(logfile)) {
-    
-    # if (!file.exists(logfile)) invisible(file.create(logfile))
+  if (!is.null(logfile)) { 
     if (!file.exists(logfile)) file.create(logfile)
     logfile_redirect <- paste0("&> ", logfile)
     
     tryCatch({
-      invisible(compile(file, logfile_redirect, ...))
+      invisible(TMB::compile(file, logfile_redirect, ...))
       message(
         paste("any output from TMB::compile has been redirected to \n",
               logfile, 
@@ -35,6 +32,6 @@ compile_tmb <- function(file,
     })
     
   } else {
-    compile(file, ...)
+    tmb::compile(file, ...)
   }
 }

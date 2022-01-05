@@ -19,20 +19,18 @@
 #' @rdname circ_sample_tmb
 #' @export
 #'
-#' @importFrom TMB sdreport
-#' @importFrom naomi sample_tmb
 circ_sample_tmb <- function(obj, opt, n_samples = 1000, ...) {
   
-  # Getting the TMB into "Naomi" format to sample from using the NAOMI package
+  ## Getting the TMB into "Naomi" format to sample from using the NAOMI package
   opt$par.fixed <- opt$par
   opt$par.full <- obj$env$last.par
   fit <- c(opt, obj = list(obj))
   class(fit) <- "naomi_fit"
-
-  # Look at standard deviation report
-  fit$sdreport <- sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
+    
+  ## Look at standard deviation report
+  fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
   
-  # Generating samples
-  fit <- sample_tmb(fit, n_samples = 1000, ...)
+  ## Generating samples
+  fit <- naomi::sample_tmb(fit, n_samples = n_samples, ...)
   return(fit)
 }

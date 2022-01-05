@@ -26,10 +26,6 @@
 #'  \code{\link[threemc]{create_integration_matrix_agetime_lag}}
 #' @rdname create_integration_matrices
 #' @export
-#' 
-#' @importFrom threemc create_integration_matrix_agetime 
-#' @importFrom threemc create_integration_matrix_agetime_lag
-
 create_integration_matrices <- function(out,
                                         time1 = "time1",
                                         time2 = "time2",
@@ -43,8 +39,8 @@ create_integration_matrices <- function(out,
   out$time2 <- out$time
   out$age <- out$circ_age + 1
   
-  # Matrix for selecting instantaneous hazard rate
-  IntMat1 <- create_integration_matrix_agetime(
+  ## Matrix for selecting instantaneous hazard rate
+  IntMat1 <- threemc::create_integration_matrix_agetime(
     dat = out,
     time1 = time1,
     time2 = time2,
@@ -54,8 +50,8 @@ create_integration_matrices <- function(out,
     ...
   )
   
-  # Matrix for selecting instantaneous hazard rate
-  IntMat2 <- create_integration_matrix_agetime_lag(
+  ## Matrix for selecting instantaneous hazard rate
+  IntMat2 <- threemc::create_integration_matrix_agetime_lag(
     dat = out,
     time1 = "time1",
     time2 = "time2",

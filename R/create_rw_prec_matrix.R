@@ -12,15 +12,15 @@
 create_rw_prec_matrix <- function(dim,
                                   order = 1,
                                   offset.diag = TRUE) {
-  # Creating structure matrix
+  ## Creating structure matrix
   Q <- diff(diag(dim), differences = order)
   Q <- t(Q) %*% Q
-  # Adding offset to diagonal if required
+  ## Adding offset to diagonal if required
   if (offset.diag) {
     diag(Q) <- diag(Q) + 1E-6
   }
-  # Converting to sparse matrix
+  ## Converting to sparse matrix
   Q <- as(Q, "sparseMatrix")
-  # Returning matrix
+  ## Returning matrix
   return(Q)
 }
