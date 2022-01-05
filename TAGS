@@ -1,90 +1,74 @@
 
-/home/paddy7wb/imperial_repos/threemc/R/circ_sample_tmb.R,26
-ccirc_sample_tmb24,1060
+/home/paddy7wb/imperial_repos/threemc//modelling.R,497
+mmodel_path40,861
+ccntry45,932
+aarea_lev54,1256
+kk_dt56,1271
+sstart_year57,1300
+ffilters63,1470
+aareas65,1582
+ssurvey_clusters67,1713
+ssurvey_individuals70,1898
+ssurvey_circumcision73,2093
+ccens_year81,2370
+ssurvey_circumcision85,2535
+oout118,3677
+ddesign_matrices136,4299
+ssurvival_matrices139,4434
+iintegration_matrices146,4809
+QQ_space153,5200
+ddat_tmb161,5431
+pparameters176,5911
+oobj220,7449
+oopt231,7906
+ffit237,8070
+oout240,8175
+oout246,8360
 
-/home/paddy7wb/imperial_repos/threemc/R/compile_tmb.R,21
-ccompile_tmb16,711
+/home/paddy7wb/imperial_repos/threemc//R/circ_sample_tmb.R,26
+ccirc_sample_tmb22,1000
 
-/home/paddy7wb/imperial_repos/threemc/R/compute_quantiles.R,28
-ccompute_quantiles30,1394
+/home/paddy7wb/imperial_repos/threemc//R/compile_tmb.R,21
+ccompile_tmb15,636
 
-/home/paddy7wb/imperial_repos/threemc/R/create_design_matrices.R,33
-ccreate_design_matrices26,1035
+/home/paddy7wb/imperial_repos/threemc//R/compute_quantiles.R,28
+ccompute_quantiles30,1386
 
-/home/paddy7wb/imperial_repos/threemc/R/create_hazard_matrix_agetime.R,39
-ccreate_hazard_matrix_agetime33,1540
+/home/paddy7wb/imperial_repos/threemc//R/create_design_matrices.R,32
+ccreate_design_matrices21,863
 
-/home/paddy7wb/imperial_repos/threemc/R/create_icar_prec_matrix.R,33
-ccreate_icar_prec_matrix18,500
+/home/paddy7wb/imperial_repos/threemc//R/create_hazard_matrix_agetime.R,39
+ccreate_hazard_matrix_agetime33,1531
 
-/home/paddy7wb/imperial_repos/threemc/R/create_integration_matrices.R,38
-ccreate_integration_matrices33,1402
+/home/paddy7wb/imperial_repos/threemc//R/create_icar_prec_matrix.R,33
+ccreate_icar_prec_matrix15,424
 
-/home/paddy7wb/imperial_repos/threemc/R/create_integration_matrix_agetime_lag.R,48
-ccreate_integration_matrix_agetime_lag28,1163
+/home/paddy7wb/imperial_repos/threemc//R/create_integration_matrices.R,38
+ccreate_integration_matrices29,1273
 
-/home/paddy7wb/imperial_repos/threemc/R/create_integration_matrix_agetime.R,44
-ccreate_integration_matrix_agetime24,1085
+/home/paddy7wb/imperial_repos/threemc//R/create_integration_matrix_agetime_lag.R,48
+ccreate_integration_matrix_agetime_lag26,1117
 
-/home/paddy7wb/imperial_repos/threemc/R/create_rw_prec_matrix.R,31
-ccreate_rw_prec_matrix12,341
+/home/paddy7wb/imperial_repos/threemc//R/create_integration_matrix_agetime.R,44
+ccreate_integration_matrix_agetime23,1091
 
-/home/paddy7wb/imperial_repos/threemc/R/create_shell_dataset.R,31
-ccreate_shell_dataset36,1724
+/home/paddy7wb/imperial_repos/threemc//R/create_rw_prec_matrix.R,31
+ccreate_rw_prec_matrix12,338
 
-/home/paddy7wb/imperial_repos/threemc/R/create_survival_matrices.R,35
-ccreate_survival_matrices28,1250
+/home/paddy7wb/imperial_repos/threemc//R/create_shell_dataset.R,31
+ccreate_shell_dataset35,1701
 
-/home/paddy7wb/imperial_repos/threemc/R/normalise_weights_kish.R,32
-nnormalise_weights_kish17,581
+/home/paddy7wb/imperial_repos/threemc//R/create_survival_matrices.R,35
+ccreate_survival_matrices25,1187
 
-/home/paddy7wb/imperial_repos/threemc/R/prepare_survey_data.R,30
-pprepare_survey_data33,1550
+/home/paddy7wb/imperial_repos/threemc//R/normalise_weights_kish.R,32
+nnormalise_weights_kish16,573
 
-/home/paddy7wb/imperial_repos/threemc/R/read_circ_data.R,24
-rread_circ_data26,936
+/home/paddy7wb/imperial_repos/threemc//R/prepare_survey_data.R,30
+pprepare_survey_data30,1484
 
-/home/paddy7wb/imperial_repos/threemc/R/util.R,11
+/home/paddy7wb/imperial_repos/threemc//R/read_circ_data.R,24
+rread_circ_data22,761
+
+/home/paddy7wb/imperial_repos/threemc//R/util.R,11
 `%||%1,0
-
-/home/paddy7wb/imperial_repos/threemc/man/read_circ_data.Rd,44
-\alias{read_circ_data}read_circ_data4,117
-
-/home/paddy7wb/imperial_repos/threemc/man/create_integration_matrix_agetime_lag.Rd,90
-\alias{create_integration_matrix_agetime_lag}create_integration_matrix_agetime_lag4,163
-
-/home/paddy7wb/imperial_repos/threemc/man/normalise_weights_kish.Rd,60
-\alias{normalise_weights_kish}normalise_weights_kish4,133
-
-/home/paddy7wb/imperial_repos/threemc/man/compute_quantiles.Rd,50
-\alias{compute_quantiles}compute_quantiles4,123
-
-/home/paddy7wb/imperial_repos/threemc/man/create_shell_dataset.Rd,56
-\alias{create_shell_dataset}create_shell_dataset4,129
-
-/home/paddy7wb/imperial_repos/threemc/man/create_design_matrices.Rd,60
-\alias{create_design_matrices}create_design_matrices4,133
-
-/home/paddy7wb/imperial_repos/threemc/man/create_hazard_matrix_agetime.Rd,72
-\alias{create_hazard_matrix_agetime}create_hazard_matrix_agetime4,145
-
-/home/paddy7wb/imperial_repos/threemc/man/create_icar_prec_matrix.Rd,62
-\alias{create_icar_prec_matrix}create_icar_prec_matrix4,135
-
-/home/paddy7wb/imperial_repos/threemc/man/create_rw_prec_matrix.Rd,58
-\alias{create_rw_prec_matrix}create_rw_prec_matrix4,131
-
-/home/paddy7wb/imperial_repos/threemc/man/create_integration_matrices.Rd,70
-\alias{create_integration_matrices}create_integration_matrices4,143
-
-/home/paddy7wb/imperial_repos/threemc/man/circ_sample_tmb.Rd,46
-\alias{circ_sample_tmb}circ_sample_tmb4,119
-
-/home/paddy7wb/imperial_repos/threemc/man/create_integration_matrix_agetime.Rd,82
-\alias{create_integration_matrix_agetime}create_integration_matrix_agetime4,155
-
-/home/paddy7wb/imperial_repos/threemc/man/create_survival_matrices.Rd,64
-\alias{create_survival_matrices}create_survival_matrices4,137
-
-/home/paddy7wb/imperial_repos/threemc/man/prepare_survey_data.Rd,54
-\alias{prepare_survey_data}prepare_survey_data4,127
