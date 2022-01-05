@@ -1,4 +1,4 @@
-#' @title Create Matri, simplify = FALSEx to Estimate Cumulative Hazard Rate
+#' @title Create Matrix to Estimate Cumulative Hazard Rate
 #'
 #' @description Create a matrix to estimate the cumulative hazard rate needed
 #' for survival analysis by age and time. The option to include an additional

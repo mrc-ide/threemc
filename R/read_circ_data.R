@@ -19,10 +19,11 @@
 #' @import dplyr
 #' @import sf
 
-## maybe add a warning for missing "circ" columns for surveys?? And add them in
-## NAs in this situation (look at KEN for this)
 read_circ_data <- function(path, filters = NULL) {
   
+  ## maybe add a warning for missing "circ" columns for surveys?? And add them in
+  ## NAs in this situation (look at KEN for this)
+
   ## read in data, depending on file type
   if (tools::file_ext(path) == "geojson") {
     .data <- read_sf(path)

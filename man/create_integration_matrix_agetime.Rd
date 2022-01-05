@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_integration_matrix_agetime.R
 \name{create_integration_matrix_agetime}
 \alias{create_integration_matrix_agetime}
-\title{Create Matri, simplify = FALSEx to Estimate Cumulative Hazard Rate}
+\title{Create Matrix to Estimate Cumulative Hazard Rate}
 \usage{
 create_integration_matrix_agetime(
   dat,
