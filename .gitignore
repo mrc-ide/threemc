@@ -17,3 +17,5 @@ inst/doc
 pkgdown
 threemc.Rproj
 *.md
+.#*
+R/.#*
