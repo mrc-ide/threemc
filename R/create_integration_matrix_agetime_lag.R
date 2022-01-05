@@ -87,15 +87,13 @@ create_integration_matrix_agetime_lag <- function(dat,
       }
       test <- test[-length(test)]
       return(test)
-    })
+    }, simplify = FALSE)
     cols <- unlist(cols)
 
     ## Row entries for integration matrix
-    rows <- apply(dat, 1, function(x) {
+    rows <- unlist(apply(dat, 1, function(x) {
       rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]))
-    })
-    rows <- unlist(rows)
-
+    }, simplify = FALSE))
     ncol <- Ntime * Nage
   }
   ## Matrix for 3D hazard function if strat not NULL
@@ -126,15 +124,13 @@ create_integration_matrix_agetime_lag <- function(dat,
       }
       test <- test[-length(test)]
       return(test)
-    })
+    }, simplify = FALSE)
     cols <- unlist(cols)
 
     ## Row entries for integration matrix
-    rows <- apply(dat, 1, function(x) {
+    rows <- unlist(apply(dat, 1, function(x) {
       rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]))
-    })
-    rows <- unlist(rows)
-
+    }, simplify = FALSE))
     ncol <- Ntime * Nage * Nstrat
   }
   ## Outputting sparse matrix

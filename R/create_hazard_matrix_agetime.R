@@ -77,12 +77,10 @@ create_hazard_matrix_agetime <- function(dat,
   if (!is.null(strat)) {
 
     ## Integration matrix for cumululative hazard
-    cols <- apply(dat, 1, function(x) {
+    cols <- unlist(apply(dat, 1, function(x) {
       Ntime * Nage * (as.numeric(x[strat]) - 1) + Ntime *
         (as.numeric(x[age]) - 1) + as.numeric(x["time2_cap"])
-    })
-    cols <- unlist(cols)
-
+    }, simplify = FALSE))
     ncol <- Ntime * Nage * Nstrat
   }
   ## Outputting sparse matrix
