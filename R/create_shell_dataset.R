@@ -56,15 +56,16 @@ create_shell_dataset <- function(survey_circumcision,
 
 
   if (missing(area_lev)) {
-    warning("area_lev arg missing, taken as maximum area level in areas")
-    area_lev <- max(areas$area_level, na.rm = T)
+    message("area_lev arg missing, taken as maximum area level in areas")
+    area_lev <- max(areas$area_level, na.rm = TRUE)
   }
   ## remove spatial elements from areas, take only specified/highest area level
-  if ("sf" %in% class(areas)) {
+  if (inherits(areas, "sf")) {
     areas_model <- st_drop_geometry(areas)
   } else {
     areas_model <- areas
   }
+
   areas_model <- areas_model %>%
     filter(area_level == area_lev) %>%
     select(area_id, area_name, space)
@@ -114,7 +115,8 @@ create_shell_dataset <- function(survey_circumcision,
       circ  = circ,
       Ntime = length(unique(out$time)),
       ...
-    ) %>%
+    ) |>
+      as.matrix() %>% 
       colSums()
   })
 
