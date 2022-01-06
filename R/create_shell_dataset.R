@@ -16,6 +16,7 @@
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,
 #' Default: "time2"
+#' @param strat Variable to stratify by in using a 3D hazard function.
 #' @param age - Variable with age circumcised or censored. Default: "age"
 #' @param circ Variables with circumcision matrix, Default: "indweight_st"
 #' @param ...  Further arguments passed to or from other methods.
@@ -32,6 +33,7 @@
 #'
 #' @import dplyr
 #' @import sf
+#' @import rlang
 create_shell_dataset <- function(survey_circumcision,
                                  areas,
                                  area_lev,
@@ -54,11 +56,11 @@ create_shell_dataset <- function(survey_circumcision,
   ##        outputs for, rather than the maximum observed age; but not 100%
   ##        sure.
 
-
   if (missing(area_lev)) {
     message("area_lev arg missing, taken as maximum area level in areas")
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }
+
   ## remove spatial elements from areas, take only specified/highest area level
   if (inherits(areas, "sf")) {
     areas_model <- st_drop_geometry(areas)
@@ -67,22 +69,22 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   areas_model <- areas_model %>%
-    filter(area_level == area_lev) %>%
-    select(area_id, area_name, space)
+      filter(.data$area_level == area_lev) %>%
+      select(any_of(c("area_id", "area_name", "space")))
 
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
   out <- tidyr::crossing(areas_model,
-    year = seq(2006, 2021, by = 1),
-    circ_age = 0:max(survey_circumcision$circ_age)
+    "year" = seq(2006, 2021, by = 1),
+    "circ_age" = 0 : max(survey_circumcision$circ_age, na.rm = TRUE)
   ) %>%
     ## Getting time and age variable
     mutate(
-      time = year - 2006 + 1,
-      age = circ_age + 1
+      time = .data$year - 2006 + 1,
+      age = .data$circ_age + 1
     ) %>%
     ## Sorting dataset
-    arrange(space, age, time)
+    arrange(.data$space, .data$age, .data$time)
 
   ## Obtain N person years
   out_int_mat <- threemc::create_integration_matrix_agetime(
@@ -116,7 +118,7 @@ create_shell_dataset <- function(survey_circumcision,
       Ntime = length(unique(out$time)),
       ...
     ) |>
-      as.matrix() %>% 
+      as.matrix() %>%
       colSums()
   })
 

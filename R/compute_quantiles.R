@@ -35,7 +35,8 @@ compute_quantiles <- function(out,
 
   ## function to do "legwork" of computing quantiles
   quantile_fun <- function(.data, probs = probs, names = names, ...) {
-    .data <- t(apply(.data, 1, quantile, probs = probs, names = names, ...))
+      .data <- t(apply(.data, 1, stats::quantile,
+                  probs = probs, names = names, ...))
   }
 
   ## want to add quantile columns to out for following hazards
@@ -60,7 +61,8 @@ compute_quantiles <- function(out,
   for (i in seq_along(types)) {
     out[, c(types[[i]])] <- quantile_fun(samples[[i]],
       probs = probs,
-      names = names, ...
+      names = names,
+      ...
     )
   }
 

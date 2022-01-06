@@ -30,6 +30,8 @@ maximum area level found in \code{areas} if not supplied.}
 \item{time2}{Variable name for time circumcised or censored,
 Default: "time2"}
 
+\item{strat}{Variable to stratify by in using a 3D hazard function.}
+
 \item{age}{\itemize{
 \item Variable with age circumcised or censored. Default: "age"
 }}

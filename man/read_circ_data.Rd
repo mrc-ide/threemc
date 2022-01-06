@@ -18,11 +18,11 @@ relevant data set, filtered as desired.
 }
 \description{
 Function to read in circumcision data to fit model. Handles
-csv with \link[data.table]{data.table::fread} (but outputs data as a
-\code{data.frame}), and geographical data with \link[sf]{read_sf} (for which it
-also adds unique identifiers for each \code{area_level}).
+csv with \code{\link[data.table]{fread}} (but outputs data as a
+\code{data.frame}), and geographical data with code{\link[sf]{read_sf}} (for which
+it also adds unique identifiers for each \code{area_level}).
 }
 \seealso{
-\code{\link[data.table]{data.table::fread}}
+\code{\link[data.table]{fread}}
 \code{\link[sf]{read_sf}}
 }

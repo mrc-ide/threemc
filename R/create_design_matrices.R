@@ -14,6 +14,7 @@
 #'  \code{\link[threemc]{create_shell_dataset}}
 #'  \code{\link[splines]{splineDesign}}
 #'  \code{\link[mgcv]{tensor.prod.model.matrix}}
+#'  \code{\link[methods]{as}}
 #'  \code{\link[Matrix]{sparse.model.matrix}}
 #' @rdname create_design_matrices
 #' @export
@@ -32,7 +33,7 @@ create_design_matrices <- function(out, k_dt = 5) {
 
   ## Design matrix for the age random effects
   X_age <- splines::splineDesign(k_age, out$age, outer.ok = TRUE)
-  X_age <- as(X_age, "sparseMatrix")
+  X_age <- methods::as(X_age, "sparseMatrix")
 
   ## Design matrix for the spatial random effects
   X_space <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(space), data = out)
@@ -40,7 +41,7 @@ create_design_matrices <- function(out, k_dt = 5) {
   ## Design matrix for the interaction random effects
   X_agetime <- mgcv::tensor.prod.model.matrix(list(X_time, X_age))
   X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))
-  X_spacetime <- sparse.model.matrix(
+  X_spacetime <- Matrix::sparse.model.matrix(
     N ~ -1 + factor((out %>%
       group_by(space, time) %>%
       group_indices())),

@@ -4,13 +4,15 @@
 \alias{circ_sample_tmb}
 \title{Sample TMB fit for Circumcision Model}
 \usage{
-circ_sample_tmb(obj, opt, n_samples = 1000, ...)
+circ_sample_tmb(obj, opt, nsample = 1000, ...)
 }
 \arguments{
 \item{obj}{TMB object/AD model outputted by \link[TMB]{MakeADFun}.}
 
 \item{opt}{Optimised TMB model, outputted by optimisation function such
 as \link[stats]{nlminb} or \link[stats]{optim}.}
+
+\item{...}{Further arguments passed to or from other methods.}
 
 \item{n_samples}{Number of samples to be generated. Additional parameters
 for \link[naomi]{sample_tmb} can also be supplied, Default: 1000}

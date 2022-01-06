@@ -19,3 +19,6 @@ RW precision matrix
 \description{
 Create the precision matrix for a RWp process.
 }
+\seealso{
+\code{\link[methods]{as}}
+}

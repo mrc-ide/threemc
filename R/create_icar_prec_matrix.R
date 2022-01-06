@@ -10,6 +10,7 @@
 #'  \code{\link[spdep]{poly2nb}}
 #'  \code{\link[spdep]{nb2mat}}
 #'  \code{\link[naomi]{scale_gmrf_precision}}
+#'  \code{\link[methods]{as}}
 #' @rdname create_icar_prec_matrix
 #' @export
 create_icar_prec_matrix <- function(sf_obj = NULL,
@@ -19,7 +20,7 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
   ## Converting to adjacency matrix
   Q_space <- spdep::nb2mat(Q_space, style = "B", zero.policy = TRUE)
   ## Converting to sparse matrix
-  Q_space <- as(Q_space, "sparseMatrix")
+  Q_space <- methods::as(Q_space, "sparseMatrix")
   ## Creating precision matrix from adjacency
   Q_space <- naomi::scale_gmrf_precision(
       Q   = diag(rowSums(as.matrix(Q_space))) - 0.99 * Q_space,
@@ -27,5 +28,5 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
       eps = 0
   )
   ## Change to same class as outputed by INLA::inla.scale.model
-  Q_space <- as(Q_space, "dgTMatrix")   
+  Q_space <- methods::as(Q_space, "dgTMatrix")   
 }

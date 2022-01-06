@@ -19,6 +19,8 @@ prepare_survey_data(
 )
 }
 \arguments{
+\item{areas}{\code{sf} shapefiles for specific country/region.}
+
 \item{survey_circumcision}{\itemize{
 \item Information on male circumcision status from
 surveys.
@@ -57,13 +59,7 @@ apply Kish coefficients.
 
 \item{strata.norm}{Stratification variables for normalising survey weights.}
 
-\item{area_hierarchy}{Hierarchy and metadata of administrative boundaries.}
-
-\item{area_boundaries}{\itemize{
-\item SF file with administrative boundaries (shapefiles).
-}}
-
-\item{strara.kish}{Stratification variables for estimating and applying the
+\item{strata.kish}{Stratification variables for estimating and applying the
 Kish coefficients.}
 }
 \value{

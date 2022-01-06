@@ -16,7 +16,7 @@ surveys containing survey weights.}
 
 \item{strata.norm}{Stratification variables for normalising survey weights.}
 
-\item{strara.kish}{Stratification variables for estimating and applying the
+\item{strata.kish}{Stratification variables for estimating and applying the
 Kish coefficients.}
 }
 \value{

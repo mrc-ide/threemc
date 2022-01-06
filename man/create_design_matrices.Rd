@@ -26,5 +26,6 @@ spatial and random effects, for both medical and traditional circumcision.
 \code{\link[threemc]{create_shell_dataset}}
 \code{\link[splines]{splineDesign}}
 \code{\link[mgcv]{tensor.prod.model.matrix}}
+\code{\link[methods]{as}}
 \code{\link[Matrix]{sparse.model.matrix}}
 }
