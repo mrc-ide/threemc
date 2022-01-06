@@ -8,6 +8,7 @@
 #' as \link[stats]{nlminb} or \link[stats]{optim}.
 #' @param n_samples Number of samples to be generated. Additional parameters
 #' for \link[naomi]{sample_tmb} can also be supplied, Default: 1000
+#' @param ...  Further arguments passed to or from other methods.
 #' @return Object of class "naomi_fit", containing the original TMB object
 #' ("obj"), the standard deviation report for optimised AD model ("sdreport")
 #' and `n_samples` samples for the (cumulative) incidence and hazard rate of
