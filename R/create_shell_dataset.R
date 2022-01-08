@@ -61,6 +61,12 @@ create_shell_dataset <- function(survey_circumcision,
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }
 
+  if (!"Matrix" %in% .packages()) {
+      message(paste("Strongly recommend loading 'Matrix' package, as it is",
+                    "is required for summing sparse matrices"))
+  }
+
+
   ## remove spatial elements from areas, take only specified/highest area level
   if (inherits(areas, "sf")) {
     areas_model <- st_drop_geometry(areas)
@@ -96,6 +102,7 @@ create_shell_dataset <- function(survey_circumcision,
     Ntime = length(unique(out$time)),
     ...
   )
+  # browser()
   out$N <- as.vector(survey_circumcision$indweight_st %*% out_int_mat)
 
   ## calculate empirical agetime hazard matrices for different circumcision
@@ -118,8 +125,7 @@ create_shell_dataset <- function(survey_circumcision,
       Ntime = length(unique(out$time)),
       ...
     ) |>
-      as.matrix() %>%
-      colSums()
+    colSums()
   })
 
   ## add to out:
