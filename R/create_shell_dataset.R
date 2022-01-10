@@ -62,8 +62,8 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   if (!"Matrix" %in% .packages()) {
-      message(paste("Strongly recommend loading 'Matrix' package, as it is",
-                    "is required for summing sparse matrices"))
+      message(paste("Strongly recommend loading 'Matrix' package before threemc,
+                    as it is required for summing sparse matrices"))
   }
 
 
