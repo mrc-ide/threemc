@@ -61,12 +61,6 @@ create_shell_dataset <- function(survey_circumcision,
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }
 
-  if (!"Matrix" %in% .packages()) {
-      message(paste("Strongly recommend loading 'Matrix' package before threemc,
-                    as it is required for summing sparse matrices"))
-  }
-
-
   ## remove spatial elements from areas, take only specified/highest area level
   if (inherits(areas, "sf")) {
     areas_model <- st_drop_geometry(areas)
@@ -124,13 +118,13 @@ create_shell_dataset <- function(survey_circumcision,
       circ  = circ,
       Ntime = length(unique(out$time)),
       ...
-    ) |>
-    colSums()
+    ) # |>
+    # colSums()
   })
+  agetime_hazard_matrices <- lapply(agetime_hazard_matrices, Matrix::colSums)
 
   ## add to out:
   empirical_circ_cols <- c("obs_mmc", "obs_tmc", "cens", "icens")
   out[, empirical_circ_cols] <- agetime_hazard_matrices
-
   return(out)
 }
