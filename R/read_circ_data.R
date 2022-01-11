@@ -20,15 +20,19 @@
 #' @import dplyr
 #' @import sf
 #' @import rlang
-read_circ_data <- function(path, filters = NULL, ...) {
+read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
 
   ## maybe add a warning for missing "circ" columns for surveys?? And add
   ## in NAs in this situation (look at KEN for this)
 
   ## read in data, depending on file type
-  if (tools::file_ext(path)%in% c("geojson", "shp", "shx")) {
+  cond <- tools::file_ext(path)%in% c("geojson", "shp", "shx")
+  if (cond == T) {
     .data <- read_sf(path, ...)
-  } else .data <- as.data.frame(data.table::fread(path, ...))
+  } else {
+      # selection prior to loading is allowed by fread
+      .data <- as.data.frame(data.table::fread(path, select = c(selected), ...))
+  }
 
   ## if desired, recursively filter data with provided `filters` vector
   if (!is.null(filters)) {
@@ -40,6 +44,13 @@ read_circ_data <- function(path, filters = NULL, ...) {
       .data <- filter(.data, !!rlang::sym(cols[i]) == vals[i])
     }
   }
+
+  # Select specific columns, if desired (and present) (no need to do for fread)
+  if (!is.null(selected) & cond == T) {
+      .data <- .data %>%
+          select(all_of(selected[selected %in% names(.data)]))
+  }
+
   ## for areas, add unique identifier within Admin code and merge to boundaries
   if (inherits(.data, "sf")) {
     .data <- .data %>%
