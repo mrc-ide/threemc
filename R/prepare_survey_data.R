@@ -41,6 +41,11 @@ prepare_survey_data <- function(areas,
 
   ## Merging circumcision and individuals survey datasets ---------------------
 
+  # change colnames to those in line with areas
+  if ("geoloc_area_id" %in% names(survey_clusters)) {
+      survey_clusters <- rename(survey_clusters, area_id = geoloc_area_id)
+  }
+
   ## Bringing datasets together
   survey_circumcision <- survey_circumcision %>%
     ## Merging on individual information to  the circumcision dataset
@@ -53,7 +58,7 @@ prepare_survey_data <- function(areas,
     left_join(
       (survey_clusters %>%
        select(any_of(c("survey_id", "cluster_id")),
-              "area_id" = "geoloc_area_id")),
+              "area_id" = "area_id")),
       by = c("survey_id", "cluster_id")
     ) %>%
     ## Remove those with missing circumcison status
