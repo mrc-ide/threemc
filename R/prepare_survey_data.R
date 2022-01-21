@@ -41,6 +41,9 @@ prepare_survey_data <- function(areas,
 
   ## Merging circumcision and individuals survey datasets ---------------------
 
+  # pull original surveys
+  orig_surveys <- unique(survey_circumcision$cluster_id)
+
   # change colnames to those in line with areas
   if ("geoloc_area_id" %in% names(survey_clusters)) {
       survey_clusters <- rename(survey_clusters, area_id = geoloc_area_id)
@@ -189,13 +192,18 @@ prepare_survey_data <- function(areas,
     filter(.data$type == "Missing", .data$Freq == 1)
 
   ## return message detailing all surveys which are missing
-  if (nrow(tmp) > 1) {
-    for (i in seq_len(nrow(tmp))) {
-      message(paste0(tmp$survey_id[i], " has all type == \"Missing\", and will
-                     be removed from the data"))
-    }
+  n <- nrow(temp)
+  if (n > 0) {
+      survey_id <- tmp$survey_id
+      message(
+          paste0(
+              paste(paste(survey_id[1:(n - 1)], collapse = ", "),
+                    survey_id[n], sep = " & "),
+              ifelse(n == 1, " has ", " have "),
+              "all type == \"Missing\", and will be removed from the data"
+          )
+      )
   }
-
   ## Removing surveys and individuals without any type information
   survey_circumcision <- survey_circumcision %>%
     filter(
@@ -211,6 +219,24 @@ prepare_survey_data <- function(areas,
       strata.norm = strata.norm,
       strata.kish = strata.kish
     )
+  }
+
+  # return message for which surveys are discarded & kept (if any)
+  surveys <- unique(survey_circumcision$survey_id)
+  if (length(surveys) != length(orig_surveys)) {
+      removed_surveys <- orig_surveys[!orig_surveys %in% surveys]
+      n <- length(removed_surveys)
+      m <- length(surveys)
+      message(
+          paste0("Surveys removed: ",
+                 paste(paste(removed_surveys[1:(n-1)], collapse = ", "),
+                       removed_surveys[n], sep = " & "))
+      )
+      message(
+          paste0("Surveys remaining: ",
+                 paste(paste(surveys[1:(m-1)], collapse = ", "),
+                       surveys[m], sep = " & "))
+      )
   }
 
   ## Returning prepped circumcision datasets
