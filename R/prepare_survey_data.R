@@ -90,7 +90,7 @@ prepare_survey_data <- function(areas,
         ## No circumcision after cens_age
         circ_status = ifelse(.data$circ_status == 1 &
           !is.na(.data$circ_age) &
-          .data$circ_age > cens_age, 0.0, .data$circ_status),
+          .data$circ_age > cens_age, 0, .data$circ_status),
         ## Resetting age at circumcision
         circ_age = ifelse(.data$circ_age > cens_age, NA,
                                 .data$circ_age),
