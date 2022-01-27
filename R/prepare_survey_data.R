@@ -68,7 +68,9 @@ prepare_survey_data <- function(areas,
     ## Remove those with missing circumcison status
     filter(
         !is.na(.data$circ_status),
-        !is.na(.data$age),
+        # !is.na(.data$age),
+        # need at least one age value for each individual to left censor
+        !(is.na(.data$circ_age & is.na(.data$age))),
         !is.na(.data$indweight)
     ) %>%
     ## Variables needed for analysis
