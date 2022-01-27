@@ -42,7 +42,7 @@ prepare_survey_data <- function(areas,
   ## Merging circumcision and individuals survey datasets ---------------------
 
   # pull original surveys
-  orig_surveys <- unique(survey_circumcision$cluster_id)
+  orig_surveys <- unique(survey_circumcision$survey_id)
 
   # change colnames to those in line with areas
   if ("geoloc_area_id" %in% names(survey_clusters)) {
@@ -195,14 +195,18 @@ prepare_survey_data <- function(areas,
   n <- nrow(tmp)
   if (n > 0) {
       survey_id <- tmp$survey_id
-      message(
-          paste0(
-              paste(paste(survey_id[1:(n - 1)], collapse = ", "),
-                    survey_id[n], sep = " & "),
-              ifelse(n == 1, " has ", " have "),
-              "all type == \"Missing\", and will be removed from the data"
+      if (n == 1) {
+          message(paste(survey_id[1], "has all type == \"Missing\"",
+                  "and will be removed"))
+      } else {
+          message(
+              paste0(
+                  paste(paste(survey_id[1:(n - 1)], collapse = ", "),
+                        survey_id[n], sep = " & "),
+                  " have all type == \"Missing\", and will be removed"
+              )
           )
-      )
+      }
   }
   ## Removing surveys and individuals without any type information
   survey_circumcision <- survey_circumcision %>%
@@ -222,21 +226,24 @@ prepare_survey_data <- function(areas,
   }
 
   # return message for which surveys are discarded & kept (if any)
-  surveys <- unique(survey_circumcision$survey_id)
-  if (length(surveys) != length(orig_surveys)) {
-      removed_surveys <- orig_surveys[!orig_surveys %in% surveys]
-      n <- length(removed_surveys)
-      m <- length(surveys)
-      message(
-          paste0("Surveys removed: ",
-                 paste(paste(removed_surveys[1:(n-1)], collapse = ", "),
-                       removed_surveys[n], sep = " & "))
-      )
-      message(
-          paste0("Surveys remaining: ",
-                 paste(paste(surveys[1:(m-1)], collapse = ", "),
-                       surveys[m], sep = " & "))
-      )
+  remaining_surveys <- unique(survey_circumcision$survey_id)
+  if (length(remaining_surveys) != length(orig_surveys)) {
+      removed_surveys <- orig_surveys[!orig_surveys %in% remaining_surveys]
+      surveys <- list(removed_surveys, remaining_surveys)
+      lengths <- c(length(removed_surveys), length(remaining_surveys))
+      initial <- c("Surveys removed: ", "Surveys remaining: ")
+      invisible(lapply(seq_along(surveys), function(i) {
+          if (lengths[i] == 1) {
+              message(paste0(initial[i], surveys[[i]]))
+          } else {
+              message(
+                  paste0(initial[i],
+                         paste(paste(
+                             surveys[[i]][1:(lengths[i] - 1)], collapse = ", "),
+                             surveys[[i]][lengths[i]], sep = " & "))
+              )
+          }
+      }))
   }
 
   ## Returning prepped circumcision datasets
