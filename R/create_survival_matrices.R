@@ -34,10 +34,18 @@ create_survival_matrices <- function(out,
   ## calculate empirical agetime hazard matrices for different circ types
   circs <- c(
     "obs_mmc", # medical circumcision rate
-    "obs_tmc", # traditional circumcision rate
+    "obs_tmc", # traditional circumcision rate,
+    "obs_mc", # all circumcision (to model unknown type)
     "cens", # censored
     "icens" # left censored
   )
+  list_names <- c("A_mmc", "A_tmc", "A_mc", "B", "C")
+  # remove MC if modelling for missing type is undesirable
+  if (!"obs_mc" %in% names(out)) {
+      circs <- circs[-3]
+      list_names <- list_names[-3]
+  }
+  ## Matrices for selecting instantaneous hazard rate for:
   hazard_matrices <- lapply(circs, function(x) {
     threemc::create_hazard_matrix_agetime(
       dat = out,
@@ -50,13 +58,7 @@ create_survival_matrices <- function(out,
       ...
     )
   })
+  names(hazard_matrices) <- list_names
 
-  ## Matrices for selecting instantaneous hazard rate for:
-  output <- list(
-    "A_mmc" = hazard_matrices[[1]], # MMC
-    "A_tmc" = hazard_matrices[[2]], # TMC
-    "B"     = hazard_matrices[[3]], # censored
-    "C"     =  hazard_matrices[[4]] # left-censored
-  )
-  return(output)
+  return(hazard_matrices)
 }

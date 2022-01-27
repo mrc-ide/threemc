@@ -96,17 +96,26 @@ create_shell_dataset <- function(survey_circumcision,
     Ntime = length(unique(out$time)),
     ...
   )
-  # browser()
   out$N <- as.vector(survey_circumcision$indweight_st %*% out_int_mat)
 
   ## calculate empirical agetime hazard matrices for different circumcision
   ## types, and take column sums (i.e. N empirical circs for each "type):
+  empirical_circ_cols <- c("obs_mmc", "obs_tmc", "obs_mc", "cens", "icens")
   subsets <- c(
     "event == 1 & type == 'MMC'", # N MMC
     "event == 1 & type == 'TMC'", # N TMC
+    "event == 1 & type == 'Missing'",
     "event == 0", # N censored (i.e. not circumcised)
     "event == 2" # N left-censored (circ at unknown age)
   )
+
+  # if there is no missing type, there is no need for MC:
+  if (!any(survey_circumcision$type == "Missing")) {
+      empirical_circ_cols <- empirical_circ_cols[-3]
+      subsets <- subsets[-3]
+  }
+
+
   agetime_hazard_matrices <- lapply(subsets, function(x) {
     threemc::create_hazard_matrix_agetime(
       dat = survey_circumcision,
@@ -118,13 +127,11 @@ create_shell_dataset <- function(survey_circumcision,
       circ  = circ,
       Ntime = length(unique(out$time)),
       ...
-    ) # |>
-    # colSums()
+    )
   })
   agetime_hazard_matrices <- lapply(agetime_hazard_matrices, Matrix::colSums)
 
   ## add to out:
-  empirical_circ_cols <- c("obs_mmc", "obs_tmc", "cens", "icens")
   out[, empirical_circ_cols] <- agetime_hazard_matrices
   return(out)
 }

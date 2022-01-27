@@ -35,7 +35,8 @@ prepare_survey_data <- function(areas,
                                 start_year = 2006,
                                 cens_year = NULL,
                                 cens_age = 59,
-                                norm_kisk_weights = F,
+                                rm_missing_type = FALSE,
+                                norm_kisk_weights = FALSE,
                                 strata.norm = c("survey_id", "area_id"),
                                 strata.kish = c("survey_id")) {
 
@@ -185,36 +186,41 @@ prepare_survey_data <- function(areas,
     )
 
   ## Getting surveys without any type information
-  tmp <- with(survey_circumcision, as.data.frame(table(survey_id, type))) %>%
-    group_by(.data$survey_id) %>%
-    ## calculate percentage and find surveys with all missing data
-    mutate(Freq = .data$Freq / sum(.data$Freq)) %>%
-    filter(.data$type == "Missing", .data$Freq == 1)
+  if (rm_missing_type == TRUE) {
+      tmp <- with(survey_circumcision, as.data.frame(table(survey_id, type))) %>%
+          group_by(.data$survey_id) %>%
+          ## calculate percentage and find surveys with all missing data
+          mutate(Freq = .data$Freq / sum(.data$Freq)) %>%
+          filter(.data$type == "Missing", .data$Freq == 1)
 
-  ## return message detailing all surveys which are missing
-  n <- nrow(tmp)
-  if (n > 0) {
-      survey_id <- tmp$survey_id
-      if (n == 1) {
-          message(paste(survey_id[1], "has all type == \"Missing\"",
-                  "and will be removed"))
-      } else {
-          message(
-              paste0(
-                  paste(paste(survey_id[1:(n - 1)], collapse = ", "),
-                        survey_id[n], sep = " & "),
-                  " have all type == \"Missing\", and will be removed"
+      ## return message detailing all surveys which are missing
+      n <- nrow(tmp)
+      if (n > 0) {
+          survey_id <- tmp$survey_id
+          if (n == 1) {
+              message(paste(survey_id[1], "has all type == \"Missing\"",
+                            "and will be removed"))
+          } else {
+              message(
+                  paste0(
+                      paste(paste(survey_id[1:(n - 1)], collapse = ", "),
+                            survey_id[n], sep = " & "),
+                      " have all type == \"Missing\", and will be removed"
+                  )
               )
-          )
+          }
       }
+      ## Removing surveys and individuals without any type information
+      survey_circumcision <- survey_circumcision %>%
+          filter(
+              !(.data$survey_id %in% !!tmp$survey_id),
+              !(.data$circ_status == 1 & .data$type == "Missing")
+          )
   }
-  ## Removing surveys and individuals without any type information
+
+  # remove surveys that don't have corresponding shapefiles in "areas"
   survey_circumcision <- survey_circumcision %>%
-    filter(
-      !(.data$survey_id %in% !!tmp$survey_id),
-      !(.data$circ_status == 1 & .data$type == "Missing"),
-      !is.na(.data$space)
-    )
+      filter(!is.na(.data$space))
 
   ## normalise survey weights and apply Kish coefficients, if desired
   if (norm_kisk_weights) {
