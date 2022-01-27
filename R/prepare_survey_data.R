@@ -192,7 +192,7 @@ prepare_survey_data <- function(areas,
     filter(.data$type == "Missing", .data$Freq == 1)
 
   ## return message detailing all surveys which are missing
-  n <- nrow(temp)
+  n <- nrow(tmp)
   if (n > 0) {
       survey_id <- tmp$survey_id
       message(
