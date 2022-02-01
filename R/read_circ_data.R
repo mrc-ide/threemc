@@ -26,12 +26,12 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   ## in NAs in this situation (look at KEN for this)
 
   ## read in data, depending on file type
-  cond <- tools::file_ext(path)%in% c("geojson", "shp", "shx")
+  cond <- tools::file_ext(path) %in% c("geojson", "shp", "shx")
   if (cond == T) {
     .data <- read_sf(path, ...)
   } else {
-      # selection prior to loading is allowed by fread
-      .data <- as.data.frame(data.table::fread(path, select = c(selected), ...))
+    # selection prior to loading is allowed by fread
+    .data <- as.data.frame(data.table::fread(path, select = c(selected), ...))
   }
 
   ## if desired, recursively filter data with provided `filters` vector
@@ -47,8 +47,8 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
 
   # Select specific columns, if desired (and present) (no need to do for fread)
   if (!is.null(selected) & cond == T) {
-      .data <- .data %>%
-          select(all_of(selected[selected %in% names(.data)]))
+    .data <- .data %>%
+      select(all_of(selected[selected %in% names(.data)]))
   }
 
   ## for areas, add unique identifier within Admin code and merge to boundaries

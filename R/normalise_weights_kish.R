@@ -23,7 +23,7 @@ normalise_weights_kish <- function(survey_circumcision,
     ## Standardising survey weights
     group_by(across(all_of(strata.norm))) %>%
     mutate(
-        indweight_st = .data$indweight / mean(.data$indweight, na.rm = TRUE)
+      indweight_st = .data$indweight / mean(.data$indweight, na.rm = TRUE)
     ) %>%
     ungroup() %>%
     ## Applying Kish coefficient to the survey weights
@@ -33,7 +33,7 @@ normalise_weights_kish <- function(survey_circumcision,
         summarise(
           N = length(.data$survey_id),
           Neff = (sum(.data$indweight)^2) /
-                         sum(.data$indweight * .data$indweight),
+            sum(.data$indweight * .data$indweight),
           ratio = .data$N / .data$Neff,
           .groups = "drop"
         )),

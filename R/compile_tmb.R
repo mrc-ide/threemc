@@ -15,23 +15,26 @@
 compile_tmb <- function(file,
                         logfile = "/tmp/tmb_logfile.log",
                         ...) {
-
   if (!is.null(logfile)) {
-
     if (!file.exists(logfile)) file.create(logfile)
     logfile_redirect <- paste0("&> ", logfile)
 
-    tryCatch({
-      invisible(TMB::compile(file, logfile_redirect, ...))
-      message(
-        paste("any output from TMB::compile has been redirected to \n",
-              logfile, "\n",
-              "Please specify 'logfile = NULL' to print to your R console")
-      )
-    }, error = function(e) {
-      stop("TMB::compile has produced an error.\n
+    tryCatch(
+      {
+        invisible(TMB::compile(file, logfile_redirect, ...))
+        message(
+          paste(
+            "any output from TMB::compile has been redirected to \n",
+            logfile, "\n",
+            "Please specify 'logfile = NULL' to print to your R console"
+          )
+        )
+      },
+      error = function(e) {
+        stop("TMB::compile has produced an error.\n
            Please specify 'logfile = NULL' to return function error messages")
-    })
+      }
+    )
   } else {
     tmb::compile(file, ...)
   }

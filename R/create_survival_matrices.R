@@ -42,8 +42,8 @@ create_survival_matrices <- function(out,
   list_names <- c("A_mmc", "A_tmc", "A_mc", "B", "C")
   # remove MC if modelling for missing type is undesirable
   if (!"obs_mc" %in% names(out)) {
-      circs <- circs[-3]
-      list_names <- list_names[-3]
+    circs <- circs[-3]
+    list_names <- list_names[-3]
   }
   ## Matrices for selecting instantaneous hazard rate for:
   hazard_matrices <- lapply(circs, function(x) {

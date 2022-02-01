@@ -69,14 +69,14 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   areas_model <- areas_model %>%
-      filter(.data$area_level == area_lev) %>%
-      select(any_of(c("area_id", "area_name", "space")))
+    filter(.data$area_level == area_lev) %>%
+    select(any_of(c("area_id", "area_name", "space")))
 
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
   out <- tidyr::crossing(areas_model,
     "year" = seq(2006, 2021, by = 1),
-    "circ_age" = 0 : max(survey_circumcision$circ_age, na.rm = TRUE)
+    "circ_age" = 0:max(survey_circumcision$circ_age, na.rm = TRUE)
   ) %>%
     ## Getting time and age variable
     mutate(
@@ -111,8 +111,8 @@ create_shell_dataset <- function(survey_circumcision,
 
   # if there is no missing type, there is no need for MC:
   if (!any(survey_circumcision$type == "Missing")) {
-      empirical_circ_cols <- empirical_circ_cols[-3]
-      subsets <- subsets[-3]
+    empirical_circ_cols <- empirical_circ_cols[-3]
+    subsets <- subsets[-3]
   }
 
 
