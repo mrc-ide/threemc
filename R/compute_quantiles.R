@@ -49,7 +49,7 @@ compute_quantiles <- function(out,
         "inc_mmc", "inc_tmc", "inc", # incidence
         "cum_inc_mmc", "cum_inc_tmc", "cum_inc"
     ) # cumulative incidence
-  
+
     # if we are modelling only MC coverage, only want non-type specific "types"
     samples <- NULL
     if (!"haz_mmc" %in% names(fit$sample)) {
@@ -57,7 +57,7 @@ compute_quantiles <- function(out,
         # pull corresponding samples for each of these hazards from fit object
         samples <- with(fit$sample, list(haz, surv, inc_mc, cum_inc_mc))
     }
-  
+
     # append "L" (lower), "M" (mean), and "U" (upper) to these column names
     # probs must be sorted to ensure this is in the right order
     types <- lapply(types, function(x) paste0(rep(x, 3), c("L", "M", "U")))
@@ -72,15 +72,16 @@ compute_quantiles <- function(out,
               inc_mmc, inc_tmc, inc_mc,
               cum_inc_mmc, cum_inc_tmc, cum_inc_mc
           )
+      )
     }
-        
+
     # for each hazard, calculate quantiles and add as appropriate cols to out
     for (i in seq_along(types)) {
         out[, c(types[[i]])] <- quantile_fun(samples[[i]],
                                              probs = probs,
                                              names = names,
                                              ...
-        )
+                                             )
     }
 
     return(out)
