@@ -47,15 +47,20 @@ compute_quantiles <- function(out,
     types <- c(
         "rate_mmc", "rate_tmc", "rate", "surv", # rates
         "inc_mmc", "inc_tmc", "inc", # incidence
-        "cum_inc_mmc", "cum_inc_tmc", "cum_inc"
-    ) # cumulative incidence
+        "cum_inc_mmc", "cum_inc_tmc", "cum_inc" # cumulative incidence
+    )
+
+    # ensure names for MC columns in fit have the suffix "_mc"
+    mmc_tmc <- paste(c("mmc", "tmc"), collapse = "|")
+    locs <- !(grepl(paste(c(mmc_tmc, "mc"), collapse = "|"), names(fit$sample)))
+    names(fit$sample)[locs] <- paste0(names(fit$sample), "_mc")
 
     # if we are modelling only MC coverage, only want non-type specific "types"
     samples <- NULL
     if (!"haz_mmc" %in% names(fit$sample)) {
-        types <- types[!grepl(paste(c("mmc", "tmc"), collapse = "|"), types)]
+        types <- types[!grepl(mmc_tmc, types)]
         # pull corresponding samples for each of these hazards from fit object
-        samples <- with(fit$sample, list(haz, surv, inc_mc, cum_inc_mc))
+        samples <- with(fit$sample, list(haz_mc, surv_mc, inc_mc, cum_inc_mc))
     }
 
     # append "L" (lower), "M" (mean), and "U" (upper) to these column names
@@ -67,8 +72,8 @@ compute_quantiles <- function(out,
       samples <- with(
           fit$sample,
           list(
-              haz_mmc, haz_tmc, haz,
-              surv,
+              haz_mmc, haz_tmc, haz_mc,
+              surv_mc,
               inc_mmc, inc_tmc, inc_mc,
               cum_inc_mmc, cum_inc_tmc, cum_inc_mc
           )
