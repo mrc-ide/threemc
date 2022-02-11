@@ -40,7 +40,7 @@ prepare_survey_data <- function(areas,
                                 cens_year = NULL,
                                 cens_age = 59,
                                 rm_missing_type = FALSE,
-                                norm_kisk_weights = FALSE,
+                                norm_kisk_weights = TRUE,
                                 strata.norm = c("survey_id", "area_id"),
                                 strata.kish = c("survey_id")) {
 
@@ -193,7 +193,8 @@ prepare_survey_data <- function(areas,
       ),
       type = case_when(
         .data$circ_who == "medical" | .data$circ_where == "medical" ~ "MMC",
-        .data$circ_who == "traditional" | .data$circ_where == "traditional" ~ "TMC",
+        .data$circ_who == "traditional" |
+                                  .data$circ_where == "traditional" ~ "TMC",
         TRUE ~ "Missing"
       )
     )
