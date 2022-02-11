@@ -47,7 +47,8 @@ prepare_survey_data <- function(areas,
 
   # change colnames to those in line with areas
   if ("geoloc_area_id" %in% names(survey_clusters)) {
-    survey_clusters <- rename(survey_clusters, area_id = geoloc_area_id)
+    survey_clusters <- survey_clusters %>%
+        rename(area_id = .data$geoloc_area_id)
   }
 
   ## Bringing datasets together
