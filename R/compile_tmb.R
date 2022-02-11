@@ -19,8 +19,7 @@ compile_tmb <- function(file,
     if (!file.exists(logfile)) file.create(logfile)
     logfile_redirect <- paste0("&> ", logfile)
 
-    tryCatch(
-      {
+    tryCatch({
         invisible(TMB::compile(file, logfile_redirect, ...))
         message(
           paste(
@@ -29,8 +28,7 @@ compile_tmb <- function(file,
             "Please specify 'logfile = NULL' to print to your R console"
           )
         )
-      },
-      error = function(e) {
+      }, error = function(e) {
         stop("TMB::compile has produced an error.\n
            Please specify 'logfile = NULL' to return function error messages")
       }
