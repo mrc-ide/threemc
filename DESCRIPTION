@@ -38,13 +38,15 @@ Imports:
     sf (>= 1.0.5),
     rlang (>= 0.4.12),
     Matrix (>= 1.3-4),
-    TMB (>= 1.7.22),
     spdep (>= 1.1.13),
     splines (>= 3.6.2),
     tidyr (>= 1.1.4),
+    data.table (>= 1.14.2),
+    mgcv (>= 1.8-38),
+    TMB (>= 1.7.22),
+    naomi (>= 2.3.1),
     stats,
-    methods,
-    tidyr (>= 1.1.4)
+    methods
 Suggests:
     covr (>= 3.5.1),
     tidyverse (>= 1.3.1),
