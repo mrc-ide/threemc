@@ -4,7 +4,7 @@
 \alias{compute_quantiles}
 \title{Calculate Quantiles for Rates and Cumulative Hazard}
 \usage{
-compute_quantiles(out, fit, probs = c(0.5, 0.025, 0.975), names = FALSE, ...)
+compute_quantiles(out, fit, probs = c(0.025, 0.5, 0.975), names = FALSE, ...)
 }
 \arguments{
 \item{out}{Shell dataset with a row for every unique record in
