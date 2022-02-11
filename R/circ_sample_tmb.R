@@ -6,7 +6,7 @@
 #' @param obj TMB object/AD model outputted by \link[TMB]{MakeADFun}.
 #' @param opt Optimised TMB model, outputted by optimisation function such
 #' as \link[stats]{nlminb} or \link[stats]{optim}.
-#' @param n_samples Number of samples to be generated. Additional parameters
+#' @param nsample Number of samples to be generated. Additional parameters
 #' for \link[naomi]{sample_tmb} can also be supplied, Default: 1000
 #' @param ...  Further arguments passed to or from other methods.
 #' @return Object of class "naomi_fit", containing the original TMB object
