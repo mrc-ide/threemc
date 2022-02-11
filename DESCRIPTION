@@ -23,7 +23,7 @@ Description: Functions and datasets to support, and extend to other Sub-Saharan
     African countries, Thomas, M. et. al., 2021, A multi-level model for 
     estimating region-age-time-type specific male circumcision coverage from 
     household survey and health system data in South Africa, 
-    arXiv:2108.09142v2 [stat.AP].
+    <arXiv:2108.091422>
 Depends: 
     R (>= 3.5.0)
 LazyData: true
