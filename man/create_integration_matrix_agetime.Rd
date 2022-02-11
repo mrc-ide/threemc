@@ -20,26 +20,30 @@ create_integration_matrix_agetime(
 \arguments{
 \item{dat}{Dataset used for modelling.}
 
-\item{subset}{Subset for dataset.}
+\item{subset}{Subset for dataset, Default: NULL}
 
-\item{time1}{Variable name for time of birth.}
+\item{time1}{Variable name for time of birth, Default: "time1"}
 
-\item{time2}{Variable name for time circumcised or censored.}
+\item{time2}{Variable name for time circumcised or censored, Default: "time2"}
 
-\item{timecaps}{Window to fix temporal dimension before and after.}
+\item{timecaps}{Window to fix temporal dimension before and after,
+Default: c(1, Inf)}
 
-\item{Ntime}{Number of time points (if NULL, function will calculate).}
+\item{Ntime}{Number of time points (if NULL, function will calculate),
+Default: NULL}
 
 \item{age}{\itemize{
-\item Variable with age circumcised or censored.
+\item Variable with age circumcised or censored, Default: "age"
 }}
 
-\item{Nage}{Number of age groups (if NULL, function will calculate).}
+\item{Nage}{Number of age groups (if NULL, function will calculate),
+Default: NULL}
 
-\item{strat}{Variable to stratify by in using a 3D hazard function.}
+\item{strat}{Variable to stratify by in using a 3D hazard function,
+Default: NULL}
 
 \item{Nstrat}{Number of stratification groups (if NULL, function will
-calculate).}
+calculate), Default: NULL}
 }
 \value{
 Matrix for selecting instantaneous hazard rate.

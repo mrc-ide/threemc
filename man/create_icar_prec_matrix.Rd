@@ -7,9 +7,9 @@
 create_icar_prec_matrix(sf_obj = NULL, row.names = NULL)
 }
 \arguments{
-\item{sf_obj}{Shapefiles needed for adjacency.}
+\item{sf_obj}{Shapefiles needed for adjacency, Default: NULL}
 
-\item{row.names}{Unique IDs for the areas.}
+\item{row.names}{Unique IDs for the areas, Default: NULL}
 }
 \value{
 ICAR precision matrix.

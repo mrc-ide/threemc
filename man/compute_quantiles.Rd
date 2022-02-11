@@ -15,13 +15,13 @@ for circumcision estimates for each unique record.}
 and hazard rate of circumcision for the region(s) in question.}
 
 \item{probs}{Specific quantiles to be calculated,
-Default: c(0.5, 0.025, 0.975)}
+Default: c(0.025, 0.5, 0.975)}
 
 \item{names}{Parameter with \link[stats]{quantile}: logical; if true, the
 result has a names attribute. Set to FALSE for speedup with many probs,
 Default: FALSE}
 
-\item{...}{Further arguments passed to or from other methods.}
+\item{...}{Further arguments passed to \link[stats]{quantile}.}
 }
 \value{
 Input \code{out} \code{data.frame}, including columns with quantiles for

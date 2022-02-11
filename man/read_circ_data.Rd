@@ -4,7 +4,7 @@
 \alias{read_circ_data}
 \title{Function to read in Circumcision Data}
 \usage{
-read_circ_data(path, filters = NULL)
+read_circ_data(path, filters = NULL, selected = NULL, ...)
 }
 \arguments{
 \item{path}{Path to data.}
@@ -12,6 +12,10 @@ read_circ_data(path, filters = NULL)
 \item{filters}{Optional named vector, whose values dictate the values
 filtered for in the corresponding column names. Only supports filtering for
 one value for each column. default: NULL}
+
+\item{selected}{Optional columns to select, removing others, default = NULL}
+
+\item{...}{Further arguments passed to or from other methods.}
 }
 \value{
 relevant data set, filtered as desired.

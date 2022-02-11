@@ -14,10 +14,11 @@ normalise_weights_kish(
 \item{survey_circumcision}{Information on male circumcision status from
 surveys containing survey weights.}
 
-\item{strata.norm}{Stratification variables for normalising survey weights.}
+\item{strata.norm}{Stratification variables for normalising survey weights,
+Default: c("survey_id", "area_id")}
 
 \item{strata.kish}{Stratification variables for estimating and applying the
-Kish coefficients.}
+Kish coefficients, Default: "survey_id"}
 }
 \value{
 Survey data with normalised survey weights and required variables to

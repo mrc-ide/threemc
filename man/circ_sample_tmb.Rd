@@ -12,16 +12,15 @@ circ_sample_tmb(obj, opt, nsample = 1000, ...)
 \item{opt}{Optimised TMB model, outputted by optimisation function such
 as \link[stats]{nlminb} or \link[stats]{optim}.}
 
-\item{...}{Further arguments passed to or from other methods.}
+\item{nsample}{Number of samples to be generated, Default: 1000}
 
-\item{n_samples}{Number of samples to be generated. Additional parameters
-for \link[naomi]{sample_tmb} can also be supplied, Default: 1000}
+\item{...}{Further arguments passed to \link[naomi]{sample_tmb}.}
 }
 \value{
 Object of class "naomi_fit", containing the original TMB object
-("obj"), the standard deviation report for optimised AD model ("sdreport")
-and \code{n_samples} samples for the (cumulative) incidence and hazard rate of
-circumcision for the region(s) in question.
+("obj"), the standard deviation report for optimised AD model (from
+\link[TMB]{sdreport}) and \code{n_samples} samples for the (cumulative) incidence
+and hazard rate of circumcision for the region(s) in question.
 }
 \description{
 Sample from TMB object, using \link[naomi]{sample_tmb}. Saves
