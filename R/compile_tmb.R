@@ -36,6 +36,6 @@ compile_tmb <- function(file,
       }
     )
   } else {
-    tmb::compile(file, ...)
+    TMB::compile(file, ...)
   }
 }
