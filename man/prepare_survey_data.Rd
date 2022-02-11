@@ -14,7 +14,7 @@ prepare_survey_data(
   cens_year = NULL,
   cens_age = 59,
   rm_missing_type = FALSE,
-  norm_kisk_weights = FALSE,
+  norm_kisk_weights = TRUE,
   strata.norm = c("survey_id", "area_id"),
   strata.kish = c("survey_id")
 )
