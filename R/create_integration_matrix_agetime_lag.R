@@ -7,16 +7,20 @@
 #'
 #' @param dat Dataset used for modelling.
 #'
-#' @param time1 Variable name for time of birth.
-#' @param subset Subset for dataset.
-#' @param time2 Variable name for time circumcised or censored.
-#' @param timecaps Window to fix temporal dimension before and after.
-#' @param Ntime Number of time points (if NULL, function will calculate).
-#' @param age - Variable with age circumcised or censored.
-#' @param Nage Number of age groups (if NULL, function will calculate).
-#' @param strat Variable to stratify by in using a 3D hazard function.
+#' @param subset Subset for dataset, Default: NULL
+#' @param time1 Variable name for time of birth, Default: "time1"
+#' @param time2 Variable name for time circumcised or censored, Default: "time2"
+#' @param timecaps Window to fix temporal dimension before and after,
+#' Default: c(1, Inf)
+#' @param Ntime Number of time points (if NULL, function will calculate),
+#' Default: NULL
+#' @param age - Variable with age circumcised or censored, Default: "age"
+#' @param Nage Number of age groups (if NULL, function will calculate),
+#' Default: NULL
+#' @param strat Variable to stratify by in using a 3D hazard function,
+#' Default: NULL
 #' @param Nstrat Number of stratification groups (if NULL, function will
-#' calculate).
+#' calculate), Default: NULL
 #' @return Matrix for selecting instantaneous hazard rate.
 #'
 #' @seealso

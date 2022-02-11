@@ -9,6 +9,7 @@
 #' @param filters Optional named vector, whose values dictate the values
 #' filtered for in the corresponding column names. Only supports filtering for
 #' one value for each column. default: NULL
+#' @param selected Optional columns to select, removing others, default = NULL
 #' @param ... Further arguments passed to or from other methods.
 #'
 #' @seealso

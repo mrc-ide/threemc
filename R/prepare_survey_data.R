@@ -8,16 +8,20 @@
 #' @param survey_individuals - Information on the individuals surveyed.
 #' @param survey_clusters - Information on the survey clusters.
 #' @param area_lev - Desired admin boundary level to perform the analysis on.
-#' @param start_year - Year to begin the analysis on.
+#' @param start_year - Year to begin the analysis on, Default: 2006
 #' @param cens_year - Year to censor the circumcision data by (Sometimes some
-#' weirdness at the final survey year, e.g. v small number of MCs).
-#' @param cens_age - Age to censor the circumcision data at (Default 59,
-#' i.e. no circumcisions after 59 years of age).
-#' @param norm_kisk_weights - Set == TRUE to normalise survey weights and
-#' apply Kish coefficients.
-#' @param strata.norm Stratification variables for normalising survey weights.
+#' weirdness at the final survey year, e.g. v small number of MCs),
+#' Default: NULL
+#' @param cens_age - Age to censor the circumcision data at, Default: 59
+#' @param rm_missing_type - Indicator to decide whether you would like to keep
+#' surveys where there is no MMC/TMC disinction. These surveys may still be
+#' useful for determining MC levels, Default: FALSE
+#' @param norm_kisk_weights - Indicator to decide whether to normalise survey
+#' weights and apply Kish coefficients, Default: TRUE
+#' @param strata.norm Stratification variables for normalising survey weights,
+#' Default: c("survey_id", "area_id")
 #' @param strata.kish Stratification variables for estimating and applying the
-#' Kish coefficients.
+#' Kish coefficients, Default: "survey_id"
 #' @seealso
 #'  \code{\link[threemc]{normalise_weights_kish}}
 #' @return Survey data with required variables to run circumcision model.
@@ -31,7 +35,7 @@ prepare_survey_data <- function(areas,
                                 survey_circumcision,
                                 survey_individuals,
                                 survey_clusters,
-                                area_lev = 0,
+                                area_lev,
                                 start_year = 2006,
                                 cens_year = NULL,
                                 cens_age = 59,

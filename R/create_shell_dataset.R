@@ -16,7 +16,8 @@
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,
 #' Default: "time2"
-#' @param strat Variable to stratify by in using a 3D hazard function.
+#' @param strat Variable to stratify by in using a 3D hazard function,
+#' Default: "space"
 #' @param age - Variable with age circumcised or censored. Default: "age"
 #' @param circ Variables with circumcision matrix, Default: "indweight_st"
 #' @param ...  Further arguments passed to or from other methods.

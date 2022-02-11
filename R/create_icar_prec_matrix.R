@@ -2,8 +2,8 @@
 #'
 #' @description Create the precision matrix for an ICAR process.
 #'
-#' @param sf_obj Shapefiles needed for adjacency.
-#' @param row.names Unique IDs for the areas.
+#' @param sf_obj Shapefiles needed for adjacency, Default: NULL
+#' @param row.names Unique IDs for the areas, Default: NULL
 #' @return ICAR precision matrix.
 #'
 #' @seealso
