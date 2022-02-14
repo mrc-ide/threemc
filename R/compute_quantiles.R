@@ -54,7 +54,7 @@ compute_quantiles <- function(out,
     # ensure names for MC columns in fit have the suffix "_mc"
     mmc_tmc <- paste(c("mmc", "tmc"), collapse = "|")
     locs <- !(grepl(paste(c(mmc_tmc, "mc"), collapse = "|"), names(fit$sample)))
-    names(fit$sample)[locs] <- paste0(names(fit$sample), "_mc")
+    names(fit$sample)[locs] <- paste0(names(fit$sample)[locs], "_mc")
 
     # if we are modelling only MC coverage, only want non-type specific "types"
     samples <- NULL
