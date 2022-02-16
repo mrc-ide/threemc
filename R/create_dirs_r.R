@@ -1,4 +1,10 @@
-# function to recursively create directories if missing (also use in plots)
+#' @title Recursively Create Missing Directories
+#' @description Function to recursively create directories if any of the 
+#' directories in a provided path are missing. Somewhat equivalent to 
+#' \code{mkdir -p} in bash.
+#' @param dir_path Path to a file or directory which you want to generate.
+#' @export
+#'
 create_dirs_r <- function(dir_path) {
   
   # split by "/"
