@@ -42,54 +42,54 @@ create_hazard_matrix_agetime <- function(dat,
                                          Nstrat = NULL,
                                          circ = "circ") {
 
-  ## Integration matrix for cumulative hazard
+  # Integration matrix for cumulative hazard
   dat$time1_cap <- pmin(
     timecaps[2] - timecaps[1] + 1,
     pmax(1, as.numeric(dat[[time1]]) - timecaps[1] + 1)
   )
 
-  ## Integration matrix for cumulative hazard
+  # Integration matrix for cumulative hazard
   dat$time2_cap <- pmin(
     timecaps[2] - timecaps[1] + 1,
     pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1)
   )
 
-  ## Number of dimensions in the hazard function
+  # Number of dimensions in the hazard function
   if (is.null(Ntime)) Ntime <- max(dat[, "time1_cap", drop = TRUE])
   if (is.null(Nage)) Nage <- max(dat[age])
   if (!is.null(strat) & is.null(Nstrat)) Nstrat <- max(dat[strat])
 
-  ## Subsetting data if necessary
+  # Subsetting data if necessary
   if (!is.null(subset)) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
-  ## Matrix for 2D age time hazard function if strat is NULL
+  # Matrix for 2D age time hazard function if strat is NULL
   if (is.null(strat)) {
-    cols <- apply(dat, 1, function(x) {
-      Ntime * (as.numeric(x[age]) - 1) + as.numeric(x["time2_cap"])
-    })
-    cols <- unlist(cols)
-
-    ## Matrix dimension
+    cols <- vapply(seq_len(nrow(dat)), function(x) { 
+      Ntime * (as.numeric(dat[x, age]) - 1) + as.numeric(dat[x, "time2_cap"])
+    }, numeric(1))
+    
+    # Matrix dimension
     ncol <- Ntime * Nage
   }
-  ## Matrix for 3D hazard function if strat not NULL
+  # Matrix for 3D hazard function if strat not NULL
   if (!is.null(strat)) {
 
-    ## Integration matrix for cumulative hazard
-    cols <- unlist(apply(dat, 1, function(x) {
-      Ntime * Nage * (as.numeric(x[strat]) - 1) + Ntime *
-        (as.numeric(x[age]) - 1) + as.numeric(x["time2_cap"])
-    }, simplify = FALSE))
+    # Integration matrix for cumulative hazard
+    cols <- vapply(seq_len(nrow(dat)), function(x) { 
+      Ntime * Nage * (as.numeric(dat[x, strat]) - 1) + Ntime *
+        (as.numeric(dat[x, age]) - 1) + as.numeric(dat[x, "time2_cap"]) 
+    }, numeric(1))
+    
     ncol <- Ntime * Nage * Nstrat
   }
-  ## Outputting sparse matrix
+  # Outputting sparse matrix
   A <- Matrix::sparseMatrix(
     i = seq_len(nrow(dat)),
     j = cols,
     x = dat[[circ]],
     dims = c(nrow(dat), ncol)
   )
-  ## Returning matrix
+  # Returning matrix
   return(A)
 }
