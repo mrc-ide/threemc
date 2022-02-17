@@ -1,17 +1,17 @@
-#' @title Pull N circumcision samples from TMB fit 
+#' @title Pull N circumcision samples from TMB fit
 #' @description Function to pull samples for various summaries inferred about
-#' circumcision in a given area (prevalence, probability or incidence, 
+#' circumcision in a given area (prevalence, probability or incidence,
 #' respectively).
 #' @param N Number of samples to be generated, Default: 100
-#' @param populations \code{data.frame} containing populations for each 
+#' @param populations \code{data.frame} containing populations for each
 #' region in tmb fits.
 #' @param no_prog_results Quantiles of different summaries for different types
-#' (Medical, traditional or total) circumcision, for survey data only, 
+#' (Medical, traditional or total) circumcision, for survey data only,
 #' Default: NULL
 #' @param prog_results Quantiles of different summaries for different types
 #' (Medical, traditional or total) circumcision, for survey data and VMMC
 #' programme data, Default: NULL
-#' @param no_prog_tmb_fit TMB model for Male Circumcision (MC), for survey data 
+#' @param no_prog_tmb_fit TMB model for Male Circumcision (MC), for survey data
 #' only.
 #' @param prog_tmb_fit TMB model for Male Circumcision (MC), for survey data and
 #' VMMC programme data.
@@ -25,14 +25,12 @@ prepare_sample_data <- function(N = 100,
                                 prog_results = NULL,
                                 no_prog_tmb_fit,
                                 prog_tmb_fit,
-                                type
-) {
-
+                                type) {
   if (is.null(no_prog_results) & is.null(prog_results)) {
     stop("cannot have prog_results == no_prog_results == NULL")
   }
   if (!type %in% c("probability", "incidence", "prevalence") |
-      length(type) > 1) {
+    length(type) > 1) {
     stop("Please choose a valid type
          (one of 'probability', 'incidence', 'prevalence'")
   }
@@ -66,8 +64,10 @@ prepare_sample_data <- function(N = 100,
     # word to be pasted onto the end of circ type below
     if (type == "prevalence") {
       category <- "coverage"
-    } else category <- type
-    
+    } else {
+      category <- type
+    }
+
     # initialise dataframes to store samples for different circ types
     tmpx_1 <- tmpx_2 <- tmpx_3 <- tmpx_4 <- tmpx_5 <- tmpx_6 <- tmp
     # type == "incidence" has 12 different "types"
@@ -82,16 +82,13 @@ prepare_sample_data <- function(N = 100,
     tmpx_1[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N]
     tmpx_1$type <- paste("MMC-nT", category)
     if (tmp$model[1] == "No program data") {
-
       tmpx_2[, paste0("samp_", 1:N)] <- 0
       tmpx_3[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N]
       tmpx_4[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N]
       tmpx_5[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N]
       tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mc]][, 1:N]
     } else if (tmp$model[1] == "With program data") {
-
       if (type == "probability") {
-
         tmpx_2[, paste0("samp_", 1:N)] <- fit$sample$probs[, 1:N] *
           fit$sample[[tmc]][, 1:N]
         tmpx_3[, paste0("samp_", 1:N)] <- (1 - fit$sample$probs[, 1:N]) *
@@ -101,7 +98,6 @@ prepare_sample_data <- function(N = 100,
         tmpx_5[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N]
         tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mc]][, 1:N]
       } else {
-
         tmpx_2[, paste0("samp_", 1:N)] <- fit$sample[[mmct]][, 1:N]
         tmpx_3[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N]
         tmpx_4[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N] +
@@ -120,12 +116,18 @@ prepare_sample_data <- function(N = 100,
 
     # Samples for the number of MCs performed (for incidence)
     if (type == "incidence") {
-      tmpx_7 <- tmpx_1;  tmpx_7$type <- "MMC-nTs performed"
-      tmpx_8 <- tmpx_2;  tmpx_8$type <- "MMC-Ts performed"
-      tmpx_9 <- tmpx_3;  tmpx_9$type <- "TMCs performed"
-      tmpx_10 <- tmpx_4; tmpx_10$type <- "MMCs performed"
-      tmpx_11 <- tmpx_5; tmpx_11$type <- "TMICs performed"
-      tmpx_12 <- tmpx_6; tmpx_12$type <- "MCs performed"
+      tmpx_7 <- tmpx_1
+      tmpx_7$type <- "MMC-nTs performed"
+      tmpx_8 <- tmpx_2
+      tmpx_8$type <- "MMC-Ts performed"
+      tmpx_9 <- tmpx_3
+      tmpx_9$type <- "TMCs performed"
+      tmpx_10 <- tmpx_4
+      tmpx_10$type <- "MMCs performed"
+      tmpx_11 <- tmpx_5
+      tmpx_11$type <- "TMICs performed"
+      tmpx_12 <- tmpx_6
+      tmpx_12$type <- "MCs performed"
     }
 
     # Append together
@@ -139,20 +141,20 @@ prepare_sample_data <- function(N = 100,
       dplyr::left_join(
         # only keep relevant columns in populations
         (populations %>%
-           dplyr::select(
-             dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
-             population
-           ))
+          dplyr::select(
+            dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
+            population
+          ))
       ) %>%
       dplyr::relocate(population, .before = samp_1)
 
     # filter out na populations, with an appropriate message
     if (any(is.na(tmp$population)) == TRUE) {
-        n1 <- nrow(tmp)
-        tmp <- dplyr::filter(tmp, !is.na(population))
-        n2 <- nrow(tmp)
-        if (n2 == 0) stop("No populations present in data")
-        message(paste0("Missing population for ", n1 - n2, " records"))
+      n1 <- nrow(tmp)
+      tmp <- dplyr::filter(tmp, !is.na(population))
+      n2 <- nrow(tmp)
+      if (n2 == 0) stop("No populations present in data")
+      message(paste0("Missing population for ", n1 - n2, " records"))
     }
 
 

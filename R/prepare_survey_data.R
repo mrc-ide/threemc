@@ -50,7 +50,7 @@ prepare_survey_data <- function(areas,
   # change colnames to those in line with areas
   if ("geoloc_area_id" %in% names(survey_clusters)) {
     survey_clusters <- survey_clusters %>%
-        dplyr::rename(area_id = .data$geoloc_area_id)
+      dplyr::rename(area_id = .data$geoloc_area_id)
   }
 
   ## Bringing datasets together
@@ -196,7 +196,7 @@ prepare_survey_data <- function(areas,
       type = dplyr::case_when(
         .data$circ_who == "medical" | .data$circ_where == "medical" ~ "MMC",
         .data$circ_who == "traditional" |
-                                  .data$circ_where == "traditional" ~ "TMC",
+          .data$circ_where == "traditional" ~ "TMC",
         TRUE ~ "Missing"
       )
     )
