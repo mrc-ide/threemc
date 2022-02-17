@@ -19,10 +19,6 @@ add_area_id <- function(
   par, 
   add_keep_cols = NULL) {
   
-  
-                par = list("area_lev" = area_lev,
-                           "area_lev_select" = x),
-
     # Getting area_id's
     area_lev_current_id = paste0("area_id", par$area_lev)
     # The level we want
