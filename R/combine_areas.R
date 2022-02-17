@@ -1,5 +1,21 @@
-# collect results for lower area hierarchies by joining higher area
-# hierarchies (should really allow inputs to add_keep_cols here!)
+#' @title Collect results for lower area hierarchies 
+#' @description Function to collect results for lower area hierarchies by 
+#' joining higher area hierarchies.
+#' @param .data Results for highest area hierarchy, to be combined to 
+#' give results for lower/less granular area hierarchies.
+#' @param areas_wide \code{data.frame} with shapefiles and area hierarchy.
+#' @param area_lev Desired admin boundary level.
+#' @param join Indicator to decide whether to join data for different 
+#' area hierarchies, or return them in list form.
+#' @param add_keep_col Additional columns to keep when summarising,
+#' Default: NULL
+#' @param ... Further arguments passed to \link[threemc]{add_area_id}.
+#' @return \code{data.frame} or list (depending on the value of \code{join})
+#' with results for all area levels less than or equal to \code{area_lev}.
+#' @importFrom dplyr %>%
+#' @export
+
+# hierarchies 
 combine_areas <- function(
     .data,
     areas_wide,
@@ -21,7 +37,7 @@ combine_areas <- function(
     if (area_levs[1] > -1) {
         results_list <- lapply(area_levs, function(x) {
             add_area_id(
-                df = (.data %>% select(-area_name)),
+                df = (.data %>% dplyr::select(-area_name)),
                 df_areas_wide = areas_wide,
                 par = list("area_lev" = area_lev,
                            "area_lev_select" = x),
