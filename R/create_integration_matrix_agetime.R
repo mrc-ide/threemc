@@ -99,6 +99,10 @@ create_integration_matrix_agetime <- function(dat,
     }, simplify = FALSE)
     cols <- unlist(cols)
 
+    # Row entries for integration matrix
+    rows <- unlist(apply(dat, 1, function(x) {
+      rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]) + 1)
+    }, simplify = FALSE))
     # Matrix dimension
     ncol <- Ntime * Nage
   }
@@ -106,7 +110,7 @@ create_integration_matrix_agetime <- function(dat,
   if (!is.null(strat)) {
 
     # column entries for integration matrix
-    cols <- apply(dat, 1, function(x) {
+    cols <- unlist(apply(dat, 1, function(x) {
       # If circumcised at birth select relevant entry
       if (as.numeric(x["time1_cap2"]) == (as.numeric(x["time2_cap2"]))) {
         Ntime * Nage * (as.numeric(x[strat]) - 1) +
@@ -115,7 +119,7 @@ create_integration_matrix_agetime <- function(dat,
             max(1, as.numeric(x["time1_cap2"]))
           )
       } else {
-        # Else just estimate the ?
+        # Else just estimate the 
         cumsum(
           c(
             Ntime * Nage * (as.numeric(x[strat]) - 1) +
@@ -128,17 +132,17 @@ create_integration_matrix_agetime <- function(dat,
           )
         )
       }
-    }, simplify = FALSE)
-    cols <- unlist(cols)
+    }, simplify = FALSE))
 
     # Matrix dimension
     ncol <- Ntime * Nage * Nstrat
   }
+  
   # Row entries for integration matrix
   rows <- unlist(apply(dat, 1, function(x) {
     rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]) + 1)
   }, simplify = FALSE))
-
+  
   # Outputting sparse matrix
   A <- Matrix::sparseMatrix(
     i = rows,

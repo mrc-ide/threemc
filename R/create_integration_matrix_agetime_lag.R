@@ -69,7 +69,7 @@ create_integration_matrix_agetime_lag <- function(dat,
   if (is.null(strat)) {
 
     # column entries for integration matrix
-    cols <- apply(dat, 1, function(x) {
+    cols <- unlist(apply(dat, 1, function(x) {
       # If circumcised at birth select relevant entry
       if (as.numeric(x["time1_cap2"]) == (as.numeric(x["time2_cap2"]))) {
         test <- min(
@@ -91,16 +91,13 @@ create_integration_matrix_agetime_lag <- function(dat,
       }
       test <- test[-length(test)]
       return(test)
-    }, simplify = FALSE)
-    cols <- unlist(cols)
-
-    ncol <- Ntime * Nage
+    }, simplify = FALSE))
   }
   # Matrix for 3D hazard function if strat not NULL
   if (!is.null(strat)) {
 
     # column entries for integration matrix
-    cols <- apply(dat, 1, FUN = function(x) {
+    cols <- unlist(apply(dat, 1, FUN = function(x) {
       # If circumcised at birth select relevant entry
       if (as.numeric(x["time1_cap2"]) == (as.numeric(x["time2_cap2"]))) {
         test <- Ntime * Nage * (as.numeric(x[strat]) - 1) +
@@ -124,8 +121,7 @@ create_integration_matrix_agetime_lag <- function(dat,
       }
       test <- test[-length(test)]
       return(test)
-    }, simplify = FALSE)
-    cols <- unlist(cols)
+    }, simplify = FALSE))
 
     ncol <- Ntime * Nage * Nstrat
   }
