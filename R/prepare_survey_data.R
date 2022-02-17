@@ -2,7 +2,7 @@
 #' @description Prepare survey data required to run the circumcision model. Can
 #' also optionally apply \link[threemc]{normalise_weights_kish}, to
 #'  normalise survey weights and apply Kish coefficients.
-#' @param areas `sf` shapefiles for specific country/region.
+#' @param areas \code{sf} shapefiles for specific country/region.
 #' @param survey_circumcision - Information on male circumcision status from
 #' surveys.
 #' @param survey_individuals - Information on the individuals surveyed.
