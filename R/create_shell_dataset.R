@@ -32,9 +32,8 @@
 #' for circumcision estimates for each unique record.
 #' @export
 #'
-#' @import dplyr
-#' @import sf
 #' @import rlang
+#' @importFrom dplyr %>%
 create_shell_dataset <- function(survey_circumcision,
                                  areas,
                                  area_lev,
@@ -64,14 +63,14 @@ create_shell_dataset <- function(survey_circumcision,
 
   ## remove spatial elements from areas, take only specified/highest area level
   if (inherits(areas, "sf")) {
-    areas_model <- st_drop_geometry(areas)
+    areas_model <- sf::st_drop_geometry(areas)
   } else {
     areas_model <- areas
   }
 
   areas_model <- areas_model %>%
-    filter(.data$area_level == area_lev) %>%
-    select(any_of(c("area_id", "area_name", "space")))
+    dplyr::filter(.data$area_level == area_lev) %>%
+    dplyr::select(dplyr::any_of(c("area_id", "area_name", "space")))
 
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
@@ -80,12 +79,12 @@ create_shell_dataset <- function(survey_circumcision,
     "circ_age" = 0:max(survey_circumcision$circ_age, na.rm = TRUE)
   ) %>%
     ## Getting time and age variable
-    mutate(
+    dplyr::mutate(
       time = .data$year - 2006 + 1,
       age = .data$circ_age + 1
     ) %>%
     ## Sorting dataset
-    arrange(.data$space, .data$age, .data$time)
+    dplyr::arrange(.data$space, .data$age, .data$time)
 
   ## Obtain N person years
   out_int_mat <- threemc::create_integration_matrix_agetime(
