@@ -46,6 +46,7 @@ Imports:
     TMB (>= 1.7.22),
     naomi (>= 2.3.1),
     stats,
+    stringr (>= 1.4.0),
     methods
 Suggests:
     covr (>= 3.5.1),

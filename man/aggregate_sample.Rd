@@ -10,8 +10,8 @@ aggregate_sample(
 )
 }
 \arguments{
-\item{.data}{\code{data.frame} including area populations, with un-aggregated
-samples.}
+\item{.data}{\code{data.frame} including area populations, with
+un-aggregated samples.}
 
 \item{aggr_cols}{Columns to aggregate samples by, Default:
 c("area_id", "area_name", "year", "age", "age_group", "model", "type")}

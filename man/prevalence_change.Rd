@@ -13,6 +13,6 @@ prevalence_change(results, spec_year)
 \code{results}.}
 }
 \description{
-Function to calculate change in prevalence/coverage from a given
-year for all other years.
+Function to calculate change in prevalence/coverage from a
+given year for all other years.
 }

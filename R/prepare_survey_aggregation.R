@@ -8,6 +8,7 @@
 #' @return Survey data, with age data reformatted, at highest/most granular
 #' area level.
 #' @importFrom dplyr %>%
+#' @importFrom data.table %like%
 #' @export
 #
 prepare_survey_aggregation <- function(areas_wide,
@@ -43,7 +44,7 @@ prepare_survey_aggregation <- function(areas_wide,
     ) %>%
     # Merging on cluster information to  the circumcision dataset
     left_join(
-      (dplyr::survey_clusters %>%
+      (survey_clusters %>%
         dplyr::select(dplyr::contains("id"), -survey_region_id) %>%
         dplyr::distinct())
     ) %>%

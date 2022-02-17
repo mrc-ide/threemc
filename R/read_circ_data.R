@@ -19,7 +19,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
-#' @import rlang
+#' @importFrom rlang .data
 read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
 
   ## maybe add a warning for missing "circ" columns for surveys?? And add

@@ -7,12 +7,13 @@
 #' @param area_lev Desired admin boundary level.
 #' @param join Indicator to decide whether to join data for different
 #' area hierarchies, or return them in list form.
-#' @param add_keep_col Additional columns to keep when summarising,
+#' @param add_keep_cols Additional columns to keep when summarising,
 #' Default: NULL
 #' @param ... Further arguments passed to \link[threemc]{add_area_id}.
 #' @return \code{data.frame} or list (depending on the value of \code{join})
 #' with results for all area levels less than or equal to \code{area_lev}.
 #' @importFrom dplyr %>%
+#' @importFrom data.table %like%
 #' @export
 
 # hierarchies

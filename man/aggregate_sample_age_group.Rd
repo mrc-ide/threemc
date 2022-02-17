@@ -14,8 +14,8 @@ aggregate_sample_age_group(
 }
 \arguments{
 \item{results_list}{list of \code{data.frame}s outputted by
-\code{\link[threemc]{combine_areas}} with \code{join = FALSE}, including area
-populations, with un-aggregated samples.}
+\code{\link[threemc]{combine_areas}} with \code{join = FALSE}, including
+area populations, with un-aggregated samples.}
 
 \item{aggr_cols}{Columns to aggregate samples by, Default:
 c("area_id", "area_name", "year", "model", "type")}

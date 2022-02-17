@@ -27,7 +27,7 @@
 #' @return Survey data with required variables to run circumcision model.
 #' @export
 #'
-#' @import rlang
+#' @importFrom rlang .data
 #' @importFrom dplyr %>%
 prepare_survey_data <- function(areas,
                                 survey_circumcision,

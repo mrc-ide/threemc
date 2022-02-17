@@ -32,7 +32,7 @@
 #' for circumcision estimates for each unique record.
 #' @export
 #'
-#' @import rlang
+#' @importFrom rlang .data
 #' @importFrom dplyr %>%
 create_shell_dataset <- function(survey_circumcision,
                                  areas,

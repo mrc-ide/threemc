@@ -17,10 +17,10 @@ give results for lower/less granular area hierarchies.}
 \item{join}{Indicator to decide whether to join data for different
 area hierarchies, or return them in list form.}
 
-\item{...}{Further arguments passed to \link[threemc]{add_area_id}.}
-
-\item{add_keep_col}{Additional columns to keep when summarising,
+\item{add_keep_cols}{Additional columns to keep when summarising,
 Default: NULL}
+
+\item{...}{Further arguments passed to \link[threemc]{add_area_id}.}
 }
 \value{
 \code{data.frame} or list (depending on the value of \code{join})

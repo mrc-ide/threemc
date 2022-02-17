@@ -14,7 +14,7 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
-#' @import rlang
+#' @importFrom rlang .data
 normalise_weights_kish <- function(survey_circumcision,
                                    strata.norm = c("survey_id", "area_id"),
                                    strata.kish = c("survey_id")) {

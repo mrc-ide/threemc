@@ -5,8 +5,8 @@
 #' @param .data \code{data.frame} with samples to be summarised.
 #' @param probs Percentiles to provide quantiles at. Set to NULL to skip
 #' computing quantiles.
-#' @import data.table
 #' @importFrom dplyr %>%
+#' @importFrom data.table %like%
 #' @export
 posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
   probs <- sort(probs)
@@ -32,7 +32,7 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
   .data <- .data_long[,
     "."
     (mean = mean(value, na.rm = TRUE),
-      sd = sd(value, na.rm = TRUE)),
+      sd = stats::sd(value, na.rm = TRUE)),
     keyby = c(names(.data)[id_cols])
   ] # group by all categories]
 

@@ -164,7 +164,7 @@ prepare_sample_data <- function(N = 100,
   # Model with Probability of MC with no program data (only surveys)
   if (!is.null(no_prog_results)) {
     tmp1 <- no_prog_results %>%
-      dlpyr::mutate(model = "No program data")
+      dplyr::mutate(model = "No program data")
     tmp1 <- append_fun(tmp1, no_prog_tmb_fit, populations, type = type)
   } else {
     tmp1 <- NULL

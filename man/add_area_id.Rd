@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_area_id.R
 \name{add_area_id}
 \alias{add_area_id}
-\title{}
+\title{Change \code{area_id} from one hierarchy level to another}
 \usage{
 add_area_id(df, df_areas_wide, par, add_keep_cols = NULL)
 }

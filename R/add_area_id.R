@@ -1,4 +1,4 @@
-#' @title
+#' @title Change \code{area_id} from one hierarchy level to another
 #' @description Function to change \code{area_id} from one hierarchy level to
 #' another.
 #' @param df Dataframe with \code{area_id} column.
