@@ -133,14 +133,14 @@ prepare_sample_data <- function(N = 100,
       dplyr::bind_rows() %>%
       # only keep relevant columns
       dplyr::select(
-        area_id, area_name, year, age, type, model, contains("samp_")
+        area_id, area_name, year, age, type, model, dplyr::contains("samp_")
       ) %>%
       # join in region populations
       dplyr::left_join(
         # only keep relevant columns in populations
         (populations %>%
            dplyr::select(
-             all_of(names(tmp)[names(tmp) %in% names(populations)]),
+             dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
              population
            ))
       ) %>%
