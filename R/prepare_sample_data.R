@@ -1,5 +1,24 @@
-# pull samples for various kinds of circumcision from TMB posterior fit
-# and join with area data from "results"
+#' @title Pull N circumcision samples from TMB fit 
+#' @description Function to pull samples for various summaries inferred about
+#' circumcision in a given area (prevalence, probability or incidence, 
+#' respectively).
+#' @param N Number of samples to be generated, Default: 100
+#' @param populations \code{data.frame} containing populations for each 
+#' region in tmb fits.
+#' @param no_prog_results Quantiles of different summaries for different types
+#' (Medical, traditional or total) circumcision, for survey data only, 
+#' Default: NULL
+#' @param prog_results Quantiles of different summaries for different types
+#' (Medical, traditional or total) circumcision, for survey data and VMMC
+#' programme data, Default: NULL
+#' @param no_prog_tmb_fit TMB model for Male Circumcision (MC), for survey data 
+#' only.
+#' @param prog_tmb_fit TMB model for Male Circumcision (MC), for survey data and
+#' VMMC programme data.
+#' @param type Determines which aspect of MC in the regions in question you wish
+#' to sample for. Can be one of "probability", "incidence" or "prevalence".
+#' @importFrom dplyr %>%
+#' @export
 prepare_sample_data <- function(N = 100,
                                 populations,
                                 no_prog_results = NULL,
@@ -29,9 +48,9 @@ prepare_sample_data <- function(N = 100,
 
     # different objects to pull samples from fit, based on desired aggregation
     if (type == "probability") {
-      mmc <- "haz_mmc"
-      tmc <- "haz_tmc"
-      mc <- ifelse("haz" %in% names(tmp), "haz", "haz_mc")
+      mmc <- "haz_mmc" # medical circumcision
+      tmc <- "haz_tmc" # traditional circumcision
+      mc <- ifelse("haz" %in% names(tmp), "haz", "haz_mc") # all male circ
     } else if (type == "incidence") {
       mmc <- "inc_mmc"
       tmc <- "inc_tmc"
@@ -48,15 +67,18 @@ prepare_sample_data <- function(N = 100,
     if (type == "prevalence") {
       category = "coverage"
     } else category = type
-
+    
+    # initialise dataframes to store samples for different circ types
     tmpx_1 <- tmpx_2 <- tmpx_3 <- tmpx_4 <- tmpx_5 <- tmpx_6 <- tmp
+    # type == "incidence" has 12 different "types"
     if (type == "incidence") {
       tmpx_7 <- tmpx_8 <- tmpx_9 <- tmpx_10 <- tmpx_11 <- tmpx_12 <- tmp
     } else {
       tmpx_7 <- tmpx_8 <- tmpx_9 <- tmpx_10 <- tmpx_11 <- tmpx_12 <- NULL
     }
 
-    #
+    # Pull samples from data
+    # Models with no VMMC data cannot distinguish between MMC-nT and MMC-T
     tmpx_1[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N]
     tmpx_1$type <- paste("MMC-nT", category)
     if (tmp$model[1] == "No program data") {
@@ -65,8 +87,6 @@ prepare_sample_data <- function(N = 100,
       tmpx_3[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N]
       tmpx_4[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N]
       tmpx_5[, paste0('samp_', 1:N)] <- fit$sample[[tmc]][, 1:N]
-      # tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N] +
-      #   fit$sample[[mmc]][, 1:N]
       tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mc]][, 1:N]
     } else if (tmp$model[1] == "With program data") {
 
@@ -79,8 +99,6 @@ prepare_sample_data <- function(N = 100,
         tmpx_4[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N] +
           fit$sample$probs[, 1:N] * fit$sample[[tmc]][, 1:N]
         tmpx_5[, paste0('samp_', 1:N)] <- fit$sample[[tmc]][, 1:N]
-        # tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N] +
-        #   fit$sample[[mmc]][, 1:N]
         tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mc]][, 1:N]
       } else {
 
@@ -90,11 +108,10 @@ prepare_sample_data <- function(N = 100,
           fit$sample[[mmct]][,1:N]
         tmpx_5[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][,1:N] +
           fit$sample[[mmct]][,1:N]
-        # tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][,1:N] +
-        #   fit$sample[[tmc]][,1:N] + fit$sample[[mmct]][,1:N]
         tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mc]][,1:N]
       }
     }
+    # give appropriate labels to each df
     tmpx_2$type <- paste("MMC-T", category)
     tmpx_3$type <- paste("TMC", category)
     tmpx_4$type <- paste("MMC", category)
@@ -111,26 +128,28 @@ prepare_sample_data <- function(N = 100,
       tmpx_12 <- tmpx_6; tmpx_12$type <- 'MCs performed'
     }
 
-    # Appending things together
+    # Append together
     tmp <- as.list(mget(paste0("tmpx_", 1:12))) %>%
-      bind_rows() %>%
+      dplyr::bind_rows() %>%
       # only keep relevant columns
-      select(area_id, area_name, year, age, type, model, contains("samp_")) %>%
+      dplyr::select(
+        area_id, area_name, year, age, type, model, contains("samp_")
+      ) %>%
       # join in region populations
-      left_join(
+      dplyr::left_join(
         # only keep relevant columns in populations
         (populations %>%
-           select(
+           dplyr::select(
              all_of(names(tmp)[names(tmp) %in% names(populations)]),
              population
            ))
       ) %>%
-      relocate(population, .before = samp_1)
+      dplyr::relocate(population, .before = samp_1)
 
     # filter out na populations, with an appropriate message
     if (any(is.na(tmp$population)) == TRUE) {
         n1 <- nrow(tmp)
-        tmp <- filter(tmp, !is.na(population))
+        tmp <- dplyr::filter(tmp, !is.na(population))
         n2 <- nrow(tmp)
         if (n2 == 0) stop("No populations present in data")
         message(paste0("Missing population for ", n1 - n2, " records"))
@@ -143,7 +162,7 @@ prepare_sample_data <- function(N = 100,
   # Model with Probability of MC with no program data (only surveys)
   if (!is.null(no_prog_results)) {
     tmp1 <- no_prog_results %>%
-      mutate(model = "No program data")
+      dlpyr::mutate(model = "No program data")
     tmp1 <- append_fun(tmp1, no_prog_tmb_fit, populations, type = type)
   } else {
     tmp1 <- NULL
@@ -152,12 +171,12 @@ prepare_sample_data <- function(N = 100,
   # Model with Probability of MC with both programme and survey data
   if (!is.null(prog_results)) {
     tmp2 <- prog_results %>%
-      mutate(model = "With program data")
+      dplyr::mutate(model = "With program data")
     tmp2 <- append_fun(tmp2, prog_tmb_fit, populations, type = type)
   } else {
     tmp2 <- NULL
   }
 
-  # Appending things together
+  # Append together
   return(rbind(tmp1, tmp2))
 }
