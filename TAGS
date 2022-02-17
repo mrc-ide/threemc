@@ -1,90 +1,186 @@
 
 /home/paddy7wb/imperial_repos/threemc/R/circ_sample_tmb.R,26
-ccirc_sample_tmb24,1060
+ccirc_sample_tmb23,1066
 
 /home/paddy7wb/imperial_repos/threemc/R/compile_tmb.R,21
-ccompile_tmb16,711
+ccompile_tmb15,631
 
 /home/paddy7wb/imperial_repos/threemc/R/compute_quantiles.R,28
-ccompute_quantiles30,1394
+ccompute_quantiles30,1386
 
-/home/paddy7wb/imperial_repos/threemc/R/create_design_matrices.R,33
-ccreate_design_matrices26,1035
+/home/paddy7wb/imperial_repos/threemc/R/create_design_matrices.R,32
+ccreate_design_matrices22,893
 
 /home/paddy7wb/imperial_repos/threemc/R/create_hazard_matrix_agetime.R,39
-ccreate_hazard_matrix_agetime33,1540
+ccreate_hazard_matrix_agetime33,1531
 
 /home/paddy7wb/imperial_repos/threemc/R/create_icar_prec_matrix.R,33
-ccreate_icar_prec_matrix18,500
+ccreate_icar_prec_matrix16,454
 
 /home/paddy7wb/imperial_repos/threemc/R/create_integration_matrices.R,38
-ccreate_integration_matrices33,1402
+ccreate_integration_matrices29,1273
 
 /home/paddy7wb/imperial_repos/threemc/R/create_integration_matrix_agetime_lag.R,48
-ccreate_integration_matrix_agetime_lag28,1163
+ccreate_integration_matrix_agetime_lag26,1117
 
 /home/paddy7wb/imperial_repos/threemc/R/create_integration_matrix_agetime.R,44
-ccreate_integration_matrix_agetime24,1085
+ccreate_integration_matrix_agetime23,1091
 
 /home/paddy7wb/imperial_repos/threemc/R/create_rw_prec_matrix.R,31
-ccreate_rw_prec_matrix12,341
+ccreate_rw_prec_matrix15,382
 
 /home/paddy7wb/imperial_repos/threemc/R/create_shell_dataset.R,31
-ccreate_shell_dataset36,1724
+ccreate_shell_dataset37,1789
 
 /home/paddy7wb/imperial_repos/threemc/R/create_survival_matrices.R,35
-ccreate_survival_matrices28,1250
+ccreate_survival_matrices25,1187
 
 /home/paddy7wb/imperial_repos/threemc/R/normalise_weights_kish.R,32
-nnormalise_weights_kish17,581
+nnormalise_weights_kish17,590
 
 /home/paddy7wb/imperial_repos/threemc/R/prepare_survey_data.R,30
-pprepare_survey_data33,1550
+pprepare_survey_data30,1403
 
 /home/paddy7wb/imperial_repos/threemc/R/read_circ_data.R,24
-rread_circ_data26,936
+rread_circ_data22,765
 
 /home/paddy7wb/imperial_repos/threemc/R/util.R,11
 `%||%1,0
 
-/home/paddy7wb/imperial_repos/threemc/man/read_circ_data.Rd,44
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/circ_sample_tmb.R,26
+ccirc_sample_tmb23,1066
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/compile_tmb.R,21
+ccompile_tmb15,631
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/compute_quantiles.R,28
+ccompute_quantiles30,1386
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/create_design_matrices.R,32
+ccreate_design_matrices22,893
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/create_hazard_matrix_agetime.R,39
+ccreate_hazard_matrix_agetime33,1531
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/create_icar_prec_matrix.R,33
+ccreate_icar_prec_matrix16,454
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/create_integration_matrices.R,38
+ccreate_integration_matrices29,1273
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/create_integration_matrix_agetime_lag.R,48
+ccreate_integration_matrix_agetime_lag26,1117
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/create_integration_matrix_agetime.R,44
+ccreate_integration_matrix_agetime23,1091
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/create_rw_prec_matrix.R,31
+ccreate_rw_prec_matrix15,382
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/create_shell_dataset.R,31
+ccreate_shell_dataset37,1789
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/create_survival_matrices.R,35
+ccreate_survival_matrices25,1187
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/normalise_weights_kish.R,32
+nnormalise_weights_kish17,590
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/prepare_survey_data.R,30
+pprepare_survey_data30,1403
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/read_circ_data.R,24
+rread_circ_data22,765
+
+/home/paddy7wb/imperial_repos/threemc/threemc.Rcheck/00_pkg_src/threemc/R/util.R,11
+`%||%1,0
+
+threemc.Rcheck/00_pkg_src/threemc/man/read_circ_data.Rd,44
 \alias{read_circ_data}read_circ_data4,117
 
-/home/paddy7wb/imperial_repos/threemc/man/create_integration_matrix_agetime_lag.Rd,90
+threemc.Rcheck/00_pkg_src/threemc/man/create_integration_matrix_agetime_lag.Rd,90
 \alias{create_integration_matrix_agetime_lag}create_integration_matrix_agetime_lag4,163
 
-/home/paddy7wb/imperial_repos/threemc/man/normalise_weights_kish.Rd,60
+threemc.Rcheck/00_pkg_src/threemc/man/normalise_weights_kish.Rd,60
 \alias{normalise_weights_kish}normalise_weights_kish4,133
 
-/home/paddy7wb/imperial_repos/threemc/man/compute_quantiles.Rd,50
+threemc.Rcheck/00_pkg_src/threemc/man/compile_tmb.Rd,38
+\alias{compile_tmb}compile_tmb4,111
+
+threemc.Rcheck/00_pkg_src/threemc/man/compute_quantiles.Rd,50
 \alias{compute_quantiles}compute_quantiles4,123
 
-/home/paddy7wb/imperial_repos/threemc/man/create_shell_dataset.Rd,56
+threemc.Rcheck/00_pkg_src/threemc/man/create_shell_dataset.Rd,56
 \alias{create_shell_dataset}create_shell_dataset4,129
 
-/home/paddy7wb/imperial_repos/threemc/man/create_design_matrices.Rd,60
+threemc.Rcheck/00_pkg_src/threemc/man/create_design_matrices.Rd,60
 \alias{create_design_matrices}create_design_matrices4,133
 
-/home/paddy7wb/imperial_repos/threemc/man/create_hazard_matrix_agetime.Rd,72
+threemc.Rcheck/00_pkg_src/threemc/man/create_hazard_matrix_agetime.Rd,72
 \alias{create_hazard_matrix_agetime}create_hazard_matrix_agetime4,145
 
-/home/paddy7wb/imperial_repos/threemc/man/create_icar_prec_matrix.Rd,62
+threemc.Rcheck/00_pkg_src/threemc/man/create_icar_prec_matrix.Rd,62
 \alias{create_icar_prec_matrix}create_icar_prec_matrix4,135
 
-/home/paddy7wb/imperial_repos/threemc/man/create_rw_prec_matrix.Rd,58
+threemc.Rcheck/00_pkg_src/threemc/man/create_rw_prec_matrix.Rd,58
 \alias{create_rw_prec_matrix}create_rw_prec_matrix4,131
 
-/home/paddy7wb/imperial_repos/threemc/man/create_integration_matrices.Rd,70
+threemc.Rcheck/00_pkg_src/threemc/man/create_integration_matrices.Rd,70
 \alias{create_integration_matrices}create_integration_matrices4,143
 
-/home/paddy7wb/imperial_repos/threemc/man/circ_sample_tmb.Rd,46
+threemc.Rcheck/00_pkg_src/threemc/man/circ_sample_tmb.Rd,46
 \alias{circ_sample_tmb}circ_sample_tmb4,119
 
-/home/paddy7wb/imperial_repos/threemc/man/create_integration_matrix_agetime.Rd,82
+threemc.Rcheck/00_pkg_src/threemc/man/create_integration_matrix_agetime.Rd,82
 \alias{create_integration_matrix_agetime}create_integration_matrix_agetime4,155
 
-/home/paddy7wb/imperial_repos/threemc/man/create_survival_matrices.Rd,64
+threemc.Rcheck/00_pkg_src/threemc/man/create_survival_matrices.Rd,64
 \alias{create_survival_matrices}create_survival_matrices4,137
 
-/home/paddy7wb/imperial_repos/threemc/man/prepare_survey_data.Rd,54
+threemc.Rcheck/00_pkg_src/threemc/man/prepare_survey_data.Rd,54
+\alias{prepare_survey_data}prepare_survey_data4,127
+
+man/read_circ_data.Rd,44
+\alias{read_circ_data}read_circ_data4,117
+
+man/create_integration_matrix_agetime_lag.Rd,90
+\alias{create_integration_matrix_agetime_lag}create_integration_matrix_agetime_lag4,163
+
+man/normalise_weights_kish.Rd,60
+\alias{normalise_weights_kish}normalise_weights_kish4,133
+
+man/compile_tmb.Rd,38
+\alias{compile_tmb}compile_tmb4,111
+
+man/compute_quantiles.Rd,50
+\alias{compute_quantiles}compute_quantiles4,123
+
+man/create_shell_dataset.Rd,56
+\alias{create_shell_dataset}create_shell_dataset4,129
+
+man/create_design_matrices.Rd,60
+\alias{create_design_matrices}create_design_matrices4,133
+
+man/create_hazard_matrix_agetime.Rd,72
+\alias{create_hazard_matrix_agetime}create_hazard_matrix_agetime4,145
+
+man/create_icar_prec_matrix.Rd,62
+\alias{create_icar_prec_matrix}create_icar_prec_matrix4,135
+
+man/create_rw_prec_matrix.Rd,58
+\alias{create_rw_prec_matrix}create_rw_prec_matrix4,131
+
+man/create_integration_matrices.Rd,70
+\alias{create_integration_matrices}create_integration_matrices4,143
+
+man/circ_sample_tmb.Rd,46
+\alias{circ_sample_tmb}circ_sample_tmb4,119
+
+man/create_integration_matrix_agetime.Rd,82
+\alias{create_integration_matrix_agetime}create_integration_matrix_agetime4,155
+
+man/create_survival_matrices.Rd,64
+\alias{create_survival_matrices}create_survival_matrices4,137
+
+man/prepare_survey_data.Rd,54
 \alias{prepare_survey_data}prepare_survey_data4,127

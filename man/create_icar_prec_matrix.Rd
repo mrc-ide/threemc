@@ -7,9 +7,9 @@
 create_icar_prec_matrix(sf_obj = NULL, row.names = NULL)
 }
 \arguments{
-\item{sf_obj}{Shapefiles needed for adjacency.}
+\item{sf_obj}{Shapefiles needed for adjacency, Default: NULL}
 
-\item{row.names}{Unique IDs for the areas.}
+\item{row.names}{Unique IDs for the areas, Default: NULL}
 }
 \value{
 ICAR precision matrix.
@@ -20,5 +20,6 @@ Create the precision matrix for an ICAR process.
 \seealso{
 \code{\link[spdep]{poly2nb}}
 \code{\link[spdep]{nb2mat}}
-\code{\link[INLA]{inla.scale.model}}
+\code{\link[naomi]{scale_gmrf_precision}}
+\code{\link[methods]{as}}
 }

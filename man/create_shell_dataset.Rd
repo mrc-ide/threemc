@@ -30,6 +30,9 @@ maximum area level found in \code{areas} if not supplied.}
 \item{time2}{Variable name for time circumcised or censored,
 Default: "time2"}
 
+\item{strat}{Variable to stratify by in using a 3D hazard function,
+Default: "space"}
+
 \item{age}{\itemize{
 \item Variable with age circumcised or censored. Default: "age"
 }}
@@ -53,7 +56,7 @@ circumcisions, known traditional circumcisions, censored survey entries
 survey entries (i.e. where circumcision occurred at an unknown age).
 }
 \seealso{
-\link[threemc]{datapack_psnu_area_level}
+\code{\link[threemc]{datapack_psnu_area_level}}
 \code{\link[tidyr]{crossing}}
 \code{\link[threemc]{create_integration_matrix_agetime}}
 \code{\link[threemc]{create_hazard_matrix_agetime}}

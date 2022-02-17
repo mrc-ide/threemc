@@ -9,16 +9,19 @@ prepare_survey_data(
   survey_circumcision,
   survey_individuals,
   survey_clusters,
-  area_lev = 0,
+  area_lev,
   start_year = 2006,
   cens_year = NULL,
   cens_age = 59,
-  norm_kisk_weights = F,
+  rm_missing_type = FALSE,
+  norm_kisk_weights = TRUE,
   strata.norm = c("survey_id", "area_id"),
   strata.kish = c("survey_id")
 )
 }
 \arguments{
+\item{areas}{\code{sf} shapefiles for specific country/region.}
+
 \item{survey_circumcision}{\itemize{
 \item Information on male circumcision status from
 surveys.
@@ -37,34 +40,35 @@ surveys.
 }}
 
 \item{start_year}{\itemize{
-\item Year to begin the analysis on.
+\item Year to begin the analysis on, Default: 2006
 }}
 
 \item{cens_year}{\itemize{
 \item Year to censor the circumcision data by (Sometimes some
-weirdness at the final survey year, e.g. v small number of MCs).
+weirdness at the final survey year, e.g. v small number of MCs),
+Default: NULL
 }}
 
 \item{cens_age}{\itemize{
-\item Age to censor the circumcision data at (Default 59,
-i.e. no circumcisions after 59 years of age).
+\item Age to censor the circumcision data at, Default: 59
+}}
+
+\item{rm_missing_type}{\itemize{
+\item Indicator to decide whether you would like to keep
+surveys where there is no MMC/TMC disinction. These surveys may still be
+useful for determining MC levels, Default: FALSE
 }}
 
 \item{norm_kisk_weights}{\itemize{
-\item Set == TRUE to normalise survey weights and
-apply Kish coefficients.
+\item Indicator to decide whether to normalise survey
+weights and apply Kish coefficients, Default: TRUE
 }}
 
-\item{strata.norm}{Stratification variables for normalising survey weights.}
+\item{strata.norm}{Stratification variables for normalising survey weights,
+Default: c("survey_id", "area_id")}
 
-\item{area_hierarchy}{Hierarchy and metadata of administrative boundaries.}
-
-\item{area_boundaries}{\itemize{
-\item SF file with administrative boundaries (shapefiles).
-}}
-
-\item{strara.kish}{Stratification variables for estimating and applying the
-Kish coefficients.}
+\item{strata.kish}{Stratification variables for estimating and applying the
+Kish coefficients, Default: "survey_id"}
 }
 \value{
 Survey data with required variables to run circumcision model.

@@ -38,7 +38,8 @@ create_integration_matrices <- function(out,
   out$age <- out$circ_age + 1
 
   ## Matrix for selecting instantaneous hazard rate
-  int_mat1 <- threemc::create_integration_matrix_agetime(
+  ## Note: must be kept in CamelCase to agree with syntax for tmb::MakeAdFun
+  IntMat1 <- threemc::create_integration_matrix_agetime(
     dat = out,
     time1 = time1,
     time2 = time2,
@@ -49,7 +50,7 @@ create_integration_matrices <- function(out,
   )
 
   ## Matrix for selecting instantaneous hazard rate
-  int_mat2 <- threemc::create_integration_matrix_agetime_lag(
+  IntMat2 <- threemc::create_integration_matrix_agetime_lag(
     dat = out,
     time1 = "time1",
     time2 = "time2",
@@ -60,8 +61,8 @@ create_integration_matrices <- function(out,
   )
 
   output <- list(
-    "int_mat1" = int_mat1,
-    "int_mat2" = int_mat2
+    "IntMat1" = IntMat1,
+    "IntMat2" = IntMat2
   )
   return(output)
 }

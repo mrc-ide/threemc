@@ -20,3 +20,5 @@ threemc.Rproj
 .#*
 R/.#*
 modelling.R
+threemc*
+..Rcheck
