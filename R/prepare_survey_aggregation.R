@@ -1,6 +1,6 @@
 #' @title Format circumcision survey data with age data reformatted. 
 #' @description Format circumcision survey data with age data reformatted.  
-#' @param areas_wide \code{sf} dataframe with shapefiles and area hierarchy.
+#' @param areas_wide \code{data.frame} with shapefiles and area hierarchy.
 #' @param survey_circumcision - Information on male circumcision status from
 #' surveys.
 #' @param survey_individuals - Information on the individuals surveyed.
