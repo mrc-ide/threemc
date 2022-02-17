@@ -1,7 +1,7 @@
 # function to get change in prevalence/coverage from a given year
 #' @title Calculate Change in Prevalence/Coverage from a given year.
-#' @description Function to calculate change in prevalence/coverage from a given 
-#' year for all other years.
+#' @description Function to calculate change in prevalence/coverage from a 
+#' given year for all other years.
 #' @param results \code{results} results for several years.
 #' @param spec_year Year to calculate change in prevalence/coverage from within
 #' \code{results}.

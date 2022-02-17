@@ -2,8 +2,8 @@
 #' @description Aggregate by area, year, age group (rather than discrete ages) 
 #' and type (weighted by population), and convert to a percentage/probability.
 #' @param results_list list of \code{data.frame}s outputted by 
-#' \code{\link[threemc]{combine_areas}} with \code{join = FALSE}, including area 
-#' populations, with un-aggregated samples.
+#' \code{\link[threemc]{combine_areas}} with \code{join = FALSE}, including 
+#' area populations, with un-aggregated samples.
 #' @param aggr_cols Columns to aggregate samples by, Default: 
 #' c("area_id", "area_name", "year", "model", "type")
 #' @param age_groups Age groups to aggregate by, Default:
@@ -26,7 +26,7 @@ aggregate_sample_age_group <- function(
                     "15-29", "10-29", "15-39", "10-39", "15-49", "10-49")
     ) {
 
-    if(inherits(results_list, "data.frame")) {
+    if (inherits(results_list, "data.frame")) {
         stop("requires list from combine_areas (set argument join = FALSE)")
     }
     

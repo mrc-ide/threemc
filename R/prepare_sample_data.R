@@ -65,8 +65,8 @@ prepare_sample_data <- function(N = 100,
 
     # word to be pasted onto the end of circ type below
     if (type == "prevalence") {
-      category = "coverage"
-    } else category = type
+      category <- "coverage"
+    } else category <- type
     
     # initialise dataframes to store samples for different circ types
     tmpx_1 <- tmpx_2 <- tmpx_3 <- tmpx_4 <- tmpx_5 <- tmpx_6 <- tmp
@@ -86,7 +86,7 @@ prepare_sample_data <- function(N = 100,
       tmpx_2[, paste0("samp_", 1:N)] <- 0
       tmpx_3[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N]
       tmpx_4[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N]
-      tmpx_5[, paste0('samp_', 1:N)] <- fit$sample[[tmc]][, 1:N]
+      tmpx_5[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N]
       tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mc]][, 1:N]
     } else if (tmp$model[1] == "With program data") {
 
@@ -95,20 +95,20 @@ prepare_sample_data <- function(N = 100,
         tmpx_2[, paste0("samp_", 1:N)] <- fit$sample$probs[, 1:N] *
           fit$sample[[tmc]][, 1:N]
         tmpx_3[, paste0("samp_", 1:N)] <- (1 - fit$sample$probs[, 1:N]) *
-          fit$sample[[tmc]][ ,1:N]
+          fit$sample[[tmc]][, 1:N]
         tmpx_4[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N] +
           fit$sample$probs[, 1:N] * fit$sample[[tmc]][, 1:N]
-        tmpx_5[, paste0('samp_', 1:N)] <- fit$sample[[tmc]][, 1:N]
+        tmpx_5[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N]
         tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mc]][, 1:N]
       } else {
 
-        tmpx_2[, paste0("samp_", 1:N)] <- fit$sample[[mmct]][,1:N]
-        tmpx_3[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][,1:N]
-        tmpx_4[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][,1:N] +
-          fit$sample[[mmct]][,1:N]
-        tmpx_5[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][,1:N] +
-          fit$sample[[mmct]][,1:N]
-        tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mc]][,1:N]
+        tmpx_2[, paste0("samp_", 1:N)] <- fit$sample[[mmct]][, 1:N]
+        tmpx_3[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N]
+        tmpx_4[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N] +
+          fit$sample[[mmct]][, 1:N]
+        tmpx_5[, paste0("samp_", 1:N)] <- fit$sample[[tmc]][, 1:N] +
+          fit$sample[[mmct]][, 1:N]
+        tmpx_6[, paste0("samp_", 1:N)] <- fit$sample[[mc]][, 1:N]
       }
     }
     # give appropriate labels to each df
@@ -120,12 +120,12 @@ prepare_sample_data <- function(N = 100,
 
     # Samples for the number of MCs performed (for incidence)
     if (type == "incidence") {
-      tmpx_7 <- tmpx_1;  tmpx_7$type <- 'MMC-nTs performed'
-      tmpx_8 <- tmpx_2;  tmpx_8$type <- 'MMC-Ts performed'
-      tmpx_9 <- tmpx_3;  tmpx_9$type <- 'TMCs performed'
-      tmpx_10 <- tmpx_4; tmpx_10$type <- 'MMCs performed'
-      tmpx_11 <- tmpx_5; tmpx_11$type <- 'TMICs performed'
-      tmpx_12 <- tmpx_6; tmpx_12$type <- 'MCs performed'
+      tmpx_7 <- tmpx_1;  tmpx_7$type <- "MMC-nTs performed"
+      tmpx_8 <- tmpx_2;  tmpx_8$type <- "MMC-Ts performed"
+      tmpx_9 <- tmpx_3;  tmpx_9$type <- "TMCs performed"
+      tmpx_10 <- tmpx_4; tmpx_10$type <- "MMCs performed"
+      tmpx_11 <- tmpx_5; tmpx_11$type <- "TMICs performed"
+      tmpx_12 <- tmpx_6; tmpx_12$type <- "MCs performed"
     }
 
     # Append together

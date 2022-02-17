@@ -21,10 +21,10 @@ add_area_id <- function(
   add_keep_cols = NULL) {
   
     # Getting area_id's
-    area_lev_current_id = paste0("area_id", par$area_lev)
+    area_lev_current_id <- paste0("area_id", par$area_lev)
     # The level we want
-    area_lev_select_id = paste0("area_id", par$area_lev_select)
-    area_lev_select_name = paste0("area_name", par$area_lev_select)
+    area_lev_select_id <- paste0("area_id", par$area_lev_select)
+    area_lev_select_name <- paste0("area_name", par$area_lev_select)
 
     # only select columns in our dataframe ("model" may be missing,
     # and `age` and `age_group` are interchangable)
@@ -50,7 +50,7 @@ add_area_id <- function(
                       ) %>%
                       distinct(),
                   by = c("area_id")) %>%
-        # Select the right columns (account for case when we are at the lowest level)
+        # Select the right columns (account for when we are at the lowest level)
         dplyr::select(
             "area_id" = ifelse(par$area_lev_select == par$area_lev,
                                "area_id",

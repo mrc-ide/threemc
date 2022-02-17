@@ -22,13 +22,13 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
     id_cols <- seq_along(names(.data)[!names(.data) %like% "samp"])
 
     # use data.table as this can be quite slow for larger countries
-    if(!inherits(.data, "data.table")) .data <- data.table::setDT(.data)
+    if (!inherits(.data, "data.table")) .data <- data.table::setDT(.data)
 
     # pivot to calculate row means and sds of samples for each stratification
     .data_long <- data.table::melt(.data, id.vars = id_cols,
                        measure.vars = c(paste0("samp_", 1:100)))
     .data <- .data_long[,
-               '.'
+               "."
                (mean = mean(value, na.rm = TRUE),
                    sd = sd(value, na.rm = TRUE)),
                keyby = c(names(.data)[id_cols])] # group by all categories]
@@ -36,11 +36,11 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
     # calculate median and CI
     if (!is.null(probs)) {
       quantiles <- .data_long[, {
-        quantiles = stats::quantile(value,
+        quantiles <- stats::quantile(value,
                                     probs,
                                     na.rm = TRUE, 
                                     names = FALSE)
-        ':='
+        ":="
         list(
           lower  = quantiles[1],
           median = quantiles[2],

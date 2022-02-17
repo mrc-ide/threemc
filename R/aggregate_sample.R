@@ -1,8 +1,8 @@
 #' @title Produce Population weighted Aggregated Samples
 #' @description Aggregate by area, year, age and type (weighted by population),
 #' and convert to a percentage/probability.
-#' @param .data \code{data.frame} including area populations, with un-aggregated 
-#' samples.
+#' @param .data \code{data.frame} including area populations, with 
+#' un-aggregated samples.
 #' @param aggr_cols Columns to aggregate samples by, Default: 
 #' c("area_id", "area_name", "year", "age", "age_group", "model", "type")
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
@@ -33,4 +33,4 @@ aggregate_sample <- function(
         dplyr::mutate(dplyr::across(dplyr::contains("samp_"), ~ . / population))
 
     return(.data)
-} 
+}
