@@ -1,7 +1,7 @@
 #' @title Merge Regional Informatoin on Dataset
 #' @description Merge regional information on the dataset 
 #' (i.e. parent area info).
-#' @param results
+#' @param results \code{data.frame} you wish to merge shapefiles with.
 #' @param areas \code{sf} shapefiles for specific country/region.
 #' @importFrom dplyr %>%
 #' @export

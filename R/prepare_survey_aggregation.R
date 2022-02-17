@@ -25,7 +25,7 @@ prepare_survey_aggregation <- function(
         TRUE               ~ circ_age),
       # Correct status for those who have information on
       # circumcision but are missing circumcision status
-      dplyr::circ_status = ifelse(is.na(circ_status) & !is.na(circ_age),
+      circ_status = ifelse(is.na(circ_status) & !is.na(circ_age),
                            1,
                            ifelse(is.na(circ_status) & !is.na(circ_age),
                                   1,

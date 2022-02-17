@@ -2,7 +2,8 @@
 #' @description Function to change \code{area_id} from one hierarchy level to 
 #' another.
 #' @param df Dataframe with \code{area_id} column.
-#' @param df_areas_wide \code{sf} dataframe with shapefiles and area hierarchy.
+#' @param df_areas_wide \code{sf} \code{dataframe} with shapefiles and area 
+#' hierarchy.
 #' @param par list with two entries: 
 #' \itemize{
 #'  \item{\code{area_lev}}{Current area level of \code{df}.}
@@ -25,8 +26,8 @@ add_area_id <- function(
     area_lev_select_id = paste0("area_id", par$area_lev_select)
     area_lev_select_name = paste0("area_name", par$area_lev_select)
 
-    #' only select columns in our dataframe ("model" may be missing,
-    #' and `age` and `age_group` are interchangable)
+    # only select columns in our dataframe ("model" may be missing,
+    # and `age` and `age_group` are interchangable)
     select_cols <- c("year", "age", "age_group", "population", "type", "model")
     select_cols <- select_cols[select_cols %in% names(df)]
     # additional columns to keep, if supplied
