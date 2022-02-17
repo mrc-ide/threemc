@@ -1,6 +1,27 @@
-#' change area ids from one hierarchy level to another
-#' (works going "down" (i.e. less granular), but does vice versa work?)
-add_area_id <- function(df, df_areas_wide, par, add_keep_cols = NULL) {
+#' @title 
+#' @description Function to change \code{area_id} from one hierarchy level to 
+#' another.
+#' @param df Dataframe with \code{area_id} column.
+#' @param df_areas_wide \code{sf} dataframe with shapefiles and area hierarchy.
+#' @param par list with two entries: 
+#' \itemize{
+#'  \item{\code{area_lev}}{Current area level of \code{df}.}
+#'  \item{\code{area_lev_select}}{Desired area level for \code{df}.}
+#' }
+#' @param add_keep_cols Additional columns to keep when summarising, 
+#' Default: NULL
+#' @return \code{df} with `area_id` changed to `area_lev_select`.
+#' @importFrom dplyr %>%
+#' @export
+add_area_id <- function(
+  df, 
+  df_areas_wide, 
+  par, 
+  add_keep_cols = NULL) {
+  
+  
+                par = list("area_lev" = area_lev,
+                           "area_lev_select" = x),
 
     # Getting area_id's
     area_lev_current_id = paste0("area_id", par$area_lev)
@@ -9,7 +30,7 @@ add_area_id <- function(df, df_areas_wide, par, add_keep_cols = NULL) {
     area_lev_select_name = paste0("area_name", par$area_lev_select)
 
     #' only select columns in our dataframe ("model" may be missing,
-    #' and `age` and `age_group` are interchangable (can definitely improve this!!)
+    #' and `age` and `age_group` are interchangable)
     select_cols <- c("year", "age", "age_group", "population", "type", "model")
     select_cols <- select_cols[select_cols %in% names(df)]
     # additional columns to keep, if supplied
@@ -21,11 +42,14 @@ add_area_id <- function(df, df_areas_wide, par, add_keep_cols = NULL) {
 
     df_area_id <- df %>%
         # join in area names for chosen area_id
-        left_join(df_areas_wide %>%
+        dplyr::left_join(df_areas_wide %>%
                       dplyr::select(
-                          area_id = all_of(area_lev_current_id), # current level
-                          all_of(area_lev_select_id), # desired level and
-                          area_name = all_of(area_lev_select_name) # corresponding name
+                          # current level
+                          area_id = dplyr::all_of(area_lev_current_id), 
+                          # desired level and
+                          dplyr::all_of(area_lev_select_id), 
+                          # corresponding name
+                          area_name = dplyr::all_of(area_lev_select_name) 
                       ) %>%
                       distinct(),
                   by = c("area_id")) %>%
@@ -35,8 +59,8 @@ add_area_id <- function(df, df_areas_wide, par, add_keep_cols = NULL) {
                                "area_id",
                                area_lev_select_id),
             "area_name",
-            all_of(select_cols),
-            all_of(par$sample_cols)
+            dplyr::all_of(select_cols),
+            dplyr::all_of(par$sample_cols)
         )
     return(df_area_id)
 }
