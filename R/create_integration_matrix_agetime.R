@@ -76,7 +76,7 @@ create_integration_matrix_agetime <- function(dat,
     #        by setting Nstrat = 1 if is.null(strat) = TRUE?
 
     # column entries for integration matrix
-    cols <- apply(dat, 1, function(x) {
+    cols <- unlist(apply(dat, 1, function(x) {
       # If circumcised at birth select relevant entry
       if (as.numeric(x["time1_cap2"]) == (as.numeric(x["time2_cap2"]))) {
         min(
@@ -96,13 +96,8 @@ create_integration_matrix_agetime <- function(dat,
           )
         )
       }
-    }, simplify = FALSE)
-    cols <- unlist(cols)
-
-    # Row entries for integration matrix
-    rows <- unlist(apply(dat, 1, function(x) {
-      rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]) + 1)
     }, simplify = FALSE))
+
     # Matrix dimension
     ncol <- Ntime * Nage
   }
