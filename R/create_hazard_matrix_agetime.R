@@ -65,10 +65,9 @@ create_hazard_matrix_agetime <- function(dat,
   }
   ## Matrix for 2D age time hazard function if strat is NULL
   if (is.null(strat)) {
-    cols <- apply(dat, 1, function(x) {
+    cols <- unlist(apply(dat, 1, function(x) {
       Ntime * (as.numeric(x[age]) - 1) + as.numeric(x["time2_cap"])
-    })
-    cols <- unlist(cols)
+    }, simplify = FALSE))
 
     ## Matrix dimension
     ncol <- Ntime * Nage

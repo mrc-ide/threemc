@@ -18,8 +18,7 @@
 #' @return relevant data set, filtered as desired.
 #' @export
 #'
-#' @import dplyr
-#' @import sf
+#' @importFrom dplyr %>%
 #' @import rlang
 read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
 
@@ -29,7 +28,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   ## read in data, depending on file type
   cond <- tools::file_ext(path) %in% c("geojson", "shp", "shx")
   if (cond == T) {
-    .data <- read_sf(path, ...)
+    .data <- sf::read_sf(path, ...)
   } else {
     # selection prior to loading is allowed by fread
     .data <- as.data.frame(data.table::fread(path, select = c(selected), ...))
@@ -42,22 +41,22 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
     for (i in seq_along(filters)) {
       if (!cols[i] %in% names(.data)) next
       ## change col i to symbol (if present), evaluate corresponding filter
-      .data <- filter(.data, !!rlang::sym(cols[i]) == vals[i])
+      .data <- dplyr::filter(.data, !!rlang::sym(cols[i]) == vals[i])
     }
   }
 
   # Select specific columns, if desired (and present) (no need to do for fread)
   if (!is.null(selected) & cond == T) {
     .data <- .data %>%
-      select(all_of(selected[selected %in% names(.data)]))
+      dplyr::select(dplyr::all_of(selected[selected %in% names(.data)]))
   }
 
   ## for areas, add unique identifier within Admin code and merge to boundaries
   if (inherits(.data, "sf")) {
     .data <- .data %>%
-      group_by(.data$area_level) %>%
-      mutate(space = row_number()) %>%
-      ungroup()
+      dplyr::group_by(.data$area_level) %>%
+      dplyr::mutate(space = dplyr::row_number()) %>%
+      dplyr::ungroup()
   }
   return(.data)
 }

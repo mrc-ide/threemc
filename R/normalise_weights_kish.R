@@ -13,7 +13,7 @@
 #' run circumcision model.
 #' @export
 #'
-#' @import dplyr
+#' @importFrom dplyr %>%
 #' @import rlang
 normalise_weights_kish <- function(survey_circumcision,
                                    strata.norm = c("survey_id", "area_id"),
@@ -22,16 +22,16 @@ normalise_weights_kish <- function(survey_circumcision,
   ## Preparing survey weights for the model
   survey_circumcision <- survey_circumcision %>%
     ## Standardising survey weights
-    group_by(across(all_of(strata.norm))) %>%
-    mutate(
+    dplyr::group_by(dplyr::across(dplyr::all_of(strata.norm))) %>%
+    dplyr::mutate(
       indweight_st = .data$indweight / mean(.data$indweight, na.rm = TRUE)
     ) %>%
-    ungroup() %>%
+    dplyr::ungroup() %>%
     ## Applying Kish coefficient to the survey weights
-    left_join(
+    dplyr::left_join(
       (survey_circumcision %>%
-        group_by(across(all_of(strata.kish))) %>%
-        summarise(
+        dplyr::group_by(dplyr::across(dplyr::all_of(strata.kish))) %>%
+        dplyr::summarise(
           N = length(.data$survey_id),
           Neff = (sum(.data$indweight)^2) /
             sum(.data$indweight * .data$indweight),
@@ -40,5 +40,5 @@ normalise_weights_kish <- function(survey_circumcision,
         )),
       by = "survey_id"
     ) %>%
-    mutate(indweight_st = .data$indweight_st / .data$ratio)
+    dplyr::mutate(indweight_st = .data$indweight_st / .data$ratio)
 }

@@ -18,7 +18,6 @@
 #'  \code{\link[naomi]{sample_tmb}}
 #' @rdname circ_sample_tmb
 #' @export
-#'
 circ_sample_tmb <- function(obj, opt, nsample = 1000, ...) {
 
   ## Getting the TMB into "Naomi" format to sample from using the NAOMI package
