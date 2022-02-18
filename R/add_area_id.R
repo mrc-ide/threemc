@@ -47,7 +47,7 @@ add_area_id <- function(df,
         # corresponding name
         area_name = dplyr::all_of(area_lev_select_name)
       ) %>%
-      distinct(),
+      dplyr::distinct(),
     by = c("area_id")
     ) %>%
     # Select the right columns (account for when we are at the lowest level)
