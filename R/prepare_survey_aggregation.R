@@ -42,7 +42,7 @@ prepare_survey_aggregation <- function(areas_wide,
     dplyr::left_join(
       (survey_individuals %>%
         dplyr::select(
-          dplyr::contains("id"), .data[, c("sex", "age", "indweight")]
+          dplyr::contains("id"), .data$sex, .data$age, .data$indweight
         )
     )) %>%
     # Merging on cluster information to  the circumcision dataset

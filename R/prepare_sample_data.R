@@ -136,7 +136,9 @@ prepare_sample_data <- function(N = 100,
       dplyr::bind_rows() %>%
       # only keep relevant columns
       dplyr::select(
-        .data[, c("area_id", "area_name", "year", "age", "type", "model")], 
+        .data$area_id, .data$area_name, 
+        .data$year, .data$age, 
+        .data$type, .data$model,
         dplyr::contains("samp_")
       ) %>%
       # join in region populations
