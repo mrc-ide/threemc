@@ -14,6 +14,7 @@
 #' with results for all area levels less than or equal to \code{area_lev}.
 #' @importFrom dplyr %>%
 #' @importFrom data.table %like%
+#' @importFrom rlang .data
 #' @export
 
 # hierarchies
@@ -36,7 +37,7 @@ combine_areas <- function(.data,
   if (area_levs[1] > -1) {
     results_list <- lapply(area_levs, function(x) {
       add_area_id(
-        df = (.data %>% dplyr::select(-area_name)),
+        df = (.data %>% dplyr::select(-.data$area_name)),
         df_areas_wide = areas_wide,
         par = list(
           "area_lev" = area_lev,

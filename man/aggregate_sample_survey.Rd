@@ -6,6 +6,7 @@
 \usage{
 aggregate_sample_survey(
   survey_circumcision,
+  areas,
   join = TRUE,
   types = list(Total = c(unique(survey_circumcision$type)), Medical = "MMC",
     Traditional = "TMC"),
@@ -17,6 +18,8 @@ aggregate_sample_survey(
 \arguments{
 \item{survey_circumcision}{Information on male circumcision status from
 surveys.}
+
+\item{areas}{\code{sf} shapefiles which include area hierarchies.}
 
 \item{join}{Indicator to decide whether to join aggregated samples for
 different age groups, Default: TRUE}

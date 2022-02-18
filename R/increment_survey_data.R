@@ -10,6 +10,7 @@
 #' }
 #' @return Survey data, with desired area level in \code{area_id}.
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @export
 # levels (should work for decreasing as well??)
 increment_survey_area <- function(survey_data,
@@ -21,8 +22,8 @@ increment_survey_area <- function(survey_data,
 
   # take only those areas in the area level you want increased:
   survey_data_area_lev <- survey_data %>%
-    dplyr::mutate(area_level = as.numeric(substr(area_id, 5, 5))) %>%
-    dplyr::filter(area_level == !!par$area_lev)
+    dplyr::mutate(area_level = as.numeric(substr(.data$area_id, 5, 5))) %>%
+    dplyr::filter(.data$area_level == !!par$area_lev)
   survey_data <- survey_data %>%
     dplyr::anti_join(survey_data_area_lev)
 

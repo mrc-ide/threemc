@@ -9,12 +9,16 @@
 #' @importFrom data.table %like%
 #' @export
 posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
+  
+  #global bindings for data.table non-standard evaluation
+  . <- value <- NULL
+  
   probs <- sort(probs)
 
   # ensure numeric columns are after categorical
   .data <- .data %>%
     dplyr::relocate(
-      population | dplyr::contains("samp_"),
+      .data$population | dplyr::contains("samp_"),
       .after = dplyr::everything()
     )
 

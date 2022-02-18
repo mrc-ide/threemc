@@ -9,6 +9,7 @@
 #' area level.
 #' @importFrom dplyr %>%
 #' @importFrom data.table %like%
+#'@importFrom rlang .data
 #' @export
 #
 prepare_survey_aggregation <- function(areas_wide,
@@ -19,19 +20,19 @@ prepare_survey_aggregation <- function(areas_wide,
     # allocate random number from 0-5 for 95 entries
     dplyr::mutate(
       circ_age = dplyr::case_when(
-        circ_age == 95 ~ sample(seq(0, 5), n(), replace = TRUE),
-        TRUE ~ circ_age
+        .data$circ_age == 95 ~ sample(seq(0, 5), n(), replace = TRUE),
+        TRUE ~ .data$circ_age
       ),
       # Correct status for those who have information on
       # circumcision but are missing circumcision status
-      circ_status = ifelse(is.na(circ_status) & !is.na(circ_age),
+      circ_status = ifelse(is.na(.data$circ_status) & !is.na(.data$circ_age),
         1,
-        ifelse(is.na(circ_status) & !is.na(circ_age),
+        ifelse(is.na(.data$circ_status) & !is.na(.data$circ_age),
           1,
-          ifelse(is.na(circ_status) &
-            !is.na(circ_where),
+          ifelse(is.na(.data$circ_status) &
+            !is.na(.data$circ_where),
           1,
-          circ_status
+          .data$circ_status
           )
         )
       )
@@ -40,43 +41,45 @@ prepare_survey_aggregation <- function(areas_wide,
     # Merging on individual information to  the circumcision dataset
     dplyr::left_join(
       (survey_individuals %>%
-        dplyr::select(dplyr::contains("id"), "sex", "age", "indweight"))
-    ) %>%
+        dplyr::select(
+          dplyr::contains("id"), .data[, c("sex", "age", "indweight")]
+        )
+    )) %>%
     # Merging on cluster information to  the circumcision dataset
-    left_join(
+    .data$left_join(
       (survey_clusters %>%
-        dplyr::select(dplyr::contains("id"), -survey_region_id) %>%
+        dplyr::select(dplyr::contains("id"), -.data$survey_region_id) %>%
         dplyr::distinct())
     ) %>%
     # Remove those with missing circumcision status
     dplyr::filter(
-      !is.na(circ_status),
-      !(is.na(age) & is.na(circ_age)),
-      !is.na(geoloc_area_id)
+      !is.na(.data$circ_status),
+      !(is.na(.data$age) & is.na(.data$circ_age)),
+      !is.na(.data$geoloc_area_id)
     ) %>%
     # Adding age group and type of circumcision
     dplyr::mutate(
-      age_group = as.numeric(cut(age,
+      age_group = as.numeric(cut(.data$age,
         breaks = c(seq(0, 65, by = 5), Inf),
         labels = 1:14,
         right = FALSE,
         include.lowest = TRUE
       )),
-      year = as.numeric(substr(survey_id, 4, 7)),
+      year = as.numeric(substr(.data$survey_id, 4, 7)),
       # setting survey types
       type = dplyr::case_when(
-        circ_who == "Healthcare worker" ~ "MMC",
-        tolower(circ_who) == "medical" ~ "MMC",
-        tolower(circ_where) == "medical" ~ "MMC",
-        circ_who == "Traditional practioner" ~ "TMC",
-        tolower(circ_who) == "traditional" ~ "TMC",
-        tolower(circ_where) == "traditional" ~ "TMC",
-        circ_status != 0 ~ "Missing",
-        TRUE ~ NA_character_
+        circ_who == "Healthcare worker"            ~ "MMC",
+        tolower(.data$circ_who) == "medical"       ~ "MMC",
+        tolower(.data$circ_where) == "medical"     ~ "MMC",
+        .data$circ_who == "Traditional practioner" ~ "TMC",
+        tolower(.data$circ_who) == "traditional"   ~ "TMC",
+        tolower(.data$circ_where) == "traditional" ~ "TMC",
+        .data$circ_status != 0                     ~ "Missing",
+        TRUE                                       ~ NA_character_
       )
     ) %>%
     # Altering column names
-    dplyr::rename(area_id = geoloc_area_id)
+    dplyr::rename(area_id = .data$geoloc_area_id)
 
   # add area id's:
   # find last area column (i.e. highest area level present)
@@ -94,7 +97,7 @@ prepare_survey_aggregation <- function(areas_wide,
     dplyr::select(
       -c(
         names(areas_wide)[!names(areas_wide) %in% "area_id"],
-        age_group
+        .data$age_group
       ) # not the same age_group as we usually use
     )
 }

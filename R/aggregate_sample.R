@@ -14,6 +14,9 @@ aggregate_sample <- function(.data,
                                "area_id", "area_name", "year",
                                "age", "age_group", "model", "type"
                              )) {
+  
+  #global bindings for data.table non-standard evaluation
+  .SD <- NULL
 
   # ensure aggregation columns are in the data
   aggr_cols <- aggr_cols[aggr_cols %in% names(.data)]

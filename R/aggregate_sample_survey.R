@@ -2,6 +2,7 @@
 #' @description Aggregate survey points for each type and age group.
 #' @param survey_circumcision Information on male circumcision status from
 #' surveys.
+#' @param areas \code{sf} shapefiles which include area hierarchies.
 #' @param join Indicator to decide whether to join aggregated samples for
 #' different age groups, Default: TRUE
 #' @param types List of circumcision types to look at, Default:
@@ -18,8 +19,10 @@
 #' @seealso
 #'  \code{\link[threemc]{combine_areas}}
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @export
 aggregate_sample_survey <- function(survey_circumcision,
+                                    areas,
                                     join = TRUE,
                                     # types list
                                     types = list(
@@ -35,8 +38,8 @@ aggregate_sample_survey <- function(survey_circumcision,
                                       "45-49", "50-54", "54-59", "60-64", "65+",
                                       "0+", "10+", "15+", "15-24", "15-29", 
                                       "15-39", "15-49", "10-29", "10-39", 
-                                      "10-49", "10-24"
-                                    )) {
+                                      "10-49", "10-24")
+                                   ) {
 
   # survey years
   survey_years <- unique(survey_circumcision$year)
@@ -60,23 +63,23 @@ aggregate_sample_survey <- function(survey_circumcision,
       }
       # Getting proportions
       tmp <- survey_circumcision %>%
-        dplyr::filter(age >= age1, age <= age2) %>%
-        dplyr::group_by(area_id, year) %>%
+        dplyr::filter(.data$age >= age1, .data$age <= age2) %>%
+        dplyr::group_by(.data$area_id, .data$year) %>%
         dplyr::summarise(
-          Y_ind = length(circ_status) *
-            sum((circ_status == 1 & type %in% types[[i]]) *
-              indweight, na.rm = TRUE) /
-            sum(indweight, na.rm = TRUE),
-          Y_obs = sum(circ_status == 1 & type %in% types[[i]]),
-          N = length(circ_status),
-          p_ind = Y_ind / N,
-          p_obs = Y_obs / N,
+          Y_ind = length(.data$circ_status) *
+            sum((.data$circ_status == 1 & .data$type %in% types[[i]]) *
+              .data$indweight, na.rm = TRUE) /
+            sum(.data$indweight, na.rm = TRUE),
+          Y_obs = sum(.data$circ_status == 1 & .data$type %in% types[[i]]),
+          N = length(.data$circ_status),
+          p_ind = .data$Y_ind / .data$N,
+          p_obs = .data$Y_obs / .data$N,
           .groups = "drop"
-        ) %>%
+        ) %>% 
         # adding age group
         dplyr::mutate(age_group = age_groups[i])
-      return(tmp)
     })
+    
     # append together results for each age group
     results_surv_type <- as.data.frame(
       data.table::rbindlist(results_surv_type, use.names = T)
@@ -94,15 +97,15 @@ aggregate_sample_survey <- function(survey_circumcision,
       dplyr::left_join(
         (areas %>%
           sf::st_drop_geometry() %>%
-          dplyr::select(dplyr::contains("area"), -area_level_label)),
+          dplyr::select(dplyr::contains("area"), -.data$area_level_label)),
         by = "area_id"
       ) %>%
-      left_join(
+      dplyr::left_join(
         (areas %>%
           sf::st_drop_geometry() %>%
           dplyr::select(
-            parent_area_id = area_id,
-            parent_area_name = area_name
+            parent_area_id = .data$area_id,
+            parent_area_name = .data$area_name
           )),
         by = "parent_area_id"
       )

@@ -18,6 +18,7 @@
 #' @param type Determines which aspect of MC in the regions in question you wish
 #' to sample for. Can be one of "probability", "incidence" or "prevalence".
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @export
 prepare_sample_data <- function(N = 100,
                                 populations,
@@ -135,7 +136,8 @@ prepare_sample_data <- function(N = 100,
       dplyr::bind_rows() %>%
       # only keep relevant columns
       dplyr::select(
-        area_id, area_name, year, age, type, model, dplyr::contains("samp_")
+        .data[, c("area_id", "area_name", "year", "age", "type", "model")], 
+        dplyr::contains("samp_")
       ) %>%
       # join in region populations
       dplyr::left_join(
@@ -143,15 +145,15 @@ prepare_sample_data <- function(N = 100,
         (populations %>%
           dplyr::select(
             dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
-            population
+            .data$population
           ))
       ) %>%
-      dplyr::relocate(population, .before = samp_1)
+      dplyr::relocate(.data$population, .before = .data$samp_1)
 
     # filter out na populations, with an appropriate message
     if (any(is.na(tmp$population)) == TRUE) {
       n1 <- nrow(tmp)
-      tmp <- dplyr::filter(tmp, !is.na(population))
+      tmp <- tmp %>% dplyr::filter(!is.na(.data$population))
       n2 <- nrow(tmp)
       if (n2 == 0) stop("No populations present in data")
       message(paste0("Missing population for ", n1 - n2, " records"))

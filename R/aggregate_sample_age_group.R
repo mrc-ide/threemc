@@ -11,11 +11,13 @@
 #' "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
 #' "0+",    "10+",   "15+",   "15-24", "10-24", 15-29",
 #' "10-29", "15-39", "10-39", "15-49", "10-49")
+#' @param N Number of samples to summarise, Default: NULL
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @seealso
 #'  \code{\link[threemc]{combine_areas}}
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @export
 aggregate_sample_age_group <- function(results_list,
                                        aggr_cols = c("area_id", "area_name", 
@@ -27,11 +29,16 @@ aggregate_sample_age_group <- function(results_list,
                                          "0+", "10+", "15+", "15-24", "10-24",
                                          "15-29", "10-29", "15-39", 
                                          "10-39", "15-49", "10-49"
-                                       )) {
+                                       ),
+                                       N = 100
+                                       ) {
   if (inherits(results_list, "data.frame")) {
     stop("requires list from combine_areas (set argument join = FALSE)")
   }
 
+  #global bindings for data.table non-standard evaluation
+  .SD <- NULL
+  
   # Multiplying by population to population weight
   results_list <- lapply(results_list, function(x) {
     x %>%
@@ -54,8 +61,8 @@ aggregate_sample_age_group <- function(results_list,
     results_list_loop <- lapply(results_list, function(x) {
       x <- x %>%
         # take results for age group i
-        dplyr::filter(age >= age1, age <= age2) %>%
-        dplyr::select(-age)
+        dplyr::filter(.data$age >= age1, .data$age <= age2) %>%
+        dplyr::select(-.data$age)
       # Getting summarising samples
       x <- data.table::setDT(x)[,
         lapply(.SD, sum, na.rm = T),

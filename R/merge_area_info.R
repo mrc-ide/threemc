@@ -4,6 +4,7 @@
 #' @param results \code{data.frame} you wish to merge shapefiles with.
 #' @param areas \code{sf} shapefiles for specific country/region.
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @export
 merge_area_info <- function(results, areas) {
 
@@ -12,15 +13,15 @@ merge_area_info <- function(results, areas) {
     # Adding region information
     dplyr::left_join(
       (areas %>%
-        dplyr::select(area_id:area_level)),
+        dplyr::select(.data$area_id:.data$area_level)),
       by = c("area_id", "area_name")
     ) %>%
-    dplyr::relocate("area_level", .after = "area_name") %>%
+    dplyr::relocate(.data$area_level, .after = "area_name") %>%
     dplyr::left_join(
       (areas %>%
         dplyr::select(
-          parent_area_id = area_id,
-          parent_area_name = area_name
+          parent_area_id = .data$area_id,
+          parent_area_name = .data$area_name
         )),
       by = "parent_area_id"
     ) %>%

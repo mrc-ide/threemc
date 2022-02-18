@@ -15,7 +15,7 @@ create_dirs_r <- function(dir_path) {
   cond <- substr(dir_path, nchar(dir_path), nchar(dir_path))
   cond <- grepl("/", cond)
   # does last word contain "."? Likely a file
-  cond <- cond & !grepl(".", last(dirs))
+  cond <- cond & !grepl(".", dplyr::last(dirs))
   if (!cond) {
     dirs <- dirs[-length(dirs)] # remove file name
   }
