@@ -27,7 +27,7 @@ prepare_sample_data <- function(N = 100,
                                 no_prog_tmb_fit,
                                 prog_tmb_fit,
                                 type) {
-  if (is.null(no_prog_results) & is.null(prog_results)) {
+  if (is.null(no_prog_results) && is.null(prog_results)) {
     stop("cannot have prog_results == no_prog_results == NULL")
   }
   if (!type %in% c("probability", "incidence", "prevalence") |
