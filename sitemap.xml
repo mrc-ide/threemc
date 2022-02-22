@@ -13,9 +13,96 @@
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/reference/add_area_id.html</loc>
+  </url>
+  <url>
+    <loc>/reference/aggregate_sample.html</loc>
+  </url>
+  <url>
+    <loc>/reference/aggregate_sample_age_group.html</loc>
+  </url>
+  <url>
+    <loc>/reference/aggregate_sample_survey.html</loc>
+  </url>
+  <url>
+    <loc>/reference/append_mc_name.html</loc>
+  </url>
+  <url>
+    <loc>/reference/circ_sample_tmb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/combine_areas.html</loc>
+  </url>
+  <url>
+    <loc>/reference/compile_tmb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/compute_quantiles.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_design_matrices.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_dirs_r.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_hazard_matrix_agetime.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_icar_prec_matrix.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_integration_matrices.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_integration_matrix_agetime.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_integration_matrix_agetime_lag.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_rw_prec_matrix.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_shell_dataset.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_survival_matrices.html</loc>
+  </url>
+  <url>
+    <loc>/reference/datapack_psnu_area_level.html</loc>
+  </url>
+  <url>
+    <loc>/reference/increment_survey_area.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
   </url>
   <url>
-    <loc>/reference/test.html</loc>
+    <loc>/reference/merge_area_info.html</loc>
+  </url>
+  <url>
+    <loc>/reference/n_circumcised.html</loc>
+  </url>
+  <url>
+    <loc>/reference/normalise_weights_kish.html</loc>
+  </url>
+  <url>
+    <loc>/reference/posterior_summary_fun.html</loc>
+  </url>
+  <url>
+    <loc>/reference/prepare_sample_data.html</loc>
+  </url>
+  <url>
+    <loc>/reference/prepare_survey_aggregation.html</loc>
+  </url>
+  <url>
+    <loc>/reference/prepare_survey_data.html</loc>
+  </url>
+  <url>
+    <loc>/reference/prevalence_change.html</loc>
+  </url>
+  <url>
+    <loc>/reference/read_circ_data.html</loc>
   </url>
 </urlset>
