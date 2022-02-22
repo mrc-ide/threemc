@@ -1,0 +1,7 @@
+all: Surv_SpaceAgeTime_ByType_withUnknownType.dll
+	# Comment here preserves the prior tab
+Surv_SpaceAgeTime_ByType_withUnknownType.dll: Surv_SpaceAgeTime_ByType_withUnknownType.cpp
+    "$(R_HOME)/bin/Rscript" --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType.cpp', '-O1 -g',DLLFLAGS='')"
+
+clean:
+    rm -rf *.dll
