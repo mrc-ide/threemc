@@ -49,12 +49,12 @@ aggregate_sample_age_group <- function(results_list,
   # aggregate sample for each age group
   results <- lapply(seq_along(age_groups), function(i) {
     # If upper limit use this split
-    if (grepl("-", age_groups[i]) == TRUE) {
+    if (grepl("-", age_groups[i])) {
       age1 <- as.numeric(strsplit(age_groups[i], "-")[[1]][1])
       age2 <- as.numeric(strsplit(age_groups[i], "-")[[1]][2])
     }
     # If no upper limit use this split
-    if (grepl("\\+", age_groups[i]) == TRUE) {
+    if (grepl("\\+", age_groups[i])) {
       age1 <- as.numeric(strsplit(age_groups[i], "\\+")[[1]][1])
       age2 <- Inf
     }
