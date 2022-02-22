@@ -25,16 +25,10 @@ prepare_survey_aggregation <- function(areas_wide,
       ),
       # Correct status for those who have information on
       # circumcision but are missing circumcision status
-      circ_status = ifelse(is.na(.data$circ_status) & !is.na(.data$circ_age),
-        1,
-        ifelse(is.na(.data$circ_status) & !is.na(.data$circ_age),
-          1,
-          ifelse(is.na(.data$circ_status) &
-            !is.na(.data$circ_where),
-          1,
-          .data$circ_status
-          )
-        )
+      circ_status = dplyr::case_when(
+        is.na(.data$circ_status) & !is.na(.data$circ_age)   ~ 1,
+        is.na(.data$circ_status) & !is.na(.data$circ_where) ~ 1,
+        TRUE                                                ~ .data$circ_status
       )
     ) %>%
     # merging individual weights to:
