@@ -53,7 +53,7 @@ combine_areas <- function(.data,
   }
 
   # return list or dataframe?
-  if (join == TRUE) {
+  if (join) {
     return(as.data.frame(data.table::rbindlist(
       results_list,
       use.names = T, ...
