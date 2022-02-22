@@ -2,7 +2,7 @@
 #' @description Prepare survey data required to run the circumcision model. Can
 #' also optionally apply \link[threemc]{normalise_weights_kish}, to
 #'  normalise survey weights and apply Kish coefficients.
-#' @param areas `sf` shapefiles for specific country/region.
+#' @param areas \code{sf} shapefiles for specific country/region.
 #' @param survey_circumcision - Information on male circumcision status from
 #' surveys.
 #' @param survey_individuals - Information on the individuals surveyed.
@@ -27,7 +27,7 @@
 #' @return Survey data with required variables to run circumcision model.
 #' @export
 #'
-#' @import rlang
+#' @importFrom rlang .data
 #' @importFrom dplyr %>%
 prepare_survey_data <- function(areas,
                                 survey_circumcision,
@@ -50,7 +50,7 @@ prepare_survey_data <- function(areas,
   # change colnames to those in line with areas
   if ("geoloc_area_id" %in% names(survey_clusters)) {
     survey_clusters <- survey_clusters %>%
-        dplyr::rename(area_id = .data$geoloc_area_id)
+      dplyr::rename(area_id = .data$geoloc_area_id)
   }
 
   ## Bringing datasets together
@@ -196,7 +196,7 @@ prepare_survey_data <- function(areas,
       type = dplyr::case_when(
         .data$circ_who == "medical" | .data$circ_where == "medical" ~ "MMC",
         .data$circ_who == "traditional" |
-                                  .data$circ_where == "traditional" ~ "TMC",
+          .data$circ_where == "traditional" ~ "TMC",
         TRUE ~ "Missing"
       )
     )

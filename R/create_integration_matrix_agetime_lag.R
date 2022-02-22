@@ -129,7 +129,7 @@ create_integration_matrix_agetime_lag <- function(dat,
   rows <- unlist(apply(dat, 1, function(x) {
     rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]))
   }, simplify = FALSE))
-  
+
   # Outputting sparse matrix
   A <- Matrix::sparseMatrix(
     i = rows,
