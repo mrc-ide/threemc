@@ -1,0 +1,25 @@
+create_aggregate_structure <- function(areas,
+                                       area_lev){
+  # MLT: Long to wide hierarchy
+  # Need this for the new aggregation matrices
+  areas_wide <- areas %>%
+    filter(area_level <= area_lev) %>%
+    st_drop_geometry() %>%
+    spread_areas() 
+  # Empty lists and data frame to stor structure
+  areas_agg1 <- list()
+  areas_agg2 <- data.frame(area_id = subset(areas, area_level <= area_lev)$area_id, ndep = NA)
+  # Loop for each area_id in the reference level
+  for (i in 1:max(subset(areas, area_level == area_lev)$space)){
+    # Getting areas lower in the hierarchy
+    test <- areas_wide %>%
+      dplyr::filter(if_any(starts_with("space"), ~. == i)) %>%
+      dplyr::pull(paste0("space", area_lev))
+    # Adding list 
+    areas_agg1 <- c(areas_agg1, list(test))
+    areas_agg2$ndep[i] <- length(test)
+  }
+  # Returning list 
+  return(list(areas_agg1 = areas_agg1, 
+              areas_agg2 = areas_agg2))
+}
