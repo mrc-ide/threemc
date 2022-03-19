@@ -10,6 +10,7 @@
 #'
 #' @param survey_circumcision Information on male circumcision status from
 #' surveys.
+#' @param population_data Single age male population counts 
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. Defaults to the
 #' maximum area level found in `areas` if not supplied.
@@ -35,6 +36,7 @@
 #' @importFrom rlang .data
 #' @importFrom dplyr %>%
 create_shell_dataset <- function(survey_circumcision,
+                                 population_data, 
                                  areas,
                                  area_lev,
                                  time1 = "time1",
@@ -69,8 +71,8 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   areas_model <- areas_model %>%
-    dplyr::filter(.data$area_level == area_lev) %>%
-    dplyr::select(dplyr::any_of(c("area_id", "area_name", "space")))
+    dplyr::filter(.data$area_level <= area_lev) %>%
+    dplyr::select(dplyr::any_of(c("area_id", "area_name", "area_level", "space")))
 
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
@@ -84,8 +86,14 @@ create_shell_dataset <- function(survey_circumcision,
       age = .data$circ_age + 1
     ) %>%
     ## Sorting dataset
-    dplyr::arrange(.data$space, .data$age, .data$time)
-
+    dplyr::arrange(.data$space, .data$age, .data$time) %>%
+    ## Adding population data on to merge 
+    dplyr::left_join(
+      population_data %>%
+        dplyr::select(c(area_id, year, circ_age = age, population)),
+      by = c('area_id', 'circ_age', 'year')
+    )
+  
   ## Obtain N person years
   out_int_mat <- threemc::create_integration_matrix_agetime(
     dat = survey_circumcision,
@@ -114,11 +122,12 @@ create_shell_dataset <- function(survey_circumcision,
     empirical_circ_cols <- empirical_circ_cols[-3]
     subsets <- subsets[-3]
   }
-
-
+  
   agetime_hazard_matrices <- lapply(subsets, function(x) {
     threemc::create_hazard_matrix_agetime(
       dat = survey_circumcision,
+      areas = areas, 
+      area_lev = area_lev,
       subset = x,
       time1 = time1,
       time2 = time2,
