@@ -10,6 +10,8 @@
 #' with a row for every unique record in circumcision survey data for a given
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
+#' @param area_lev Desired admin boundary level to perform the analysis on. 
+#' Defaults to the maximum area level found in `dat` if not supplied.
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,
 #' Default: "time2"
@@ -27,12 +29,21 @@
 #' @rdname create_integration_matrices
 #' @export
 create_integration_matrices <- function(out,
+                                        area_lev, 
                                         time1 = "time1",
                                         time2 = "time2",
                                         age = "age",
                                         strat = "space",
                                         ...) {
-  out <- out
+  if (missing(area_lev)) {
+    message("area_lev arg missing, taken as maximum area level in shell dataset")
+    area_lev <- max(dat$area_level, na.rm = TRUE)
+  }
+  
+  # Only doing the matrices on the specified aggregation
+  out <- create_shell_dataset_area(out, area_lev)
+  
+  # Preparing age and time variables 
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
   out$age <- out$circ_age + 1
