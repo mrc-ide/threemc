@@ -5,7 +5,7 @@
 #' components on the specified administrative boundaries. 
 #'
 #' @param dat Shell dataset used for modelling
-#' @param area_lev Desired admin boundary level to perform the analysis on. 
+#' @param area_lev  PSNU area level for specific country. Defaults to the
 #' Defaults to the maximum area level found in `dat` if not supplied.
 #' @param ...  Further arguments passed to or from other methods.
 create_shell_dataset_area <- function(dat,  area_lev) {

@@ -10,7 +10,7 @@
 #'
 #' @param survey_circumcision Information on male circumcision status from
 #' surveys.
-#' @param population_data Single age male population counts 
+#' @param population_data Single age male population counts by space and time. 
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. Defaults to the
 #' maximum area level found in `areas` if not supplied.

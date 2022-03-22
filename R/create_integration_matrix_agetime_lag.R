@@ -6,7 +6,6 @@
 #' function.
 #'
 #' @param dat Dataset used for modelling.
-#'
 #' @param subset Subset for dataset, Default: NULL
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored, Default: "time2"

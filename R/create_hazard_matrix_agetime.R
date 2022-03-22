@@ -8,6 +8,8 @@
 #' with a row for every unique record in circumcision survey data for a given
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
+#' @param areas `sf` shapefiles for specific country/region.
+#' @param area_lev  PSNU area level for specific country. 
 #' @param subset Subset for dataset, Default: NULL
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,
@@ -77,10 +79,7 @@ create_hazard_matrix_agetime <- function(dat,
   # If the selection matrices need to be taken from one reference aggregation 
   # then we get a list of the hierarchical structure to that level
   if (aggregated == TRUE){
-    # Adding row identifier for matrix creation
-    dat$row <- 1:nrow(dat)
-    
-    ## If no stratification variable create a dummy variable
+    ## If no weighting variable create a dummy variable
     if (is.null(weight)){
       weight <- 'weight'
       dat$weight <- 1
@@ -101,8 +100,16 @@ create_hazard_matrix_agetime <- function(dat,
                            dplyr::filter(area_level == area_lev) %>%
                            dplyr::pull(space))
     
-    # Only keeping stratums where we have data 
-    dat2 <- subset(dat, eval(parse(text = paste(circ, ' != 0', sep = ''))))
+    # Minimum space ID within the reference level
+    Nstrat <- out %>%
+      dplyr::filter(area_level == area_lev) %>%
+      dplyr::pull(space) %>%
+      unique() %>%
+      length()
+    
+    # Only keeping stratums where we have data
+    dat2 <- subset(dat, eval(parse(text = paste(circ, ' != 0', sep = '')))) %>%
+      dplyr::mutate(row = 1:dplyr::n())
     
     # Aggregation for each row in the dataframe
     entries <- apply(dat2, 1, function(x) {
@@ -113,7 +120,6 @@ create_hazard_matrix_agetime <- function(dat,
       cols <- Ntime * Nage * (tmp_space - min_ref_space) +
         Ntime * (as.numeric(x[age]) - 1) +
         as.numeric(x["time2_cap"])
-      print(summary(cols))
       # Getting rows for sparse matrix
       rows <- rep(as.numeric(x["row"]), length(cols))
       # Getting weights 

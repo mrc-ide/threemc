@@ -10,7 +10,7 @@
 #' with a row for every unique record in circumcision survey data for a given
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
-#' @param area_lev Desired admin boundary level to perform the analysis on. 
+#' @param area_lev  PSNU area level for specific country. Defaults to the
 #' Defaults to the maximum area level found in `dat` if not supplied.
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,

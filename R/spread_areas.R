@@ -1,12 +1,8 @@
 #' Spread area hierarchy to wide format
 #'
 #' @param areas area hierarchy data.frame
-#' @param min_level integer specifying the minimum level
-#' @param max_level integer specifying the maximum level
-#'
-#' TODO: Make this an example - where is areas.rds?
-#' areas <- readRDS(system.file("extdata/areas/areas.rds", package = "naomi"))
-#' areas_wide <- spread_areas(areas)
+#' @param min_level integer specifying the minimum level wanted
+#' @param max_level integer specifying the maximum level wanted
 #'
 #' @export
 spread_areas <- function(areas, 

@@ -1,6 +1,16 @@
+#' @title Create a List containing the Hierarchy of levels
+#'
+#' @description Create a list containing all the area dependencies and number 
+#' of for each area in the hierarchy
+#'
+#' @param areas `sf` shapefiles for specific country/region.
+#' @param area_lev  PSNU area level for specific country. 
+#'
+#' @rdname create_aggregate_structure
+#' @export
 create_aggregate_structure <- function(areas,
                                        area_lev){
-  # MLT: Long to wide hierarchy
+  # Long to wide hierarchy
   # Need this for the new aggregation matrices
   areas_wide <- areas %>%
     filter(area_level <= area_lev) %>%
