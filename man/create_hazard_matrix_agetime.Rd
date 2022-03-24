@@ -6,7 +6,6 @@
 \usage{
 create_hazard_matrix_agetime(
   dat,
-  out,
   areas,
   area_lev,
   subset = NULL,
@@ -25,11 +24,6 @@ create_hazard_matrix_agetime(
 }
 \arguments{
 \item{dat}{Shell dataset (outputted by \link[threemc]{create_shell_dataset}
-with a row for every unique record in circumcision survey data for a given
-area. Also includes empirical estimates for circumcision estimates for each
-unique record.}
-
-\item{out}{Shell dataset (outputted by \link[threemc]{create_shell_dataset}
 with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.}

@@ -11,6 +11,16 @@ create_aggregate_structure(areas, area_lev)
 
 \item{area_lev}{PSNU area level for specific country.}
 }
+\value{
+A list of length 2 containing:
+\itemize{
+\item{"sub_region_list"}{A list of the specific sub-regions contained
+within each space (i.e. for each area_id) (including itself)}
+\item{"n_links_df"}{A dataframe with 2 columns, area_id and ndep, detailing
+the number of sub-regions contained within each area_id (also including
+itself)}
+}
+}
 \description{
 Create a list containing all the area dependencies and number
 of for each area in the hierarchy

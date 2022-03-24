@@ -4,7 +4,7 @@
 \alias{create_shell_dataset_area}
 \title{Subset and Prepare Shell Dataset to Only One Admin Boundary}
 \usage{
-create_shell_dataset_area(dat, area_lev)
+create_shell_dataset_area(dat, area_lev = NULL)
 }
 \arguments{
 \item{dat}{Shell dataset used for modelling}
