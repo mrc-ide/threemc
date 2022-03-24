@@ -104,6 +104,7 @@ create_shell_dataset <- function(survey_circumcision,
     time1 = time1,
     time2 = time2,
     strat = strat,
+    Nstrat = nrow(areas_model),
     age   = age,
     Ntime = length(unique(out$time)),
     ...
@@ -139,6 +140,7 @@ create_shell_dataset <- function(survey_circumcision,
       age   = age,
       circ  = circ,
       Ntime = length(unique(out$time)),
+      Nstrat = nrow(areas_model),
       ...
     )
   })
