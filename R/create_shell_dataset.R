@@ -72,7 +72,9 @@ create_shell_dataset <- function(survey_circumcision,
 
   areas_model <- areas_model %>%
     dplyr::filter(.data$area_level <= area_lev) %>%
-    dplyr::select(dplyr::any_of(c("area_id", "area_name", "area_level", "space")))
+    dplyr::select(
+      dplyr::any_of(c("area_id", "area_name", "area_level", "space"))
+    )
 
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
@@ -91,7 +93,7 @@ create_shell_dataset <- function(survey_circumcision,
     dplyr::left_join(
       population_data %>%
         dplyr::select(c(area_id, year, circ_age = age, population)),
-      by = c('area_id', 'circ_age', 'year')
+      by = c("area_id", "circ_age", "year")
     )
   
   ## Obtain N person years

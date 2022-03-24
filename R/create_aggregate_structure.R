@@ -9,7 +9,7 @@
 #' @rdname create_aggregate_structure
 #' @export
 create_aggregate_structure <- function(areas,
-                                       area_lev){
+                                       area_lev) {
   # Long to wide hierarchy
   # Need this for the new aggregation matrices
   areas_wide <- areas %>%
@@ -18,9 +18,11 @@ create_aggregate_structure <- function(areas,
     spread_areas() 
   # Empty lists and data frame to stor structure
   areas_agg1 <- list()
-  areas_agg2 <- data.frame(area_id = subset(areas, area_level <= area_lev)$area_id, ndep = NA)
+  areas_agg2 <- data.frame(
+    area_id = subset(areas, area_level <= area_lev)$area_id, ndep = NA
+  )
   # Loop for each area_id in the reference level
-  for (i in 1:max(subset(areas, area_level == area_lev)$space)){
+  for (i in 1:max(subset(areas, area_level == area_lev)$space)) {
     # Getting areas lower in the hierarchy
     test <- areas_wide %>%
       dplyr::filter(if_any(starts_with("space"), ~. == i)) %>%

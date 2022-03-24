@@ -24,7 +24,9 @@ create_design_matrices <- function(dat,  area_lev, k_dt = 5) {
   
   
   if (missing(area_lev)) {
-    message("area_lev arg missing, taken as maximum area level in shell dataset")
+    message(
+      "area_lev arg missing, taken as maximum area level in shell dataset"
+    )
     area_lev <- max(dat$area_level, na.rm = TRUE)
   }
   

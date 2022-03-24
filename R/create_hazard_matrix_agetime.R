@@ -61,8 +61,8 @@ create_hazard_matrix_agetime <- function(dat,
   )
   
   ## If no stratification variable create a dummy variable
-  if (is.null(strat)){
-    strat <- 'strat'
+  if (is.null(strat)) {
+    strat <- "strat"
     dat$strat <- 1
   }
   
@@ -78,10 +78,10 @@ create_hazard_matrix_agetime <- function(dat,
   
   # If the selection matrices need to be taken from one reference aggregation 
   # then we get a list of the hierarchical structure to that level
-  if (aggregated == TRUE){
+  if (aggregated == TRUE) {
     ## If no weighting variable create a dummy variable
-    if (is.null(weight)){
-      weight <- 'weight'
+    if (is.null(weight)) {
+      weight <- "weight"
       dat$weight <- 1
     }
     
@@ -93,7 +93,7 @@ create_hazard_matrix_agetime <- function(dat,
     # replicate to the main dataset
     dat <- dat %>%
       left_join(areas_agg$areas_agg2,
-                by = 'area_id')
+                by = "area_id")
     
     # Minimum space ID within the reference level
     min_ref_space <- min(out %>%
@@ -108,7 +108,7 @@ create_hazard_matrix_agetime <- function(dat,
       length()
     
     # Only keeping stratums where we have data
-    dat2 <- subset(dat, eval(parse(text = paste(circ, ' != 0', sep = '')))) %>%
+    dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = "")))) %>%
       dplyr::mutate(row = 1:dplyr::n())
     
     # Aggregation for each row in the dataframe
@@ -123,7 +123,9 @@ create_hazard_matrix_agetime <- function(dat,
       # Getting rows for sparse matrix
       rows <- rep(as.numeric(x["row"]), length(cols))
       # Getting weights 
-      vals <- as.numeric(x[circ]) * dat[cols, weight, drop = TRUE] / sum(dat[cols, weight, drop = TRUE])
+      vals <- 
+        as.numeric(x[circ]) *
+          dat[cols, weight, drop = TRUE] / sum(dat[cols, weight, drop = TRUE])
       # Output dataset 
       tmp <- data.frame(cols, rows, vals)
       # Return dataframe
@@ -136,9 +138,9 @@ create_hazard_matrix_agetime <- function(dat,
     vals <- as.numeric(unlist(lapply(entries, "[", "vals")))
   }
   # Else the selection matrices will be taken from the aggregation they are on
-  else{
+  else {
     # Only keeping stratums where we have data 
-    dat2 <- subset(dat, eval(parse(text = paste(circ, ' != 0', sep = ''))))
+    dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))
     
     ## Column entries for hazard matrix
     cols <- unlist(apply(dat2, 1, function(x) {
