@@ -9,7 +9,7 @@
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
 #' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country. 
+#' @param area_lev  PSNU area level for specific country.
 #' @param subset Subset for dataset, Default: NULL
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,
@@ -26,7 +26,7 @@
 #' @param Nstrat Number of stratification groups (if NULL, function will
 #' calculate), Default: NULL
 #' @param circ Variables with circumcision matrix, Default: "circ"
-#' @param aggregated `agggregated = FALSE` treats every area_id as its own 
+#' @param aggregated `agggregated = FALSE` treats every area_id as its own
 #' object, `aggregated = TRUE` means we only look at area level of interest.
 #' @param weight weight to apply for each ?
 
@@ -39,8 +39,8 @@
 #' @importFrom rlang .data
 #' @export
 create_hazard_matrix_agetime <- function(dat,
-                                         areas, 
-                                         area_lev, 
+                                         areas,
+                                         area_lev,
                                          subset = NULL,
                                          time1 = "time1",
                                          time2 = "time2",
@@ -53,36 +53,36 @@ create_hazard_matrix_agetime <- function(dat,
                                          circ = "circ",
                                          aggregated = FALSE,
                                          weight = NULL) {
-  
+
   # Integration matrix for cumulative hazard
   dat$time1_cap <- pmin(
     timecaps[2] - timecaps[1] + 1,
     pmax(1, as.numeric(dat[[time1]]) - timecaps[1] + 1)
   )
-  
+
   ## Integration matrix for cumulative hazard
   dat$time2_cap <- pmin(
     timecaps[2] - timecaps[1] + 1,
     pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1)
   )
-  
+
   ## If no stratification variable create a dummy variable
   if (is.null(strat)) {
     strat <- "strat"
     dat$strat <- 1
   }
-  
+
   ## Number of dimensions in the hazard function
   if (is.null(Ntime)) Ntime <- max(dat[, "time1_cap", drop = TRUE])
   if (is.null(Nage)) Nage <- max(dat[age])
   if (is.null(Nstrat)) Nstrat <- max(dat[strat])
-  
+
   ## Subsetting data if necessary
   if (!is.null(subset)) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
-  
-  # If the selection matrices need to be taken from one reference aggregation 
+
+  # If the selection matrices need to be taken from one reference aggregation
   # then we get a list of the hierarchical structure to that level
   if (aggregated == TRUE) {
     ## If no weighting variable create a dummy variable
@@ -90,38 +90,40 @@ create_hazard_matrix_agetime <- function(dat,
       weight <- "weight"
       dat$weight <- 1
     }
-    
+
     # Getting aggregation structure
-    areas_agg <- create_aggregate_structure(areas    = areas,
-                                            area_lev = area_lev)
-    
-    # Merging on number of times to 
+    areas_agg <- create_aggregate_structure(
+      areas = areas,
+      area_lev = area_lev
+    )
+
+    # Merging on number of times to
     # replicate to the main dataset
     dat <- dat %>%
       dplyr::left_join(
         areas_agg$n_sub_region_df,
         by = "area_id"
       )
-    
+
     # Minimum space ID within the reference level
     min_ref_space <- min(dat %>%
-                           dplyr::filter(.data$area_level == area_lev) %>%
-                           dplyr::pull(.data$space))
-    
+      dplyr::filter(.data$area_level == area_lev) %>%
+      dplyr::pull(.data$space))
+
     # Minimum space ID within the reference level
     Nstrat <- dat %>%
       dplyr::filter(.data$area_level == area_lev) %>%
-      dplyr::distinct(.data$space) %>% 
-      dplyr::pull() %>% 
+      dplyr::distinct(.data$space) %>%
+      dplyr::pull() %>%
       length()
-    
+
     # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = "")))) %>%
       dplyr::mutate(row = 1:dplyr::n())
-    
+
     # Aggregation for each row in the dataframe
     entries <- apply(dat2, 1, function(x) {
-      # Getting areas in reference administrative 
+      # Getting areas in reference administrative
       # boundaries to aggregate over
       tmp_space <- areas_agg$sub_region_list[[as.numeric(x[strat])]]
       # Getting columns with non-zero entries for sparse matrix
@@ -130,16 +132,16 @@ create_hazard_matrix_agetime <- function(dat,
         as.numeric(x["time2_cap"])
       # Getting rows for sparse matrix
       rows <- rep(as.numeric(x["row"]), length(cols))
-      # Getting weights 
-      vals <- 
+      # Getting weights
+      vals <-
         as.numeric(x[circ]) *
           dat[cols, weight, drop = TRUE] / sum(dat[cols, weight, drop = TRUE])
-      # Output dataset 
+      # Output dataset
       tmp <- data.frame(cols, rows, vals)
       # Return dataframe
       return(tmp)
     })
-    
+
     # Extracting entries for sparse matrix
     cols <- as.numeric(unlist(lapply(entries, "[", "cols")))
     rows <- as.numeric(unlist(lapply(entries, "[", "rows")))
@@ -147,9 +149,9 @@ create_hazard_matrix_agetime <- function(dat,
   }
   # Else the selection matrices will be taken from the aggregation they are on
   else {
-    # Only keeping strata where we have data 
+    # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))
-    
+
     ## Column entries for hazard matrix
     cols <- unlist(apply(dat2, 1, function(x) {
       Ntime * Nage * (as.numeric(x[strat]) - 1) + Ntime *
@@ -158,7 +160,7 @@ create_hazard_matrix_agetime <- function(dat,
     rows <- seq_len(nrow(dat2))
     vals <- dat2[[circ]]
   }
-  
+
   ## Outputting sparse hazard matrix which selects the
   ## corresponding incidence rates for the likelihood.
   A <- Matrix::sparseMatrix(
@@ -167,7 +169,7 @@ create_hazard_matrix_agetime <- function(dat,
     x = vals,
     dims = c(nrow(dat2), Ntime * Nage * Nstrat)
   )
-  
+
   ## Returning matrix
   return(A)
 }

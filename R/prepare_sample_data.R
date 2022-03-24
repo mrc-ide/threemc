@@ -136,8 +136,8 @@ prepare_sample_data <- function(N = 100,
       dplyr::bind_rows() %>%
       # only keep relevant columns
       dplyr::select(
-        .data$area_id, .data$area_name, 
-        .data$year, .data$age, 
+        .data$area_id, .data$area_name,
+        .data$year, .data$age,
         .data$type, .data$model,
         dplyr::contains("samp_")
       ) %>%

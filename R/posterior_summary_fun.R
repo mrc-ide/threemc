@@ -8,10 +8,10 @@
 #' @importFrom dplyr %>%
 #' @export
 posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
-  
-  #global bindings for data.table non-standard evaluation
+
+  # global bindings for data.table non-standard evaluation
   . <- value <- NULL
-  
+
   probs <- sort(probs)
 
   # ensure numeric columns are after categorical
@@ -41,7 +41,8 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 
   # calculate median and CI
   if (!is.null(probs)) {
-    quantiles <- .data_long[, {
+    quantiles <- .data_long[,
+      {
         quantiles <- stats::quantile(value,
           probs,
           na.rm = TRUE,
@@ -52,7 +53,8 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
           lower  = quantiles[1],
           median = quantiles[2],
           upper  = quantiles[3]
-        )},
+        )
+      },
       keyby = c(names(.data)[id_cols]),
     ]
 

@@ -10,7 +10,7 @@
 #'
 #' @param survey_circumcision Information on male circumcision status from
 #' surveys.
-#' @param population_data Single age male population counts by space and time. 
+#' @param population_data Single age male population counts by space and time.
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. Defaults to the
 #' maximum area level found in `areas` if not supplied.
@@ -36,7 +36,7 @@
 #' @importFrom rlang .data
 #' @importFrom dplyr %>%
 create_shell_dataset <- function(survey_circumcision,
-                                 population_data, 
+                                 population_data,
                                  areas,
                                  area_lev = NULL,
                                  time1 = "time1",
@@ -89,15 +89,16 @@ create_shell_dataset <- function(survey_circumcision,
     ) %>%
     ## Sorting dataset
     dplyr::arrange(.data$space, .data$age, .data$time) %>%
-    ## Adding population data on to merge 
+    ## Adding population data on to merge
     dplyr::left_join(
       population_data %>%
         dplyr::select(
-          .data$area_id, .data$year, circ_age = .data$age, .data$population
+          .data$area_id, .data$year,
+          circ_age = .data$age, .data$population
         ),
       by = c("area_id", "circ_age", "year")
     )
-  
+
   ## Obtain N person years
   out_int_mat <- threemc::create_integration_matrix_agetime(
     dat = survey_circumcision,
@@ -127,11 +128,11 @@ create_shell_dataset <- function(survey_circumcision,
     empirical_circ_cols <- empirical_circ_cols[-3]
     subsets <- subsets[-3]
   }
-  
+
   agetime_hazard_matrices <- lapply(subsets, function(x) {
     threemc::create_hazard_matrix_agetime(
       dat = survey_circumcision,
-      areas = areas, 
+      areas = areas,
       area_lev = area_lev,
       subset = x,
       time1 = time1,

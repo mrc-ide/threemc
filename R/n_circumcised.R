@@ -3,10 +3,10 @@
 #' @param results Results with samples for number of circumcisions performed
 #' in each region.
 #' @importFrom dplyr %>%
-#'@importFrom rlang .data
+#' @importFrom rlang .data
 #' @export
 n_circumcised <- function(results) {
-  
+
   # Getting number of circumcised men
   n_circ <- split(results, results$type)
 

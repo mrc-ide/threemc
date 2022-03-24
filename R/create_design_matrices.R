@@ -21,18 +21,17 @@
 #' @importFrom dplyr %>%
 #' @export
 
-create_design_matrices <- function(dat,  area_lev = NULL, k_dt = 5) {
-  
+create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
   if (is.null(area_lev)) {
     message(
       "area_lev arg missing, taken as maximum area level in shell dataset"
     )
     area_lev <- max(dat$area_level, na.rm = TRUE)
   }
-  
+
   # Only doing the matrices on the specified aggregation
   dat <- create_shell_dataset_area(dat, area_lev)
-  
+
   ## Spline definitions
   k_age <-
     k_dt * (floor(min(dat$age) / k_dt) - 3):(ceiling(max(dat$age) / k_dt) + 3)

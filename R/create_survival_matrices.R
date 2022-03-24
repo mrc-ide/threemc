@@ -33,7 +33,7 @@ create_survival_matrices <- function(out,
                                      time2 = "time2",
                                      age = "age",
                                      strat = "space",
-                                     aggregated = TRUE, 
+                                     aggregated = TRUE,
                                      ...) {
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
@@ -64,7 +64,7 @@ create_survival_matrices <- function(out,
       age   = age,
       circ  = x,
       Ntime = length(unique(out$time)),
-      aggregated = TRUE, 
+      aggregated = TRUE,
       ...
     )
   })
