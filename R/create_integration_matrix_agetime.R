@@ -1,30 +1,30 @@
-#" @title Create Matrix to Estimate Cumulative Hazard Rate
-#"
-#" @description Create a matrix to estimate the cumulative hazard rate needed
-#" for survival analysis by age and time. The option to include an additional
-#" stratification variable is also available, creating a 3D hazard function.
-#"
-#" @param dat Dataset used for modelling.
-#" @param subset Subset for dataset, Default: NULL
-#" @param time1 Variable name for time of birth, Default: "time1"
-#" @param time2 Variable name for time circumcised or censored, Default: "time2"
-#" @param timecaps Window to fix temporal dimension before and after,
-#" Default: c(1, Inf)
-#" @param Ntime Number of time points (if NULL, function will calculate),
-#" Default: NULL
-#" @param age - Variable with age circumcised or censored, Default: "age"
-#" @param Nage Number of age groups (if NULL, function will calculate),
-#" Default: NULL
-#" @param strat Variable to stratify by in using a 3D hazard function,
-#" Default: NULL
-#" @param Nstrat Number of stratification groups (if NULL, function will
-#" calculate), Default: NULL
+#' @title Create Matrix to Estimate Cumulative Hazard Rate
+#'
+#' @description Create a matrix to estimate the cumulative hazard rate needed
+#' for survival analysis by age and time. The option to include an additional
+#' stratification variable is also available, creating a 3D hazard function.
+#'
+#' @param dat Dataset used for modelling.
+#' @param subset Subset for dataset, Default: NULL
+#' @param time1 Variable name for time of birth, Default: "time1"
+#' @param time2 Variable name for time circumcised or censored, Default: "time2"
+#' @param timecaps Window to fix temporal dimension before and after,
+#' Default: c(1, Inf)
+#' @param Ntime Number of time points (if NULL, function will calculate),
+#' Default: NULL
+#' @param age - Variable with age circumcised or censored, Default: "age"
+#' @param Nage Number of age groups (if NULL, function will calculate),
+#' Default: NULL
+#' @param strat Variable to stratify by in using a 3D hazard function,
+#' Default: NULL
+#' @param Nstrat Number of stratification groups (if NULL, function will
+#' calculate), Default: NULL
 #
-#" @return Matrix for selecting instantaneous hazard rate.
-#" @seealso
-#"   \code{\link[Matrix]{sparseMatrix}}
-#" @rdname create_integration_matrix_agetime
-#" @export
+#' @return Matrix for selecting instantaneous hazard rate.
+#' @seealso
+#'   \code{\link[Matrix]{sparseMatrix}}
+#' @rdname create_integration_matrix_agetime
+#' @export
 create_integration_matrix_agetime <- function(dat,
                                               subset = NULL,
                                               time1 = "time1",
