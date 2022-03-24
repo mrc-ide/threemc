@@ -8,7 +8,6 @@
 #' @return Survey data, with age data reformatted, at highest/most granular
 #' area level.
 #' @importFrom dplyr %>%
-#' @importFrom data.table %like%
 #'@importFrom rlang .data
 #' @export
 #
@@ -78,7 +77,7 @@ prepare_survey_aggregation <- function(areas_wide,
   # add area id's:
   # find last area column (i.e. highest area level present)
   last_area_id <- dplyr::last(
-    names(areas_wide)[names(areas_wide) %like% "area_id" &
+    names(areas_wide)[grepl("area_id", names(areas_wide)) &
       nchar(names(areas_wide)) > 7]
   )
 

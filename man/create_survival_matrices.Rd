@@ -39,6 +39,8 @@ Default: "time2"}
 \item{strat}{Variable to stratify by in using a 3D hazard function,
 Default: "space"}
 
+\item{aggregated}{??}
+
 \item{...}{Further arguments passed to or from other methods.}
 }
 \value{

@@ -11,8 +11,6 @@ create_shell_dataset_area(dat, area_lev)
 
 \item{area_lev}{PSNU area level for specific country. Defaults to the
 Defaults to the maximum area level found in \code{dat} if not supplied.}
-
-\item{...}{Further arguments passed to or from other methods.}
 }
 \description{
 Subset the shell dataset to a specific area of interest and

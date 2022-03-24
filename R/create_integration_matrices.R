@@ -39,7 +39,7 @@ create_integration_matrices <- function(out,
     message(
       "area_lev arg missing, taken as maximum area level in shell dataset"
     )
-    area_lev <- max(dat$area_level, na.rm = TRUE)
+    area_lev <- max(out$area_level, na.rm = TRUE)
   }
   
   # Only doing the matrices on the specified aggregation

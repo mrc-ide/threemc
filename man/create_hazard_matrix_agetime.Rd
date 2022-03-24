@@ -6,6 +6,7 @@
 \usage{
 create_hazard_matrix_agetime(
   dat,
+  out,
   areas,
   area_lev,
   subset = NULL,
@@ -24,6 +25,11 @@ create_hazard_matrix_agetime(
 }
 \arguments{
 \item{dat}{Shell dataset (outputted by \link[threemc]{create_shell_dataset}
+with a row for every unique record in circumcision survey data for a given
+area. Also includes empirical estimates for circumcision estimates for each
+unique record.}
+
+\item{out}{Shell dataset (outputted by \link[threemc]{create_shell_dataset}
 with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.}
@@ -59,6 +65,11 @@ Default: NULL}
 calculate), Default: NULL}
 
 \item{circ}{Variables with circumcision matrix, Default: "circ"}
+
+\item{aggregated}{\code{agggregated = FALSE} treats every area_id as its own
+object, \code{aggregated = TRUE} means we only look at area level of interest.}
+
+\item{weight}{weight to apply for each ?}
 }
 \value{
 Matrix for selecting instantaneous hazard rate.

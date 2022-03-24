@@ -7,7 +7,8 @@
 #' @param dat Shell dataset used for modelling
 #' @param area_lev  PSNU area level for specific country. Defaults to the
 #' Defaults to the maximum area level found in `dat` if not supplied.
-#' @param ...  Further arguments passed to or from other methods.
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
 create_shell_dataset_area <- function(dat,  area_lev) {
   
   if (missing(area_lev)) {
@@ -19,9 +20,9 @@ create_shell_dataset_area <- function(dat,  area_lev) {
   
   # Only doing the matrices on the specified aggregation
   dat <- dat %>%
-    dplyr::filter(area_level == area_lev) %>%
+    dplyr::filter(.data$area_level == area_lev) %>%
     # Resetting counter on space
-    dplyr::mutate(space = space - min(space) + 1)
+    dplyr::mutate(space = .data$space - min(.data$space) + 1)
   
   ## Returning matrix
   return(dat)

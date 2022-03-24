@@ -16,6 +16,7 @@
 #' @param age - Variable with age circumcised or censored. Default: "age"
 #' @param strat Variable to stratify by in using a 3D hazard function,
 #' Default: "space"
+#' @param aggregated ??
 #' @param  ... Further arguments passed to or from other methods.
 #' @return `list` of length 4 of survival matrices for selecting
 #' instantaneous hazard rate.

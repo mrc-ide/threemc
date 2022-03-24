@@ -18,10 +18,10 @@
 #'  \code{\link[methods]{as}}
 #'  \code{\link[Matrix]{sparse.model.matrix}}
 #' @rdname create_design_matrices
+#' @importFrom dplyr %>%
 #' @export
 
 create_design_matrices <- function(dat,  area_lev, k_dt = 5) {
-  
   
   if (missing(area_lev)) {
     message(

@@ -6,7 +6,6 @@
 #' @param probs Percentiles to provide quantiles at. Set to NULL to skip
 #' computing quantiles.
 #' @importFrom dplyr %>%
-#' @importFrom data.table %like%
 #' @export
 posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
   
@@ -23,7 +22,7 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
     )
 
   # pull locations of columns to "group by"
-  id_cols <- seq_along(names(.data)[!names(.data) %like% "samp"])
+  id_cols <- seq_along(names(.data)[!grepl("samp", names(.data))])
 
   # use data.table as this can be quite slow for larger countries
   if (!inherits(.data, "data.table")) .data <- data.table::setDT(.data)

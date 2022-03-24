@@ -8,6 +8,10 @@
 #' with a row for every unique record in circumcision survey data for a given
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
+#' @param out Shell dataset (outputted by \link[threemc]{create_shell_dataset}
+#' with a row for every unique record in circumcision survey data for a given
+#' area. Also includes empirical estimates for circumcision estimates for each
+#' unique record.
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. 
 #' @param subset Subset for dataset, Default: NULL
@@ -26,13 +30,20 @@
 #' @param Nstrat Number of stratification groups (if NULL, function will
 #' calculate), Default: NULL
 #' @param circ Variables with circumcision matrix, Default: "circ"
+#' @param aggregated `agggregated = FALSE` treats every area_id as its own 
+#' object, `aggregated = TRUE` means we only look at area level of interest.
+#' @param weight weight to apply for each ?
+
 #' @return Matrix for selecting instantaneous hazard rate.
 #'
 #' @seealso
 #'  \code{\link[threemc]{create_shell_dataset}}
 #' @rdname create_hazard_matrix_agetime
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @export
 create_hazard_matrix_agetime <- function(dat,
+                                         out, 
                                          areas, 
                                          area_lev, 
                                          subset = NULL,
@@ -87,27 +98,29 @@ create_hazard_matrix_agetime <- function(dat,
     
     # Getting aggregation structure
     areas_agg <- create_aggregate_structure(areas    = areas,
-                                            area_lev = 5)
+                                            area_lev = area_lev)
     
     # Merging on number of times to 
     # replicate to the main dataset
     dat <- dat %>%
-      left_join(areas_agg$areas_agg2,
-                by = "area_id")
+      dplyr::left_join(
+        areas_agg$areas_agg2,
+        by = "area_id"
+      )
     
     # Minimum space ID within the reference level
-    min_ref_space <- min(out %>%
-                           dplyr::filter(area_level == area_lev) %>%
-                           dplyr::pull(space))
+    min_ref_space <- min(dat %>%
+                           dplyr::filter(.data$area_level == area_lev) %>%
+                           dplyr::pull(.data$space))
     
     # Minimum space ID within the reference level
     Nstrat <- out %>%
-      dplyr::filter(area_level == area_lev) %>%
-      dplyr::pull(space) %>%
-      unique() %>%
+      dplyr::filter(.data$area_level == area_lev) %>%
+      dplyr::distinct(.data$space) %>% 
+      dplyr::pull() %>% 
       length()
     
-    # Only keeping stratums where we have data
+    # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = "")))) %>%
       dplyr::mutate(row = 1:dplyr::n())
     
@@ -132,14 +145,14 @@ create_hazard_matrix_agetime <- function(dat,
       return(tmp)
     })
     
-    # Extracting entries for sparseMatrix
+    # Extracting entries for sparse matrix
     cols <- as.numeric(unlist(lapply(entries, "[", "cols")))
     rows <- as.numeric(unlist(lapply(entries, "[", "rows")))
     vals <- as.numeric(unlist(lapply(entries, "[", "vals")))
   }
   # Else the selection matrices will be taken from the aggregation they are on
   else {
-    # Only keeping stratums where we have data 
+    # Only keeping strata where we have data 
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))
     
     ## Column entries for hazard matrix
