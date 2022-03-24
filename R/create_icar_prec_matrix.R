@@ -41,6 +41,6 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
     A   = matrix(1, 1, nrow(Q_space)),
     eps = 0
   )
-  ## Change to same class as outputed by INLA::inla.scale.model
+  ## Change to same class as outputted by INLA::inla.scale.model
   Q_space <- methods::as(Q_space, "dgTMatrix")
 }
