@@ -6,6 +6,8 @@
 \usage{
 create_hazard_matrix_agetime(
   dat,
+  areas,
+  area_lev,
   subset = NULL,
   time1 = "time1",
   time2 = "time2",
@@ -15,7 +17,9 @@ create_hazard_matrix_agetime(
   Nage = NULL,
   strat = NULL,
   Nstrat = NULL,
-  circ = "circ"
+  circ = "circ",
+  aggregated = FALSE,
+  weight = NULL
 )
 }
 \arguments{
@@ -23,6 +27,10 @@ create_hazard_matrix_agetime(
 with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.}
+
+\item{areas}{\code{sf} shapefiles for specific country/region.}
+
+\item{area_lev}{PSNU area level for specific country.}
 
 \item{subset}{Subset for dataset, Default: NULL}
 
