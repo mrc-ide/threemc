@@ -8,10 +8,6 @@
 #' with a row for every unique record in circumcision survey data for a given
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
-#' @param out Shell dataset (outputted by \link[threemc]{create_shell_dataset}
-#' with a row for every unique record in circumcision survey data for a given
-#' area. Also includes empirical estimates for circumcision estimates for each
-#' unique record.
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. 
 #' @param subset Subset for dataset, Default: NULL
@@ -43,7 +39,6 @@
 #' @importFrom rlang .data
 #' @export
 create_hazard_matrix_agetime <- function(dat,
-                                         out, 
                                          areas, 
                                          area_lev, 
                                          subset = NULL,
@@ -59,7 +54,7 @@ create_hazard_matrix_agetime <- function(dat,
                                          aggregated = FALSE,
                                          weight = NULL) {
   
-  ## Integration matrix for cumulative hazard
+  # Integration matrix for cumulative hazard
   dat$time1_cap <- pmin(
     timecaps[2] - timecaps[1] + 1,
     pmax(1, as.numeric(dat[[time1]]) - timecaps[1] + 1)
@@ -104,7 +99,7 @@ create_hazard_matrix_agetime <- function(dat,
     # replicate to the main dataset
     dat <- dat %>%
       dplyr::left_join(
-        areas_agg$areas_agg2,
+        areas_agg$n_sub_region_df,
         by = "area_id"
       )
     
@@ -114,7 +109,7 @@ create_hazard_matrix_agetime <- function(dat,
                            dplyr::pull(.data$space))
     
     # Minimum space ID within the reference level
-    Nstrat <- out %>%
+    Nstrat <- dat %>%
       dplyr::filter(.data$area_level == area_lev) %>%
       dplyr::distinct(.data$space) %>% 
       dplyr::pull() %>% 
@@ -128,7 +123,7 @@ create_hazard_matrix_agetime <- function(dat,
     entries <- apply(dat2, 1, function(x) {
       # Getting areas in reference administrative 
       # boundaries to aggregate over
-      tmp_space <- areas_agg$areas_agg1[[as.numeric(x[strat])]]
+      tmp_space <- areas_agg$sub_region_list[[as.numeric(x[strat])]]
       # Getting columns with non-zero entries for sparse matrix
       cols <- Ntime * Nage * (tmp_space - min_ref_space) +
         Ntime * (as.numeric(x[age]) - 1) +

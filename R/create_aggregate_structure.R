@@ -5,33 +5,42 @@
 #'
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. 
-#'
+#' @returns A list of length 2 containing:
+#' \itemize{
+#'  \item{"sub_region_list"}{A list of the specific sub-regions contained 
+#'  within each space (i.e. for each area_id) (including itself)}
+#'  \item{"n_links_df"}{A dataframe with 2 columns, area_id and ndep, detailing
+#'  the number of sub-regions contained within each area_id (also including 
+#'  itself)}
+#' }
 #' @rdname create_aggregate_structure
 #' @export
 create_aggregate_structure <- function(areas,
                                        area_lev) {
-  # Long to wide hierarchy
-  # Need this for the new aggregation matrices
-  areas_wide <- areas %>%
-    dplyr::filter(.data$area_level <= area_lev) %>%
-    sf::st_drop_geometry() %>%
-    spread_areas() 
-  # Empty lists and data frame to store structure
-  areas_agg1 <- list()
-  areas_agg2 <- data.frame(
-    area_id = subset(areas, area_level <= area_lev)$area_id, ndep = NA
-  )
-  # Loop for each area_id in the reference level
-  for (i in seq_len((subset(areas, area_level == area_lev)$space))) {
+  # drop geometry and filter to specified area level
+  areas <- sf::st_drop_geometry(areas) %>% 
+    dplyr::filter(.data$area_level <= area_lev)
+  
+  # Long to wide hierarchy (Need for new aggregation matrices)
+  areas_wide <- spread_areas(areas)
+    
+  # iterate over all area_ids at specific area_lev (i.e. spaces)
+  max_space <- areas %>% 
+    dplyr::filter(.data$area_level == area_lev) %>% 
+    dplyr::summarise(max(.data$space)) %>% 
+    dplyr::pull()
+  area_id_seq <- seq(1, max_space, 1)
+  sub_region_list <- lapply(area_id_seq, function(i) {
     # Getting areas lower in the hierarchy
-    test <- areas_wide %>%
-      dplyr::filter(dplyr::if_any(dplyr::starts_with("space"), ~. == i)) %>%
+    areas_wide %>%
+      dplyr::filter(dplyr::if_any(dplyr::starts_with("space"), ~ . == i)) %>% 
       dplyr::pull(paste0("space", area_lev))
-    # Adding list 
-    areas_agg1 <- c(areas_agg1, list(test))
-    areas_agg2$ndep[i] <- length(test)
-  }
+  })
+  
+  n_sub_region_df <- areas %>% 
+    dplyr::distinct(.data$area_id) %>% 
+    dplyr::mutate(sp_dep = sapply(sub_region_list, length))
+  
   # Returning list 
-  return(list(areas_agg1 = areas_agg1, 
-              areas_agg2 = areas_agg2))
+  list(sub_region_list = sub_region_list, n_sub_region_df = n_sub_region_df)
 }
