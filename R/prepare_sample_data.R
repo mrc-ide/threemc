@@ -49,7 +49,7 @@ prepare_sample_data <- function(N = 100,
     if (type == "probability") {
       mmc <- "haz_mmc" # medical circumcision
       tmc <- "haz_tmc" # traditional circumcision
-      mc <- ifelse("haz" %in% names(fit$sample), "haz", "haz_mc") # all male circ
+      mc <- ifelse("haz" %in% names(fit$sample), "haz", "haz_mc") # all circ
     } else if (type == "incidence") {
       mmc <- "inc_mmc"
       tmc <- "inc_tmc"
