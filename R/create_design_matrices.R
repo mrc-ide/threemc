@@ -21,9 +21,9 @@
 #' @importFrom dplyr %>%
 #' @export
 
-create_design_matrices <- function(dat,  area_lev, k_dt = 5) {
+create_design_matrices <- function(dat,  area_lev = NULL, k_dt = 5) {
   
-  if (missing(area_lev)) {
+  if (is.null(area_lev)) {
     message(
       "area_lev arg missing, taken as maximum area level in shell dataset"
     )

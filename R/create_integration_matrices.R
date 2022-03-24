@@ -29,13 +29,13 @@
 #' @rdname create_integration_matrices
 #' @export
 create_integration_matrices <- function(out,
-                                        area_lev, 
+                                        area_lev = NULL, 
                                         time1 = "time1",
                                         time2 = "time2",
                                         age = "age",
                                         strat = "space",
                                         ...) {
-  if (missing(area_lev)) {
+  if (is.null(area_lev)) {
     message(
       "area_lev arg missing, taken as maximum area level in shell dataset"
     )

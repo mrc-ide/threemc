@@ -38,7 +38,7 @@
 create_shell_dataset <- function(survey_circumcision,
                                  population_data, 
                                  areas,
-                                 area_lev,
+                                 area_lev = NULL,
                                  time1 = "time1",
                                  time2 = "time2",
                                  strat = "space",
@@ -58,7 +58,7 @@ create_shell_dataset <- function(survey_circumcision,
   ##        outputs for, rather than the maximum observed age; but not 100%
   ##        sure.
 
-  if (missing(area_lev)) {
+  if (is.null(area_lev)) {
     message("area_lev arg missing, taken as maximum area level in areas")
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }

@@ -9,9 +9,9 @@
 #' Defaults to the maximum area level found in `dat` if not supplied.
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
-create_shell_dataset_area <- function(dat,  area_lev) {
+create_shell_dataset_area <- function(dat, area_lev = NULL) {
   
-  if (missing(area_lev)) {
+  if (is.null(area_lev)) {
     message(
       "area_lev arg missing, taken as maximum area level in shell dataset"
     )
