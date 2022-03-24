@@ -6,13 +6,12 @@
 #' @param probs Percentiles to provide quantiles at. Set to NULL to skip
 #' computing quantiles.
 #' @importFrom dplyr %>%
-#' @importFrom data.table %like%
 #' @export
 posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
-  
-  #global bindings for data.table non-standard evaluation
+
+  # global bindings for data.table non-standard evaluation
   . <- value <- NULL
-  
+
   probs <- sort(probs)
 
   # ensure numeric columns are after categorical
@@ -23,7 +22,7 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
     )
 
   # pull locations of columns to "group by"
-  id_cols <- seq_along(names(.data)[!names(.data) %like% "samp"])
+  id_cols <- seq_along(names(.data)[!grepl("samp", names(.data))])
 
   # use data.table as this can be quite slow for larger countries
   if (!inherits(.data, "data.table")) .data <- data.table::setDT(.data)
@@ -42,7 +41,8 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 
   # calculate median and CI
   if (!is.null(probs)) {
-    quantiles <- .data_long[, {
+    quantiles <- .data_long[,
+      {
         quantiles <- stats::quantile(value,
           probs,
           na.rm = TRUE,
@@ -53,7 +53,8 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
           lower  = quantiles[1],
           median = quantiles[2],
           upper  = quantiles[3]
-        )},
+        )
+      },
       keyby = c(names(.data)[id_cols]),
     ]
 

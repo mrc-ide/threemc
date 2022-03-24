@@ -20,25 +20,26 @@
 #' @importFrom rlang .data
 #' @export
 aggregate_sample_age_group <- function(results_list,
-                                       aggr_cols = c("area_id", "area_name", 
-                                                     "year", "model", "type"),
+                                       aggr_cols = c(
+                                         "area_id", "area_name",
+                                         "year", "model", "type"
+                                       ),
                                        age_groups = c(
-                                         "0-4", "5-9", "10-14", "15-19", 
-                                         "20-24", "25-29", "30-34", "35-39", 
+                                         "0-4", "5-9", "10-14", "15-19",
+                                         "20-24", "25-29", "30-34", "35-39",
                                          "40-44", "45-49", "50-54", "54-59",
                                          "0+", "10+", "15+", "15-24", "10-24",
-                                         "15-29", "10-29", "15-39", 
+                                         "15-29", "10-29", "15-39",
                                          "10-39", "15-49", "10-49"
                                        ),
-                                       N = 100
-                                       ) {
+                                       N = 100) {
   if (inherits(results_list, "data.frame")) {
     stop("requires list from combine_areas (set argument join = FALSE)")
   }
 
-  #global bindings for data.table non-standard evaluation
+  # global bindings for data.table non-standard evaluation
   .SD <- NULL
-  
+
   # Multiplying by population to population weight
   results_list <- lapply(results_list, function(x) {
     x %>%

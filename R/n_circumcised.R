@@ -3,14 +3,15 @@
 #' @param results Results with samples for number of circumcisions performed
 #' in each region.
 #' @importFrom dplyr %>%
-#'@importFrom rlang .data
+#' @importFrom rlang .data
 #' @export
 n_circumcised <- function(results) {
+
   # Getting number of circumcised men
-  tmp <- split(results, results$type)
+  n_circ <- split(results, results$type)
 
   # get circumcised population by type
-  tmp <- lapply(tmp, function(x) {
+  n_circ_type <- lapply(n_circ, function(x) {
     x %>%
       dplyr::mutate(
         dplyr::across(dplyr::contains("samp_"), ~ . * population),
@@ -22,7 +23,7 @@ n_circumcised <- function(results) {
       )
   })
   # also calculate unmet need
-  tmp[[length(tmp) + 1]] <- results %>%
+  n_circ_type[[length(n_circ_type) + 1]] <- results %>%
     dplyr::filter(.data$type == "MC coverage") %>%
     dplyr::mutate(
       dplyr::across(dplyr::contains("samp_"), ~ population * (1 - .)),
@@ -30,5 +31,5 @@ n_circumcised <- function(results) {
     )
 
   # Append together
-  results_n <- as.data.frame(data.table::rbindlist(tmp, use.names = T))
+  results_n <- as.data.frame(data.table::rbindlist(n_circ_type, use.names = T))
 }

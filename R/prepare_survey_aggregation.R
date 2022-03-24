@@ -8,8 +8,7 @@
 #' @return Survey data, with age data reformatted, at highest/most granular
 #' area level.
 #' @importFrom dplyr %>%
-#' @importFrom data.table %like%
-#'@importFrom rlang .data
+#' @importFrom rlang .data
 #' @export
 #
 prepare_survey_aggregation <- function(areas_wide,
@@ -26,9 +25,9 @@ prepare_survey_aggregation <- function(areas_wide,
       # Correct status for those who have information on
       # circumcision but are missing circumcision status
       circ_status = dplyr::case_when(
-        is.na(.data$circ_status) & !is.na(.data$circ_age)   ~ 1,
+        is.na(.data$circ_status) & !is.na(.data$circ_age) ~ 1,
         is.na(.data$circ_status) & !is.na(.data$circ_where) ~ 1,
-        TRUE                                                ~ .data$circ_status
+        TRUE ~ .data$circ_status
       )
     ) %>%
     # merging individual weights to:
@@ -38,7 +37,8 @@ prepare_survey_aggregation <- function(areas_wide,
         dplyr::select(
           dplyr::contains("id"), .data$sex, .data$age, .data$indweight
         )
-    )) %>%
+      )
+    ) %>%
     # Merging on cluster information to  the circumcision dataset
     .data$left_join(
       (survey_clusters %>%
@@ -62,14 +62,14 @@ prepare_survey_aggregation <- function(areas_wide,
       year = as.numeric(substr(.data$survey_id, 4, 7)),
       # setting survey types
       type = dplyr::case_when(
-        circ_who == "Healthcare worker"            ~ "MMC",
-        tolower(.data$circ_who) == "medical"       ~ "MMC",
-        tolower(.data$circ_where) == "medical"     ~ "MMC",
+        circ_who == "Healthcare worker" ~ "MMC",
+        tolower(.data$circ_who) == "medical" ~ "MMC",
+        tolower(.data$circ_where) == "medical" ~ "MMC",
         .data$circ_who == "Traditional practioner" ~ "TMC",
-        tolower(.data$circ_who) == "traditional"   ~ "TMC",
+        tolower(.data$circ_who) == "traditional" ~ "TMC",
         tolower(.data$circ_where) == "traditional" ~ "TMC",
-        .data$circ_status != 0                     ~ "Missing",
-        TRUE                                       ~ NA_character_
+        .data$circ_status != 0 ~ "Missing",
+        TRUE ~ NA_character_
       )
     ) %>%
     # Altering column names
@@ -78,7 +78,7 @@ prepare_survey_aggregation <- function(areas_wide,
   # add area id's:
   # find last area column (i.e. highest area level present)
   last_area_id <- dplyr::last(
-    names(areas_wide)[names(areas_wide) %like% "area_id" &
+    names(areas_wide)[grepl("area_id", names(areas_wide)) &
       nchar(names(areas_wide)) > 7]
   )
 

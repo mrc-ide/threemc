@@ -29,21 +29,23 @@
 #' @rdname create_integration_matrices
 #' @export
 create_integration_matrices <- function(out,
-                                        area_lev, 
+                                        area_lev = NULL,
                                         time1 = "time1",
                                         time2 = "time2",
                                         age = "age",
                                         strat = "space",
                                         ...) {
-  if (missing(area_lev)) {
-    message("area_lev arg missing, taken as maximum area level in shell dataset")
-    area_lev <- max(dat$area_level, na.rm = TRUE)
+  if (is.null(area_lev)) {
+    message(
+      "area_lev arg missing, taken as maximum area level in shell dataset"
+    )
+    area_lev <- max(out$area_level, na.rm = TRUE)
   }
-  
+
   # Only doing the matrices on the specified aggregation
   out <- create_shell_dataset_area(out, area_lev)
-  
-  # Preparing age and time variables 
+
+  # Preparing age and time variables
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
   out$age <- out$circ_age + 1

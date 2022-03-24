@@ -16,6 +16,7 @@
 #' @param age - Variable with age circumcised or censored. Default: "age"
 #' @param strat Variable to stratify by in using a 3D hazard function,
 #' Default: "space"
+#' @param aggregated ??
 #' @param  ... Further arguments passed to or from other methods.
 #' @return `list` of length 4 of survival matrices for selecting
 #' instantaneous hazard rate.
@@ -32,7 +33,7 @@ create_survival_matrices <- function(out,
                                      time2 = "time2",
                                      age = "age",
                                      strat = "space",
-                                     aggregated = TRUE, 
+                                     aggregated = TRUE,
                                      ...) {
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
@@ -63,7 +64,7 @@ create_survival_matrices <- function(out,
       age   = age,
       circ  = x,
       Ntime = length(unique(out$time)),
-      aggregated = TRUE, 
+      aggregated = TRUE,
       ...
     )
   })

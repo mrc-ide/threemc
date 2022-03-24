@@ -49,17 +49,17 @@ prepare_sample_data <- function(N = 100,
     if (type == "probability") {
       mmc <- "haz_mmc" # medical circumcision
       tmc <- "haz_tmc" # traditional circumcision
-      mc <- ifelse("haz" %in% names(tmp), "haz", "haz_mc") # all male circ
+      mc <- ifelse("haz" %in% names(fit$sample), "haz", "haz_mc") # all circ
     } else if (type == "incidence") {
       mmc <- "inc_mmc"
       tmc <- "inc_tmc"
       mmct <- "inc_mmct"
-      mc <- ifelse("inc" %in% names(tmp), "inc", "inc_mc")
+      mc <- ifelse("inc" %in% names(fit$sample), "inc", "inc_mc")
     } else if (type == "prevalence") {
       mmc <- "cum_inc_mmc"
       tmc <- "cum_inc_tmc"
       mmct <- "cum_inc_mmct"
-      mc <- ifelse("cum_inc" %in% names(tmp), "cum_inc", "cum_inc_mc")
+      mc <- ifelse("cum_inc" %in% names(fit$sample), "cum_inc", "cum_inc_mc")
     }
 
     # word to be pasted onto the end of circ type below
@@ -136,8 +136,8 @@ prepare_sample_data <- function(N = 100,
       dplyr::bind_rows() %>%
       # only keep relevant columns
       dplyr::select(
-        .data$area_id, .data$area_name, 
-        .data$year, .data$age, 
+        .data$area_id, .data$area_name,
+        .data$year, .data$age,
         .data$type, .data$model,
         dplyr::contains("samp_")
       ) %>%

@@ -10,7 +10,7 @@
 #'
 #' @param survey_circumcision Information on male circumcision status from
 #' surveys.
-#' @param population_data Single age male population counts by space and time. 
+#' @param population_data Single age male population counts by space and time.
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. Defaults to the
 #' maximum area level found in `areas` if not supplied.
@@ -36,9 +36,9 @@
 #' @importFrom rlang .data
 #' @importFrom dplyr %>%
 create_shell_dataset <- function(survey_circumcision,
-                                 population_data, 
+                                 population_data,
                                  areas,
-                                 area_lev,
+                                 area_lev = NULL,
                                  time1 = "time1",
                                  time2 = "time2",
                                  strat = "space",
@@ -58,7 +58,7 @@ create_shell_dataset <- function(survey_circumcision,
   ##        outputs for, rather than the maximum observed age; but not 100%
   ##        sure.
 
-  if (missing(area_lev)) {
+  if (is.null(area_lev)) {
     message("area_lev arg missing, taken as maximum area level in areas")
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }
@@ -72,7 +72,9 @@ create_shell_dataset <- function(survey_circumcision,
 
   areas_model <- areas_model %>%
     dplyr::filter(.data$area_level <= area_lev) %>%
-    dplyr::select(dplyr::any_of(c("area_id", "area_name", "area_level", "space")))
+    dplyr::select(
+      dplyr::any_of(c("area_id", "area_name", "area_level", "space"))
+    )
 
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
@@ -87,19 +89,23 @@ create_shell_dataset <- function(survey_circumcision,
     ) %>%
     ## Sorting dataset
     dplyr::arrange(.data$space, .data$age, .data$time) %>%
-    ## Adding population data on to merge 
+    ## Adding population data on to merge
     dplyr::left_join(
       population_data %>%
-        dplyr::select(c(area_id, year, circ_age = age, population)),
-      by = c('area_id', 'circ_age', 'year')
+        dplyr::select(
+          .data$area_id, .data$year,
+          circ_age = .data$age, .data$population
+        ),
+      by = c("area_id", "circ_age", "year")
     )
-  
+
   ## Obtain N person years
   out_int_mat <- threemc::create_integration_matrix_agetime(
     dat = survey_circumcision,
     time1 = time1,
     time2 = time2,
     strat = strat,
+    Nstrat = nrow(areas_model),
     age   = age,
     Ntime = length(unique(out$time)),
     ...
@@ -122,11 +128,11 @@ create_shell_dataset <- function(survey_circumcision,
     empirical_circ_cols <- empirical_circ_cols[-3]
     subsets <- subsets[-3]
   }
-  
+
   agetime_hazard_matrices <- lapply(subsets, function(x) {
     threemc::create_hazard_matrix_agetime(
       dat = survey_circumcision,
-      areas = areas, 
+      areas = areas,
       area_lev = area_lev,
       subset = x,
       time1 = time1,
@@ -135,6 +141,7 @@ create_shell_dataset <- function(survey_circumcision,
       age   = age,
       circ  = circ,
       Ntime = length(unique(out$time)),
+      Nstrat = nrow(areas_model),
       ...
     )
   })

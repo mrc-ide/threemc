@@ -6,6 +6,8 @@
 \usage{
 create_hazard_matrix_agetime(
   dat,
+  areas,
+  area_lev,
   subset = NULL,
   time1 = "time1",
   time2 = "time2",
@@ -15,7 +17,9 @@ create_hazard_matrix_agetime(
   Nage = NULL,
   strat = NULL,
   Nstrat = NULL,
-  circ = "circ"
+  circ = "circ",
+  aggregated = FALSE,
+  weight = NULL
 )
 }
 \arguments{
@@ -23,6 +27,10 @@ create_hazard_matrix_agetime(
 with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.}
+
+\item{areas}{\code{sf} shapefiles for specific country/region.}
+
+\item{area_lev}{PSNU area level for specific country.}
 
 \item{subset}{Subset for dataset, Default: NULL}
 
@@ -51,6 +59,11 @@ Default: NULL}
 calculate), Default: NULL}
 
 \item{circ}{Variables with circumcision matrix, Default: "circ"}
+
+\item{aggregated}{\code{agggregated = FALSE} treats every area_id as its own
+object, \code{aggregated = TRUE} means we only look at area level of interest.}
+
+\item{weight}{weight to apply for each ?}
 }
 \value{
 Matrix for selecting instantaneous hazard rate.
