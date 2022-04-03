@@ -70,7 +70,7 @@ create_shell_dataset <- function(survey_circumcision,
 
   areas_model <- areas_model %>%
     dplyr::filter(.data$area_level == area_lev) %>%
-    dplyr::select(dplyr::any_of(c("area_id", "area_name", "space")))
+    dplyr::select(.data$area_id, .data$area_name, .data$space)
 
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
