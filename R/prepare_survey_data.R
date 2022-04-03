@@ -135,7 +135,10 @@ prepare_survey_data <- function(areas,
   ## Setting desired level aggregation ----------------------------------------
 
   areas <- sf::st_drop_geometry(areas)
-  areas <- dplyr::select(areas, .data$area_id, .data$parent_area_id, .data$area_level, .data$space)
+  areas <- dplyr::select(areas, .data$area_id, .data$area_name,
+                         .data$parent_area_id, .data$area_level,
+                         .data$space)
+                          
   
   ## Getting the area level id to province
   for (i in seq_len(max(areas$area_level))) {
@@ -148,7 +151,7 @@ prepare_survey_data <- function(areas,
                                  as.character(.data$area_id),
                                  as.character(.data$parent_area_id))
       ) %>%
-      dplyr::select(-.data$parent_area_id, -.data$area_level, -.data$space)
+      dplyr::select(-.data$parent_area_id, -.data$area_name, -.data$area_level, -.data$space)
   }
 
   ## Final preparation of circumcision variables ------------------------------
