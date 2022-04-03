@@ -136,9 +136,7 @@ prepare_survey_data <- function(areas,
 
   areas <- sf::st_drop_geometry(areas)
   areas <- dplyr::select(areas, .data$area_id, .data$area_name,
-                         .data$parent_area_id, .data$area_level,
-                         .data$space)
-                          
+                         .data$parent_area_id, .data$area_level)
   
   ## Getting the area level id to province
   for (i in seq_len(max(areas$area_level))) {
@@ -151,7 +149,7 @@ prepare_survey_data <- function(areas,
                                  as.character(.data$area_id),
                                  as.character(.data$parent_area_id))
       ) %>%
-      dplyr::select(-.data$parent_area_id, -.data$area_name, -.data$area_level, -.data$space)
+      dplyr::select(-.data$parent_area_id, -.data$area_name, -.data$area_level)
   }
 
   ## Final preparation of circumcision variables ------------------------------
@@ -159,8 +157,10 @@ prepare_survey_data <- function(areas,
   ## Preparing circumcision variables for the model
   survey_circumcision <- survey_circumcision %>%
     ## Merging on the region index
-    dplyr::left_join(
-      dplyr::select(areas, .data$area_id, .data$area_name, .data$space),
+    ## Note: inner_join will remove observations that don't
+    ##       corresponding to a location in "areas"
+    dplyr::inner_join(
+      dplyr::select(areas, .data$area_id, .data$area_name),
       by = "area_id"
     ) %>% 
     dplyr::mutate(
@@ -232,10 +232,6 @@ prepare_survey_data <- function(areas,
         !(.data$circ_status == 1 & .data$type == "Missing")
       )
   }
-
-  # remove surveys that don't have corresponding shapefiles in "areas"
-  survey_circumcision <- survey_circumcision %>%
-    dplyr::filter(!is.na(.data$space))
 
   ## normalise survey weights and apply Kish coefficients, if desired
   if (norm_kisk_weights) {
