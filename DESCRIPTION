@@ -1,6 +1,6 @@
 Package: threemc
-Title: Multi-Level Modelling of Male Circumcision in Sub-Saharan Africa
-Version: 0.1.0
+Title: (Matt's) Multi-Level Model of Male Circumcision in Sub-Saharan Africa
+Version: 0.1.1
 Authors@R: c(person(family  = "Thomas", 
                     give    = "Matthew", 
                     role    = "aut",

@@ -52,26 +52,25 @@ prepare_survey_data <- function(areas,
     survey_clusters <- survey_clusters %>%
       dplyr::rename(area_id = .data$geoloc_area_id)
   }
-
-  ## Bringing datasets together
+  
+  ## Merging datasets
   survey_circumcision <- survey_circumcision %>%
     ## Merging on individual information to  the circumcision dataset
     dplyr::left_join(
-      (survey_individuals %>%
-        dplyr::select(
-          dplyr::contains("id"), dplyr::any_of(c("sex", "age", "indweight"))
-        )),
+      survey_individuals %>%
+        dplyr::select(.data$survey_id, .data$cluster_id, .data$individual_id,
+                      .data$sex, .data$age, .data$indweight),
       by = c("survey_id", "individual_id")
     ) %>%
     ## Merging on cluster information to the circumcision dataset
     dplyr::left_join(
-      (survey_clusters %>%
-        dplyr::select(dplyr::any_of(c("survey_id", "cluster_id")),
-          "area_id" = "area_id"
-        )),
+      survey_clusters %>%
+        dplyr::select(.data$survey_id, .data$cluster_id, .data$area_id),
       by = c("survey_id", "cluster_id")
-    ) %>%
-    ## Remove those with missing circumcison status
+    )
+  
+  ## Remove those with missing circumcison status
+  survey_circumcision <- survey_circumcision %>%
     dplyr::filter(
       !is.na(.data$circ_status),
       # !is.na(.data$age),
@@ -86,7 +85,7 @@ prepare_survey_data <- function(areas,
       ## Year of Birth (estimated as no DOB filly yet)
       yob = .data$year - .data$age,
       ## If circumcision age > age of the individual set, reset circumcision age
-      circ_age = ifelse(.data$circ_age > .data$age, NA, .data$circ_age)
+      circ_age = dplyr::if_else(.data$circ_age > .data$age, NA_real_, .data$circ_age)
     )
 
   ## Censoring if necessary ---------------------------------------------------
@@ -135,26 +134,21 @@ prepare_survey_data <- function(areas,
 
   ## Setting desired level aggregation ----------------------------------------
 
+  areas <- sf::st_drop_geometry(areas)
+  areas <- dplyr::select(areas, .data$area_id, .data$parent_area_id, .data$area_level, .data$space)
+  
   ## Getting the area level id to province
   for (i in seq_len(max(areas$area_level))) {
     survey_circumcision <- survey_circumcision %>%
       ## Merging on boundary information
-      dplyr::left_join(
-        (areas %>%
-          sf::st_drop_geometry() %>%
-          dplyr::select(
-            dplyr::contains("area_id"), dplyr::matches("area_level")
-          )),
-        by = "area_id"
-      ) %>%
+      dplyr::left_join(areas, by = "area_id") %>%
       ## Altering area
       dplyr::mutate(
-        area_id = ifelse(.data$area_level == area_lev,
-          as.character(.data$area_id),
-          as.character(.data$parent_area_id)
-        )
+        area_id = dplyr::if_else(.data$area_level == area_lev,
+                                 as.character(.data$area_id),
+                                 as.character(.data$parent_area_id))
       ) %>%
-      dplyr::select(-dplyr::any_of(c("parent_area_id", "area_level")))
+      dplyr::select(-.data$parent_area_id, -.data$area_level, -.data$space)
   }
 
   ## Final preparation of circumcision variables ------------------------------
@@ -163,11 +157,9 @@ prepare_survey_data <- function(areas,
   survey_circumcision <- survey_circumcision %>%
     ## Merging on the region index
     dplyr::left_join(
-      (areas %>%
-        sf::st_drop_geometry() %>%
-        dplyr::select(dplyr::any_of(c("area_id", "area_name", "space")))),
+      dplyr::select(areas, .data$area_id, .data$area_name, .data$space),
       by = "area_id"
-    ) %>%
+    ) %>% 
     dplyr::mutate(
       ## Time interval for the individual
       time1 = .data$yob - start_year + 1,
