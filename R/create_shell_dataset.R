@@ -95,8 +95,8 @@ create_shell_dataset <- function(survey_circumcision,
         dplyr::select(
           .data$area_id, .data$year,
           circ_age = .data$age, .data$population
-        ),
-      by = c("area_id", "circ_age", "year")
+        ) # ,
+      # by = c("area_id", "circ_age", "year")
     )
 
   ## Obtain N person years
