@@ -85,7 +85,7 @@ prepare_survey_data <- function(areas,
       ## Year of Birth (estimated as no DOB filly yet)
       yob = .data$year - .data$age,
       ## If circumcision age > age of the individual set, reset circumcision age
-      circ_age = dplyr::if_else(.data$circ_age > .data$age, NA_real_, .data$circ_age)
+      circ_age = ifelse(.data$circ_age > .data$age, NA_real_, .data$circ_age)
     )
 
   ## Censoring if necessary ---------------------------------------------------
@@ -145,7 +145,7 @@ prepare_survey_data <- function(areas,
       dplyr::left_join(areas, by = "area_id") %>%
       ## Altering area
       dplyr::mutate(
-        area_id = dplyr::if_else(.data$area_level == area_lev,
+        area_id = ifelse(.data$area_level == area_lev,
                                  as.character(.data$area_id),
                                  as.character(.data$parent_area_id))
       ) %>%
