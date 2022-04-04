@@ -72,9 +72,7 @@ create_shell_dataset <- function(survey_circumcision,
 
   areas_model <- areas_model %>%
     dplyr::filter(.data$area_level <= area_lev) %>%
-    dplyr::select(
-      dplyr::any_of(c("area_id", "area_name", "area_level", "space"))
-    )
+    dplyr::select(.data$area_id, .data$area_name, .data$area_level, .data$space)
 
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
@@ -99,6 +97,14 @@ create_shell_dataset <- function(survey_circumcision,
       # by = c("area_id", "circ_age", "year")
     )
 
+  ## Add `space` to survey_circumcision observations
+  survey_circumcision <- survey_circumcision %>%
+    dplyr::left_join(
+      dplyr::select(areas_model, .data$area_id, .data$space),
+      by = "area_id"
+    )
+  stopifnot(!is.na(survey_circumcision$space))
+  
   ## Obtain N person years
   out_int_mat <- threemc::create_integration_matrix_agetime(
     dat = survey_circumcision,
