@@ -29,11 +29,21 @@ Type objective_function<Type>::operator() ()
   /// Data definitions ///
   ////////////////////////
   // Survival analysis matrices
-  DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting instantaneous hazard for medically circumcised pop
-  DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
-  DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
-  DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
-  DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
+  DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting hazard for medically circumcised population
+  DATA_VECTOR(weights_mmc); // Survey weights to weight the tmc  hazard in the likelihood
+  
+  DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting hazard for traditionally circumcised population
+  DATA_VECTOR(weights_tmc); // Survey weights to weight the mmc hazard in the likelihood
+  
+  DATA_SPARSE_MATRIX(A_mc); // Matrix selecting hazard for unknown circumcised population
+  DATA_VECTOR(weights_mc); // Survey weights to weight the mc hazard in the likelihood
+  
+  DATA_SPARSE_MATRIX(A_lc); // Matrix selecting hazard for right censored pop (i.e. no mc)
+  DATA_VECTOR(weights_lc); // Survey weights to weight the right censoring hazard in the likelihood
+  
+  DATA_SPARSE_MATRIX(A_rc); // Matrix selecting hazard for left censored pop (i.e. mc at unknown age)
+  DATA_VECTOR(weights_rc); // Survey weights to weight the left censoring hazard in the likelihood
+  
   DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard 
   DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard 
   
@@ -251,19 +261,19 @@ Type objective_function<Type>::operator() ()
   /// Likelihood ///
   //////////////////
   // Getting likelihood for those medically circumcised
-  nll -= (A_mmc * log(inc_mmc)).sum();
+  nll -= (weights_mmc * log(A_mmc * inc_mmc)).sum();
   
   // Getting likelihood for those traditionally circumcised
-  nll -= (A_tmc * log(inc_tmc)).sum();
+  nll -= (weights_tmc * log(A_tmc * inc_tmc)).sum();
   
   // Getting likelihood for those circumcised of unknown type
-  nll -= (A_mc * log(inc)).sum();
+  nll -= (weights_mc * log(A_mc * inc)).sum();
   
   // Getting likelihood for those right censored
-  nll -= (B * log(surv)).sum();
+  nll -= (weights_rc * log(A_rc * surv)).sum();
   
   // Getting likelihood for those left censored
-  nll -= (C * log(leftcens)).sum();
+  nll -= (weights_lc * log(A_lc * leftcens)).sum();
   
   ///////////////////////////
   /// Reporting variables ///
