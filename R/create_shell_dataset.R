@@ -36,16 +36,16 @@
 #' @importFrom rlang .data
 #' @importFrom dplyr %>%
 create_shell_dataset <- function(survey_circumcision,
-                                 population_data,
-                                 areas,
-                                 area_lev = NULL,
-                                 time1 = "time1",
-                                 time2 = "time2",
-                                 strat = "space",
-                                 age = "age",
-                                 circ = "indweight_st",
-                                 ...) {
-
+                                  population_data,
+                                  areas,
+                                  area_lev = NULL,
+                                  time1 = "time1",
+                                  time2 = "time2",
+                                  strat = "space",
+                                  age = "age",
+                                  circ = "indweight_st",
+                                  ...) {
+  
   ## !! JE: the area_id field here used the area_id that appeared in the
   ##        circumcision dataset. If there were some area_id with no
   ##        observations, then they were dropped, which created a
@@ -57,28 +57,28 @@ create_shell_dataset <- function(survey_circumcision,
   ##        based on the theoretical maximum circumcision age that we want
   ##        outputs for, rather than the maximum observed age; but not 100%
   ##        sure.
-
+  
   if (is.null(area_lev)) {
     message("area_lev arg missing, taken as maximum area level in areas")
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }
-
+  
   ## remove spatial elements from areas, take only specified/highest area level
   if (inherits(areas, "sf")) {
     areas_model <- sf::st_drop_geometry(areas)
   } else {
     areas_model <- areas
   }
-
+  
   areas_model <- areas_model %>%
     dplyr::filter(.data$area_level <= area_lev) %>%
     dplyr::select(.data$area_id, .data$area_name, .data$area_level, .data$space)
-
+  
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
   out <- tidyr::crossing(areas_model,
-    "year" = seq(2006, 2021, by = 1),
-    "circ_age" = 0:max(survey_circumcision$circ_age, na.rm = TRUE)
+                         "year" = seq(2006, 2021, by = 1),
+                         "circ_age" = 0:max(survey_circumcision$circ_age, na.rm = TRUE)
   ) %>%
     ## Getting time and age variable
     dplyr::mutate(
@@ -93,10 +93,10 @@ create_shell_dataset <- function(survey_circumcision,
         dplyr::select(
           .data$area_id, .data$year,
           circ_age = .data$age, .data$population
-        ) # ,
-      # by = c("area_id", "circ_age", "year")
+        ),
+      by = c("area_id", "circ_age", "year")
     )
-
+  
   ## Add `space` to survey_circumcision observations
   survey_circumcision <- survey_circumcision %>%
     dplyr::left_join(
@@ -117,7 +117,7 @@ create_shell_dataset <- function(survey_circumcision,
     ...
   )
   out$N <- as.vector(survey_circumcision$indweight_st %*% out_int_mat)
-
+  
   ## calculate empirical agetime hazard matrices for different circumcision
   ## types, and take column sums (i.e. N empirical circs for each "type):
   empirical_circ_cols <- c("obs_mmc", "obs_tmc", "obs_mc", "cens", "icens")
@@ -128,15 +128,15 @@ create_shell_dataset <- function(survey_circumcision,
     "event == 0", # N censored (i.e. not circumcised)
     "event == 2" # N left-censored (circ at unknown age)
   )
-
+  
   # if there is no missing type, there is no need for MC:
   if (!any(survey_circumcision$type == "Missing")) {
     empirical_circ_cols <- empirical_circ_cols[-3]
     subsets <- subsets[-3]
   }
-
+  
   agetime_hazard_matrices <- lapply(subsets, function(x) {
-    threemc::create_hazard_matrix_agetime(
+    tmp <- threemc::create_hazard_matrix_agetime(
       dat = survey_circumcision,
       areas = areas,
       area_lev = area_lev,
@@ -150,9 +150,10 @@ create_shell_dataset <- function(survey_circumcision,
       Nstrat = nrow(areas_model),
       ...
     )
+    return(tmp$weights * tmp$A)
   })
   agetime_hazard_matrices <- lapply(agetime_hazard_matrices, Matrix::colSums)
-
+  
   ## add to out:
   out[, empirical_circ_cols] <- agetime_hazard_matrices
   return(out)
