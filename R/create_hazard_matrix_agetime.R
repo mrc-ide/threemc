@@ -53,35 +53,35 @@ create_hazard_matrix_agetime <- function(dat,
                                          circ = "circ",
                                          aggregated = FALSE,
                                          weight = NULL) {
-
+  
   # Integration matrix for cumulative hazard
   dat$time1_cap <- pmin(
     timecaps[2] - timecaps[1] + 1,
     pmax(1, as.numeric(dat[[time1]]) - timecaps[1] + 1)
   )
-
+  
   ## Integration matrix for cumulative hazard
   dat$time2_cap <- pmin(
     timecaps[2] - timecaps[1] + 1,
     pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1)
   )
-
+  
   ## If no stratification variable create a dummy variable
   if (is.null(strat)) {
     strat <- "strat"
     dat$strat <- 1
   }
-
+  
   ## Number of dimensions in the hazard function
   if (is.null(Ntime)) Ntime <- max(dat[, "time1_cap", drop = TRUE])
   if (is.null(Nage)) Nage <- max(dat[age])
   if (is.null(Nstrat)) Nstrat <- max(dat[strat])
-
+  
   ## Subsetting data if necessary
   if (!is.null(subset)) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
-
+  
   # If the selection matrices need to be taken from one reference aggregation
   # then we get a list of the hierarchical structure to that level
   if (aggregated == TRUE) {
@@ -90,13 +90,13 @@ create_hazard_matrix_agetime <- function(dat,
       weight <- "weight"
       dat$weight <- 1
     }
-
+    
     # Getting aggregation structure
     areas_agg <- create_aggregate_structure(
       areas = areas,
       area_lev = area_lev
     )
-
+    
     # Merging on number of times to
     # replicate to the main dataset
     dat <- dat %>%
@@ -104,23 +104,23 @@ create_hazard_matrix_agetime <- function(dat,
         areas_agg$n_sub_region_df,
         by = "area_id"
       )
-
+    
     # Minimum space ID within the reference level
     min_ref_space <- min(dat %>%
-      dplyr::filter(.data$area_level == area_lev) %>%
-      dplyr::pull(.data$space))
-
+                           dplyr::filter(.data$area_level == area_lev) %>%
+                           dplyr::pull(.data$space))
+    
     # Minimum space ID within the reference level
     Nstrat <- dat %>%
       dplyr::filter(.data$area_level == area_lev) %>%
       dplyr::distinct(.data$space) %>%
       dplyr::pull() %>%
       length()
-
+    
     # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = "")))) %>%
       dplyr::mutate(row = 1:dplyr::n())
-
+    
     # Aggregation for each row in the dataframe
     entries <- apply(dat2, 1, function(x) {
       # Getting areas in reference administrative
@@ -133,15 +133,13 @@ create_hazard_matrix_agetime <- function(dat,
       # Getting rows for sparse matrix
       rows <- rep(as.numeric(x["row"]), length(cols))
       # Getting weights
-      vals <-
-        as.numeric(x[circ]) *
-          dat[cols, weight, drop = TRUE] / sum(dat[cols, weight, drop = TRUE])
+      vals <- dat[cols, weight, drop = TRUE] / sum(dat[cols, weight, drop = TRUE])
       # Output dataset
       tmp <- data.frame(cols, rows, vals)
       # Return dataframe
       return(tmp)
     })
-
+    
     # Extracting entries for sparse matrix
     cols <- as.numeric(unlist(lapply(entries, "[", "cols")))
     rows <- as.numeric(unlist(lapply(entries, "[", "rows")))
@@ -151,16 +149,16 @@ create_hazard_matrix_agetime <- function(dat,
   else {
     # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))
-
+    
     ## Column entries for hazard matrix
     cols <- unlist(apply(dat2, 1, function(x) {
       Ntime * Nage * (as.numeric(x[strat]) - 1) + Ntime *
         (as.numeric(x[age]) - 1) + as.numeric(x["time2_cap"])
     }, simplify = FALSE))
     rows <- seq_len(nrow(dat2))
-    vals <- dat2[[circ]]
+    vals <- rep(1, length(cols))
   }
-
+  
   ## Outputting sparse hazard matrix which selects the
   ## corresponding incidence rates for the likelihood.
   A <- Matrix::sparseMatrix(
@@ -169,7 +167,12 @@ create_hazard_matrix_agetime <- function(dat,
     x = vals,
     dims = c(nrow(dat2), Ntime * Nage * Nstrat)
   )
-
+  
+  # Getting weights for pseudo-likelihood. Now separated 
+  # As aggragation needs to happen before logging and weighting
+  # in the likelihood. 
+  weights <- dat2[[circ]]
+  
   ## Returning matrix
-  return(A)
+  return(list(A=A, weights=weights))
 }
