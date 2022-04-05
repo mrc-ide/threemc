@@ -37,7 +37,7 @@ create_survival_matrices <- function(out,
                                      ...) {
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
-
+  
   ## calculate empirical agetime hazard matrices for different circ types
   circs <- c(
     "obs_mmc", # medical circumcision rate
@@ -46,7 +46,8 @@ create_survival_matrices <- function(out,
     "cens", # censored
     "icens" # left censored
   )
-  list_names <- c("A_mmc", "A_tmc", "A_mc", "B", "C")
+  # suffices for entries in the final list 
+  list_names <- c("_mmc", "_tmc", "_mc", "_rc", "_lc")
   # remove MC if modelling for missing type is undesirable
   if (!"obs_mc" %in% names(out)) {
     circs <- circs[-3]
@@ -68,7 +69,10 @@ create_survival_matrices <- function(out,
       ...
     )
   })
-  names(hazard_matrices) <- list_names
-
+  # Turning list of five lists into one list 
+  hazard_matrices <- rlang::flatten(hazard_matrices)
+  # Altering entry names
+  names(hazard_matrices) <- paste(names(hazard_matrices), rep(list_names, each = 2), sep = '')
+  # Retunring hazard matrices
   return(hazard_matrices)
 }
