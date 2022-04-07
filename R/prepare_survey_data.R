@@ -66,6 +66,7 @@ prepare_survey_data <- function(areas,
     ## Merging on cluster information to the circumcision dataset
     dplyr::left_join(
       (survey_clusters %>%
+        dplyr::mutate(area_id = as.character(.data$area_id)) %>% 
         dplyr::select(dplyr::any_of(c("survey_id", "cluster_id")),
           "area_id" = "area_id"
         )),
@@ -134,17 +135,22 @@ prepare_survey_data <- function(areas,
   }
 
   ## Setting desired level aggregation ----------------------------------------
-
+  
+  survey_circumcision <- survey_circumcision %>% 
+    dplyr::mutate(area_id = as.character(.data$area_id))
+  
+  areas_join <- sf::st_drop_geometry(areas) %>% 
+    dplyr::select(
+      dplyr::contains("area_id"), dplyr::matches("area_level")
+    ) %>% 
+    dplyr::mutate(area_id = as.character(.data$area_id))
+    
   ## Getting the area level id to province
   for (i in seq_len(max(areas$area_level))) {
     survey_circumcision <- survey_circumcision %>%
       ## Merging on boundary information
       dplyr::left_join(
-        (areas %>%
-          sf::st_drop_geometry() %>%
-          dplyr::select(
-            dplyr::contains("area_id"), dplyr::matches("area_level")
-          )),
+        areas_join,
         by = "area_id"
       ) %>%
       ## Altering area
