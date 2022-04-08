@@ -4,7 +4,7 @@
 \alias{create_design_matrices}
 \title{Create Design Matrices}
 \usage{
-create_design_matrices(dat, area_lev, k_dt = 5)
+create_design_matrices(dat, area_lev = NULL, k_dt = 5)
 }
 \arguments{
 \item{dat}{Shell dataset (datputted by \link[threemc]{create_shell_dataset}

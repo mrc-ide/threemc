@@ -6,7 +6,7 @@
 \usage{
 create_integration_matrices(
   out,
-  area_lev,
+  area_lev = NULL,
   time1 = "time1",
   time2 = "time2",
   age = "age",

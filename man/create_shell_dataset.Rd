@@ -8,7 +8,7 @@ create_shell_dataset(
   survey_circumcision,
   population_data,
   areas,
-  area_lev,
+  area_lev = NULL,
   time1 = "time1",
   time2 = "time2",
   strat = "space",
