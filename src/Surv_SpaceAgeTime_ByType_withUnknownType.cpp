@@ -1,4 +1,6 @@
 #include <TMB.hpp>
+#define TMB_LIB_INIT R_init_threemc
+
 /***************************************************/
 /* Function to inverse logit transform for vectors */
 /***************************************************/
