@@ -26,23 +26,34 @@ spread_areas <- function(areas,
       `:=`(!!paste0("area_name", min_level), .data$area_name),
       `:=`(!!paste0("space", min_level), .data$space)
     )
-
-  for (level in (min_level + 1):max_level) {
-    areas_wide <- areas_wide %>%
-      dplyr::left_join(
-        areas %>%
-          dplyr::filter(.data$area_level == level) %>%
-          dplyr::select(
-            `:=`(!!paste0("area_id", level), .data$area_id),
-            `:=`(!!paste0("area_name", level), .data$area_name),
-            .data$parent_area_id,
-            `:=`(!!paste0("space", level), .data$space),
-          ),
-        by = stats::setNames(
-          c("parent_area_id"), c(paste0("area_id", level - 1L))
-        )
-      )
+  
+  # create safe sequence from min_level + 1 to max_level to loop over
+  level_seq <- seq_len(max_level)
+  if (length(level_seq) == 0) {
+    level_seq <- 0
+  } else {
+    level_seq <- level_seq[level_seq >= (min_level + 1)]
   }
+  
+  if (all(level_seq != 0)) {
+    for (level in level_seq) {
+      areas_wide <- areas_wide %>%
+        dplyr::left_join(
+          areas %>%
+            dplyr::filter(.data$area_level == level) %>%
+            dplyr::select(
+              `:=`(!!paste0("area_id", level), .data$area_id),
+              `:=`(!!paste0("area_name", level), .data$area_name),
+              .data$parent_area_id,
+              `:=`(!!paste0("space", level), .data$space),
+            ),
+          by = stats::setNames(
+            c("parent_area_id"), c(paste0("area_id", level - 1L))
+          )
+        )
+    }
+  }
+  
   areas_wide$area_id <- areas_wide[[paste0("area_id", max_level)]]
   if (!is.null(boundaries)) {
     areas_wide <- sf::st_as_sf(
