@@ -41,8 +41,7 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 
   # calculate median and CI
   if (!is.null(probs)) {
-    quantiles <- .data_long[,
-      {
+    quantiles <- .data_long[, {
         quantiles <- stats::quantile(value,
           probs,
           na.rm = TRUE,
