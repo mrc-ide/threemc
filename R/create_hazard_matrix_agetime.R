@@ -146,9 +146,9 @@ create_hazard_matrix_agetime <- function(dat,
     cols <- as.numeric(unlist(lapply(entries, "[", "cols")))
     rows <- as.numeric(unlist(lapply(entries, "[", "rows")))
     vals <- as.numeric(unlist(lapply(entries, "[", "vals")))
-  }
+    
   # Else the selection matrices will be taken from the aggregation they are on
-  else {
+  } else {
     # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))
 
