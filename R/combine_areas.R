@@ -27,6 +27,7 @@ combine_areas <- function(.data,
 
   # all area levels in the data (0 indexed)
   area_levs <- seq_len(area_lev) - 1
+  if (length(area_levs) == 0) area_levs <- -1
 
   # columns to keep
   add_keep_cols <- c(add_keep_cols, names(.data)[names(.data) %like% "samp_"])
