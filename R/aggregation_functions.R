@@ -49,7 +49,7 @@ threemc_aggregate <- function(
     dplyr::select(
       dplyr::all_of(c("area_id", "area_name", "parent_area_id", "area_level"))
     ) %>%
-    naomi::spread_areas()
+    spread_areas()
   
   # Model with Probability of MC
   .data$model <- "No program data"
