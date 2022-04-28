@@ -17,6 +17,14 @@ aggregate_sample <- function(.data,
 
   # global bindings for data.table non-standard evaluation
   .SD <- NULL
+  
+  # convert .data from list to data.frame, if required
+  if (!inherits(.data, "data.frame")) {
+    .data <- as.data.frame(data.table::rbindlist(
+      .data,
+      use.names = T, ...
+    ))
+  }
 
   # ensure aggregation columns are in the data
   aggr_cols <- aggr_cols[aggr_cols %in% names(.data)]
