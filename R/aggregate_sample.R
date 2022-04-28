@@ -13,7 +13,7 @@ aggregate_sample <- function(.data,
                              aggr_cols = c(
                                "area_id", "area_name", "year",
                                "age", "age_group", "model", "type"
-                             )) {
+                             ), ...) {
 
   # global bindings for data.table non-standard evaluation
   .SD <- NULL
