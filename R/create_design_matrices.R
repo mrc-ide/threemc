@@ -47,8 +47,14 @@ create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
   X_age <- methods::as(X_age, "sparseMatrix")
 
   ## Design matrix for the spatial random effects
-  X_space <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(space), data = dat)
-
+  if (all(dat$space == 1)) {
+    # form <- stats::formula(N ~ -1)
+    form <- stats::formula(N ~ 1)
+  } else {
+    form <- stats::formula(N ~ -1 + as.factor(space))
+  }
+  X_space <- Matrix::sparse.model.matrix(form, data = dat)
+  
   ## Design matrix for the interaction random effects
   X_agetime <- mgcv::tensor.prod.model.matrix(list(X_time, X_age))
   X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))

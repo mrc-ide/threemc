@@ -22,7 +22,7 @@ create_aggregate_structure <- function(areas,
     dplyr::filter(.data$area_level <= area_lev)
 
   # Long to wide hierarchy (Need for new aggregation matrices)
-  areas_wide <- spread_areas(areas)
+  areas_wide <- threemc::spread_areas(areas)
 
   # iterate over all area_ids at specific area_lev (i.e. spaces)
   max_space <- areas %>%

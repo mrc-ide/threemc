@@ -34,7 +34,11 @@ aggregate_sample_age_group <- function(results_list,
                                        ),
                                        N = 100) {
   if (inherits(results_list, "data.frame")) {
-    stop("requires list from combine_areas (set argument join = FALSE)")
+    message(
+      paste0("requires list from combine_areas (set argument join = FALSE), ",
+            "coercing to list")
+    )
+    results_list <- list(results_list)
   }
 
   # global bindings for data.table non-standard evaluation
