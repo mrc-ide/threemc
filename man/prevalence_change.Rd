@@ -16,3 +16,4 @@ prevalence_change(results, spec_year)
 Function to calculate change in prevalence/coverage from a
 given year for all other years.
 }
+\keyword{internal}
