@@ -5,6 +5,7 @@
 #' un-aggregated samples.
 #' @param aggr_cols Columns to aggregate samples by, Default:
 #' c("area_id", "area_name", "year", "age", "age_group", "model", "type")
+#' @param ... Further arguments passed to \code{data.table::rbindlist}.
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
