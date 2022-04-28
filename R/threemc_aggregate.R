@@ -44,7 +44,9 @@ threemc_aggregate <- function(
   
   # wide formatted areas, for changing area levels later
   areas_wide <- areas %>%
-    dplyr::select(area_id, area_name, parent_area_id, area_level) %>%
+    dplyr::select(
+      dplyr::all_of(c("area_id", "area_name", "parent_area_id", "area_level"))
+    ) %>%
     naomi::spread_areas()
   
   # Model with Probability of MC
@@ -53,10 +55,10 @@ threemc_aggregate <- function(
   
   #### Load rates from survival model ####
   .data <- prepare_sample_data(N = N,
-                                 populations = populations,
-                                 no_prog_.data = .data,
-                                 no_prog_tmb_fit = fit_no_prog,
-                                 type = type)
+                               populations = populations,
+                               no_prog_results = .data,
+                               no_prog_tmb_fit = fit_no_prog,
+                               type = type)
   
   rm(fit, fit_no_prog, populations); gc()
   
