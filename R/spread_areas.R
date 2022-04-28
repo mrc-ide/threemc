@@ -3,13 +3,16 @@
 #' @param areas area hierarchy data.frame
 #' @param min_level integer specifying the minimum level wanted
 #' @param max_level integer specifying the maximum level wanted
+#' @param space whether to include "space" columns. Excluding these returns the 
+#' same object as \code{naomi::spread_areas}, Default: TRUE
 #'
 #' @export
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data :=
 spread_areas <- function(areas,
                          min_level = min(areas$area_level),
-                         max_level = max(areas$area_level)) {
+                         max_level = max(areas$area_level),
+                         space = TRUE) {
   if (inherits(areas, "sf")) {
     boundaries <- areas %>% dplyr::select(.data$area_id)
     areas <- sf::st_drop_geometry(areas)
@@ -60,5 +63,12 @@ spread_areas <- function(areas,
       dplyr::left_join(areas_wide, boundaries, by = "area_id")
     )
   }
+  
+  # removing "space" columns returns same object as naomi::spread_areas
+  if (space == FALSE) {
+    areas_wide <- areas_wide %>% 
+      select(-contains("space"))
+  }
+  
   return(areas_wide)
 }
