@@ -458,7 +458,7 @@ aggregate_sample_age_group <- function(results_list,
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @rdname prevalence_change 
-#' @rdname keywords internal
+#' @keywords internal
 prevalence_change <- function(results, spec_year) {
 
   # pull samples from coverage in chosen year
