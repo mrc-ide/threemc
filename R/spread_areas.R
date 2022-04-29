@@ -67,7 +67,7 @@ spread_areas <- function(areas,
   # removing "space" columns returns same object as naomi::spread_areas
   if (space == FALSE) {
     areas_wide <- areas_wide %>% 
-      select(-contains("space"))
+      dplyr::select(-dplyr::contains("space"))
   }
   
   return(areas_wide)
