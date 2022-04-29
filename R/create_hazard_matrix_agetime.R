@@ -27,9 +27,10 @@
 #' calculate), Default: NULL
 #' @param circ Variables with circumcision matrix, Default: "circ"
 #' @param aggregated `agggregated = FALSE` treats every area_id as its own
-#' object, `aggregated = TRUE` means we only look at area level of interest.
-#' @param weight weight to apply for each ?
-
+#' object, allowing for the use of surveys for lower area hierarchies. 
+#' `aggregated = TRUE` means we only look at area level of interest.
+#' @param weight variable to weigh circumcisions by when aggregating for 
+#' lower area hierarchies (only applicable for `aggregated = TRUE`) 
 #' @return Matrix for selecting instantaneous hazard rate.
 #'
 #' @seealso
