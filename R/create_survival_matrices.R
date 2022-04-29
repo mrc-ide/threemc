@@ -16,7 +16,11 @@
 #' @param age - Variable with age circumcised or censored. Default: "age"
 #' @param strat Variable to stratify by in using a 3D hazard function,
 #' Default: "space"
-#' @param aggregated ??
+#' @param aggregated `agggregated = FALSE` treats every area_id as its own
+#' object, allowing for the use of surveys for lower area hierarchies. 
+#' `aggregated = TRUE` means we only look at area level of interest.
+#' @param weight variable to weigh circumcisions by when aggregating for 
+#' lower area hierarchies (only applicable for `aggregated = TRUE`) 
 #' @param  ... Further arguments passed to or from other methods.
 #' @return `list` of length 4 of survival matrices for selecting
 #' instantaneous hazard rate.
@@ -34,6 +38,7 @@ create_survival_matrices <- function(out,
                                      age = "age",
                                      strat = "space",
                                      aggregated = TRUE,
+                                     weight = "population",
                                      ...) {
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
@@ -65,6 +70,7 @@ create_survival_matrices <- function(out,
       circ  = x,
       Ntime = length(unique(out$time)),
       aggregated = TRUE,
+      weight = weight,
       ...
     )
   })
