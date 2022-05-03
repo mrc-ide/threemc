@@ -7,7 +7,8 @@
 spread_areas(
   areas,
   min_level = min(areas$area_level),
-  max_level = max(areas$area_level)
+  max_level = max(areas$area_level),
+  space = TRUE
 )
 }
 \arguments{
@@ -16,6 +17,9 @@ spread_areas(
 \item{min_level}{integer specifying the minimum level wanted}
 
 \item{max_level}{integer specifying the maximum level wanted}
+
+\item{space}{whether to include "space" columns. Excluding these returns the
+same object as \code{naomi::spread_areas}, Default: TRUE}
 }
 \description{
 Spread area hierarchy to wide format

@@ -61,9 +61,11 @@ calculate), Default: NULL}
 \item{circ}{Variables with circumcision matrix, Default: "circ"}
 
 \item{aggregated}{\code{agggregated = FALSE} treats every area_id as its own
-object, \code{aggregated = TRUE} means we only look at area level of interest.}
+object, allowing for the use of surveys for lower area hierarchies.
+\code{aggregated = TRUE} means we only look at area level of interest.}
 
-\item{weight}{weight to apply for each ?}
+\item{weight}{variable to weigh circumcisions by when aggregating for
+lower area hierarchies (only applicable for \code{aggregated = TRUE})}
 }
 \value{
 Matrix for selecting instantaneous hazard rate.

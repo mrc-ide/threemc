@@ -13,6 +13,7 @@ create_survival_matrices(
   age = "age",
   strat = "space",
   aggregated = TRUE,
+  weight = "population",
   ...
 )
 }
@@ -39,7 +40,12 @@ Default: "time2"}
 \item{strat}{Variable to stratify by in using a 3D hazard function,
 Default: "space"}
 
-\item{aggregated}{??}
+\item{aggregated}{\code{agggregated = FALSE} treats every area_id as its own
+object, allowing for the use of surveys for lower area hierarchies.
+\code{aggregated = TRUE} means we only look at area level of interest.}
+
+\item{weight}{variable to weigh circumcisions by when aggregating for
+lower area hierarchies (only applicable for \code{aggregated = TRUE})}
 
 \item{...}{Further arguments passed to or from other methods.}
 }
