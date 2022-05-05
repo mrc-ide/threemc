@@ -18,13 +18,16 @@ instantaneous hazard rate, required for fitting TMB model."><!-- mathjax --><scr
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">threemc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
   <a href="../reference/index.html">Reference</a>
+</li>
+<li>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/mrc-ide/threemc/" class="external-link">
@@ -54,6 +57,7 @@ instantaneous hazard rate, required for fitting TMB model.</p>
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">create_integration_matrices</span><span class="op">(</span>
   <span class="va">out</span>,
+  area_lev <span class="op">=</span> <span class="cn">NULL</span>,
   time1 <span class="op">=</span> <span class="st">"time1"</span>,
   time2 <span class="op">=</span> <span class="st">"time2"</span>,
   age <span class="op">=</span> <span class="st">"age"</span>,
@@ -69,6 +73,9 @@ instantaneous hazard rate, required for fitting TMB model.</p>
 with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.</p></dd>
+<dt>area_lev</dt>
+<dd><p>PSNU area level for specific country. Defaults to the
+Defaults to the maximum area level found in <code>dat</code> if not supplied.</p></dd>
 <dt>time1</dt>
 <dd><p>Variable name for time of birth, Default: "time1"</p></dd>
 <dt>time2</dt>
@@ -107,7 +114,7 @@ instantaneous hazard rate.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer></div>
