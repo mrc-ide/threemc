@@ -6,10 +6,13 @@
 \usage{
 create_survival_matrices(
   out,
+  areas = areas,
+  area_lev = area_lev,
   time1 = "time1",
   time2 = "time2",
   age = "age",
   strat = "space",
+  aggregated = TRUE,
   ...
 )
 }
@@ -18,6 +21,11 @@ create_survival_matrices(
 with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.}
+
+\item{areas}{\code{sf} shapefiles for specific country/region.}
+
+\item{area_lev}{PSNU area level for specific country. Defaults to the
+maximum area level found in \code{areas} if not supplied.}
 
 \item{time1}{Variable name for time of birth, Default: "time1"}
 
@@ -30,6 +38,8 @@ Default: "time2"}
 
 \item{strat}{Variable to stratify by in using a 3D hazard function,
 Default: "space"}
+
+\item{aggregated}{??}
 
 \item{...}{Further arguments passed to or from other methods.}
 }

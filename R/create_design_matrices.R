@@ -2,10 +2,11 @@
 #' @description Create design matrices for fixed effects and temporal, age,
 #' spatial and random effects, for both medical and traditional circumcision.
 #'
-#' @param out Shell dataset (outputted by \link[threemc]{create_shell_dataset}
+#' @param dat Shell dataset (datputted by \link[threemc]{create_shell_dataset}
 #' with a row for every unique record in circumcision survey data for a given
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
+#' @param area_lev Desired admin boundary level to perform the analysis on.
 #' @param k_dt Age knot spacing in spline definitions, Default: 5
 #' @return List of design matrices for fixed and random effects for medical
 #' and traditional circumcision.
@@ -17,35 +18,51 @@
 #'  \code{\link[methods]{as}}
 #'  \code{\link[Matrix]{sparse.model.matrix}}
 #' @rdname create_design_matrices
+#' @importFrom dplyr %>%
 #' @export
 
-create_design_matrices <- function(out, k_dt = 5) {
+create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
+  if (is.null(area_lev)) {
+    message(
+      "area_lev arg missing, taken as maximum area level in shell dataset"
+    )
+    area_lev <- max(dat$area_level, na.rm = TRUE)
+  }
+
+  # Only doing the matrices on the specified aggregation
+  dat <- create_shell_dataset_area(dat, area_lev)
 
   ## Spline definitions
   k_age <-
-    k_dt * (floor(min(out$age) / k_dt) - 3):(ceiling(max(out$age) / k_dt) + 3)
+    k_dt * (floor(min(dat$age) / k_dt) - 3):(ceiling(max(dat$age) / k_dt) + 3)
 
   ## Design matrix for the fixed effects
-  X_fixed <- Matrix::sparse.model.matrix(N ~ 1, data = out)
+  X_fixed <- Matrix::sparse.model.matrix(N ~ 1, data = dat)
 
   ## Design matrix for the temporal random effects
-  X_time <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(time), data = out)
+  X_time <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(time), data = dat)
 
   ## Design matrix for the age random effects
-  X_age <- splines::splineDesign(k_age, out$age, outer.ok = TRUE)
+  X_age <- splines::splineDesign(k_age, dat$age, outer.ok = TRUE)
   X_age <- methods::as(X_age, "sparseMatrix")
 
   ## Design matrix for the spatial random effects
-  X_space <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(space), data = out)
-
+  if (all(dat$space == 1)) {
+    # form <- stats::formula(N ~ -1)
+    form <- stats::formula(N ~ 1)
+  } else {
+    form <- stats::formula(N ~ -1 + as.factor(space))
+  }
+  X_space <- Matrix::sparse.model.matrix(form, data = dat)
+  
   ## Design matrix for the interaction random effects
   X_agetime <- mgcv::tensor.prod.model.matrix(list(X_time, X_age))
   X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))
   X_spacetime <- Matrix::sparse.model.matrix(
-    N ~ -1 + factor((out %>%
+    N ~ -1 + factor((dat %>%
       group_by(space, time) %>%
       group_indices())),
-    data = out
+    data = dat
   )
   ## return design matrices as list
   output <- list(

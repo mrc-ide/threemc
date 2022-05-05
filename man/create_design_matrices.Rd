@@ -4,13 +4,15 @@
 \alias{create_design_matrices}
 \title{Create Design Matrices}
 \usage{
-create_design_matrices(out, k_dt = 5)
+create_design_matrices(dat, area_lev = NULL, k_dt = 5)
 }
 \arguments{
-\item{out}{Shell dataset (outputted by \link[threemc]{create_shell_dataset}
+\item{dat}{Shell dataset (datputted by \link[threemc]{create_shell_dataset}
 with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.}
+
+\item{area_lev}{Desired admin boundary level to perform the analysis on.}
 
 \item{k_dt}{Age knot spacing in spline definitions, Default: 5}
 }

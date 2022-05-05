@@ -7,12 +7,16 @@
 #' with a row for every unique record in circumcision survey data for a given
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
+#' @param areas `sf` shapefiles for specific country/region.
+#' @param area_lev  PSNU area level for specific country. Defaults to the
+#' maximum area level found in `areas` if not supplied.
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,
 #' Default: "time2"
 #' @param age - Variable with age circumcised or censored. Default: "age"
 #' @param strat Variable to stratify by in using a 3D hazard function,
 #' Default: "space"
+#' @param aggregated ??
 #' @param  ... Further arguments passed to or from other methods.
 #' @return `list` of length 4 of survival matrices for selecting
 #' instantaneous hazard rate.
@@ -23,10 +27,13 @@
 #' @rdname create_survival_matrices
 #' @export
 create_survival_matrices <- function(out,
+                                     areas = areas,
+                                     area_lev = area_lev,
                                      time1 = "time1",
                                      time2 = "time2",
                                      age = "age",
                                      strat = "space",
+                                     aggregated = TRUE,
                                      ...) {
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
@@ -49,12 +56,15 @@ create_survival_matrices <- function(out,
   hazard_matrices <- lapply(circs, function(x) {
     threemc::create_hazard_matrix_agetime(
       dat = out,
+      areas = areas,
+      area_lev = area_lev,
       time1 = time1,
       time2 = time2,
       strat = strat,
       age   = age,
       circ  = x,
       Ntime = length(unique(out$time)),
+      aggregated = TRUE,
       ...
     )
   })

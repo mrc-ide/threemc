@@ -33,13 +33,13 @@ aggregate_sample_survey <- function(survey_circumcision,
                                       "Traditional" = "TMC"
                                     ),
                                     age_groups = c(
-                                      "0-4", "5-9", "10-14", "15-19", "20-24", 
-                                      "25-29", "30-34", "35-39", "40-44", 
+                                      "0-4", "5-9", "10-14", "15-19", "20-24",
+                                      "25-29", "30-34", "35-39", "40-44",
                                       "45-49", "50-54", "54-59", "60-64", "65+",
-                                      "0+", "10+", "15+", "15-24", "15-29", 
-                                      "15-39", "15-49", "10-29", "10-39", 
-                                      "10-49", "10-24")
-                                   ) {
+                                      "0+", "10+", "15+", "15-24", "15-29",
+                                      "15-39", "15-49", "10-29", "10-39",
+                                      "10-49", "10-24"
+                                    )) {
 
   # survey years
   survey_years <- unique(survey_circumcision$year)
@@ -75,11 +75,11 @@ aggregate_sample_survey <- function(survey_circumcision,
           p_ind = .data$Y_ind / .data$N,
           p_obs = .data$Y_obs / .data$N,
           .groups = "drop"
-        ) %>% 
+        ) %>%
         # adding age group
         dplyr::mutate(age_group = age_groups[i])
     })
-    
+
     # append together results for each age group
     results_surv_type <- as.data.frame(
       data.table::rbindlist(results_surv_type, use.names = T)

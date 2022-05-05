@@ -6,8 +6,9 @@
 \usage{
 create_shell_dataset(
   survey_circumcision,
+  population_data,
   areas,
-  area_lev,
+  area_lev = NULL,
   time1 = "time1",
   time2 = "time2",
   strat = "space",
@@ -19,6 +20,8 @@ create_shell_dataset(
 \arguments{
 \item{survey_circumcision}{Information on male circumcision status from
 surveys.}
+
+\item{population_data}{Single age male population counts by space and time.}
 
 \item{areas}{\code{sf} shapefiles for specific country/region.}
 

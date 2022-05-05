@@ -4,10 +4,12 @@
 \alias{create_icar_prec_matrix}
 \title{Create Precision Matrix for ICAR Process}
 \usage{
-create_icar_prec_matrix(sf_obj = NULL, row.names = NULL)
+create_icar_prec_matrix(sf_obj = NULL, area_lev = NULL, row.names = NULL)
 }
 \arguments{
 \item{sf_obj}{Shapefiles needed for adjacency, Default: NULL}
+
+\item{area_lev}{PSNU area level for specific country.}
 
 \item{row.names}{Unique IDs for the areas, Default: NULL}
 }
