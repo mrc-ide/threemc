@@ -64,8 +64,9 @@ prepare_survey_data <- function(areas,
     ) %>%
     ## Merging on cluster information to the circumcision dataset
     dplyr::left_join(
-      survey_clusters %>%
-        dplyr::select(.data$survey_id, .data$cluster_id, .data$area_id),
+      (survey_clusters %>%
+        dplyr::mutate(area_id = as.character(.data$area_id)) %>% 
+        dplyr::select(.data$survey_id, .data$cluster_id, .data$area_id)),
       by = c("survey_id", "cluster_id")
     )
   
@@ -134,16 +135,28 @@ prepare_survey_data <- function(areas,
 
   ## Setting desired level aggregation ----------------------------------------
 
-  areas <- sf::st_drop_geometry(areas)
+  # if(inherits("sf", areas)) areas <- sf::st_drop_geometry(areas)
   areas <- dplyr::select(areas, .data$area_id, .data$area_name,
                          .data$parent_area_id, .data$area_level)
+    
+  survey_circumcision <- survey_circumcision %>% 
+    dplyr::mutate(area_id = as.character(.data$area_id))
   
-  ## Getting the area level id to province
+  areas_join <- sf::st_drop_geometry(areas) %>% 
+    dplyr::select(
+      dplyr::contains("area_id"), dplyr::matches("area_level")
+    ) %>% 
+    dplyr::mutate(area_id = as.character(.data$area_id))
+    
+  # Getting the area level id to province
   for (i in seq_len(max(areas$area_level))) {
     survey_circumcision <- survey_circumcision %>%
       ## Merging on boundary information
-      dplyr::left_join(areas, by = "area_id") %>%
-      ## Altering area
+      dplyr::left_join(
+        areas_join,
+        by = "area_id"
+      ) %>%
+      # Altering area
       dplyr::mutate(
         area_id = ifelse(.data$area_level == area_lev,
                                  as.character(.data$area_id),
@@ -154,31 +167,31 @@ prepare_survey_data <- function(areas,
 
   ## Final preparation of circumcision variables ------------------------------
 
-  ## Preparing circumcision variables for the model
+  # Preparing circumcision variables for the model
   survey_circumcision <- survey_circumcision %>%
-    ## Merging on the region index
-    ## Note: inner_join will remove observations that don't
-    ##       corresponding to a location in "areas"
+    # Merging on the region index
+    # Note: inner_join will remove observations that don't
+    #       corresponding to a location in "areas"
     dplyr::inner_join(
       dplyr::select(areas, .data$area_id, .data$area_name),
       by = "area_id"
     ) %>% 
     dplyr::mutate(
-      ## Time interval for the individual
+      # Time interval for the individual
       time1 = .data$yob - start_year + 1,
       time2 = .data$yoc - start_year + 1,
-      ## Event type
+      # Event type
       event = ifelse(.data$circ_status == 1 & !is.na(.data$circ_age), 1,
         ifelse((.data$circ_status == 1 & is.na(.data$circ_age)), 2, 0)
       ),
-      ## Circumcision age
+      # Circumcision age
       circ_age = .data$yoc - .data$yob,
       age = .data$circ_age + 1
     )
 
-  ## Adding circumcision type to dataset
+  # Adding circumcision type to dataset
   survey_circumcision <- survey_circumcision %>%
-    ## Type of circumcision
+    # Type of circumcision
     dplyr::mutate(
       circ_who = ifelse(.data$circ_who == "other",
         NA_character_,
@@ -196,7 +209,7 @@ prepare_survey_data <- function(areas,
       )
     )
 
-  ## Getting surveys without any type information
+  # Getting surveys without any type information
   if (rm_missing_type == TRUE) {
     tmp <- with(survey_circumcision, as.data.frame(table(survey_id, type))) %>%
       dplyr::group_by(.data$survey_id) %>%
@@ -204,7 +217,7 @@ prepare_survey_data <- function(areas,
       dplyr::mutate(Freq = .data$Freq / sum(.data$Freq)) %>%
       dplyr::filter(.data$type == "Missing", .data$Freq == 1)
 
-    ## return message detailing all surveys which are missing
+    # return message detailing all surveys which are missing
     n <- nrow(tmp)
     if (n > 0) {
       survey_id <- tmp$survey_id
@@ -225,7 +238,7 @@ prepare_survey_data <- function(areas,
         )
       }
     }
-    ## Removing surveys and individuals without any type information
+    # Removing surveys and individuals without any type information
     survey_circumcision <- survey_circumcision %>%
       dplyr::filter(
         !(.data$survey_id %in% !!tmp$survey_id),
@@ -233,7 +246,7 @@ prepare_survey_data <- function(areas,
       )
   }
 
-  ## normalise survey weights and apply Kish coefficients, if desired
+  # normalise survey weights and apply Kish coefficients, if desired
   if (norm_kisk_weights) {
     survey_circumcision <- threemc::normalise_weights_kish(
       survey_circumcision,
@@ -269,6 +282,6 @@ prepare_survey_data <- function(areas,
     }))
   }
 
-  ## Returning prepped circumcision datasets
+  # Returning prepped circumcision datasets
   return(survey_circumcision)
 }
