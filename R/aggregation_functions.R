@@ -24,12 +24,13 @@
 #' @importFrom rlang .data
 #' @rdname threemc_aggregate
 #' @export
-threemc_aggregate <- function( # datasets
-                              .data, fit, areas, populations, # datasets
-                              # options
-                              age_var = c("age", "age_group"),
-                              type = c("probability", "incidence", "prevalence"), area_lev, N = 100,
-                              prev_year = 2008) {
+threemc_aggregate <- function(
+  # datasets
+  .data, fit, areas, populations, # datasets
+  # options
+  age_var = c("age", "age_group"),
+  type = c("probability", "incidence", "prevalence"), area_lev, N = 100,
+  prev_year = 2008) {
 
   #### Preparing location/shapefile information ####
   if (inherits(areas, "sf")) {
@@ -566,8 +567,7 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 
   # calculate median and CI
   if (!is.null(probs)) {
-    quantiles <- .data_long[,
-      {
+    quantiles <- .data_long[, {
         quantiles <- stats::quantile(value,
           probs,
           na.rm = TRUE,
