@@ -128,7 +128,6 @@ create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
 
   ## Design matrix for the spatial random effects
   if (all(dat$space == 1)) {
-    # form <- stats::formula(N ~ -1)
     form <- stats::formula(N ~ 1)
   } else {
     form <- stats::formula(N ~ -1 + as.factor(space))
