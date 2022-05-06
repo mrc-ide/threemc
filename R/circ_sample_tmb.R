@@ -18,7 +18,7 @@
 #'  \code{\link[naomi]{sample_tmb}}
 #' @rdname circ_sample_tmb
 #' @export
-circ_sample_tmb <- function(obj, opt, nsample = 1000, ...) {
+circ_sample_tmb <- function(obj, opt, sdreport = FALSE, nsample = 1000, ...) {
 
   ## Getting the TMB into "Naomi" format to sample from using the NAOMI package
   opt$par.fixed <- opt$par
@@ -27,7 +27,9 @@ circ_sample_tmb <- function(obj, opt, nsample = 1000, ...) {
   class(fit) <- "naomi_fit"
 
   ## Look at standard deviation report
-  fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
+  if (sdreport == TRUE) {
+      fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
+  }
 
   ## Generating samples
   fit <- naomi::sample_tmb(fit, nsample = nsample, ...)
