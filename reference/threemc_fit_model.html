@@ -57,11 +57,11 @@ model fit (if so desired).</p>
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">threemc_fit_model</span><span class="op">(</span>
   <span class="va">dat_tmb</span>,
+  <span class="va">mod</span>,
   <span class="va">parameters</span>,
   maps <span class="op">=</span> <span class="cn">NULL</span>,
   randoms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"u_time_mmc"</span>, <span class="st">"u_age_mmc"</span>, <span class="st">"u_space_mmc"</span>, <span class="st">"u_agetime_mmc"</span>,
     <span class="st">"u_agespace_mmc"</span>, <span class="st">"u_spacetime_mmc"</span>, <span class="st">"u_age_tmc"</span>, <span class="st">"u_space_tmc"</span>, <span class="st">"u_agespace_tmc"</span><span class="op">)</span>,
-  <span class="va">mod</span>,
   sample <span class="op">=</span> <span class="cn">TRUE</span>,
   smaller_fit_obj <span class="op">=</span> <span class="cn">TRUE</span>,
   sdreport <span class="op">=</span> <span class="cn">FALSE</span>,
@@ -85,6 +85,11 @@ matrices for selecting the instantaneous hazard rate.</p></li>
 Survival matrices for MMC, TMC, censored and left censored</p></li>
 <li><p>Q_spacePrecision/Adjacency matrix for the spatial random effects.</p></li>
 </ul></dd>
+<dt>mod</dt>
+<dd><p>TMB model, one of either
+"Surv_SpaceAgeTime_ByType_withUnknownType" or "Surv_SpaceAgeTime" if the
+surveys for the country in question make no distinction between circumcision
+type (i.e whether they were performed in a medical or traditional setting).</p></dd>
 <dt>parameters</dt>
 <dd><p><code>list</code> of fixed and random model parameters.</p></dd>
 <dt>maps</dt>
@@ -93,11 +98,6 @@ indicate parameters to be kept fixed at their initial value throughout the
 optimisation process.</p></dd>
 <dt>randoms</dt>
 <dd><p><code>vector</code> of random effects.</p></dd>
-<dt>mod</dt>
-<dd><p>TMB model, one of either
-"Surv_SpaceAgeTime_ByType_withUnknownType" or "Surv_SpaceAgeTime" if the
-surveys for the country in question make no distinction between circumcision
-type (i.e whether they were performed in a medical or traditional setting).</p></dd>
 <dt>sample</dt>
 <dd><p>If set to TRUE, has function also return N samples for
 medical, traditional and total circumcisions, Default: TRUE</p></dd>
