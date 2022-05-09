@@ -103,6 +103,7 @@ threemc_fit_model <- function(
     if (smaller_fit_obj == TRUE) {
       fit <- minimise_fit_obj(fit, dat_tmb, parameters)
     }
+    return (fit)
   } else {
     return(opt)
   }
