@@ -1,26 +1,26 @@
-#### Main Function #### 
+#### Main Function ####
 
 #' @title Produce Population weighted Aggregated Samples
 #' @description Aggregate by area, year, age and type (weighted by population),
 #' and convert to a percentage/probability.
-#' @param .data \code{data.frame} of unaggregated modelling results. 
-#' @param fit \code{TMB} list containing model parameters, nested list of 
-#' `samples` for the (cumulative) incidence and hazard rate of circumcision for 
+#' @param .data \code{data.frame} of unaggregated modelling results.
+#' @param fit \code{TMB} list containing model parameters, nested list of
+#' `samples` for the (cumulative) incidence and hazard rate of circumcision for
 #' the region(s) in question.
-#' @param areas `sf` shapefiles for specific country/region. 
+#' @param areas `sf` shapefiles for specific country/region.
 #' @param populations \code{data.frame} containing populations for each
 #' region in tmb fits.
-#' @param age_var Determines whether you wish to aggregate by discrete ages or 
-#' age groups (0-4, 5-9, 10-14, and so on). 
+#' @param age_var Determines whether you wish to aggregate by discrete ages or
+#' age groups (0-4, 5-9, 10-14, and so on).
 #' @param type Determines which aspect of MC in the regions in question you wish
 #' to aggregate for. Can be one of "probability", "incidence" or "prevalence".
-#' @param area_lev PSNU area level for specific country. 
+#' @param area_lev PSNU area level for specific country.
 #' @param N Number of samples to be generated, Default: 100
-#' @param prev_year If type == "prevalence", choose year to compare prevalence 
-#' with. 
+#' @param prev_year If type == "prevalence", choose year to compare prevalence
+#' with.
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
-#' @importFrom dplyr %>% 
+#' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @rdname threemc_aggregate
 #' @export
@@ -28,69 +28,71 @@ threemc_aggregate <- function(
   # datasets
   .data, fit, areas, populations, # datasets
   # options
-  age_var = c("age", "age_group"), 
-  type = c("probability", "incidence", "prevalence"), area_lev, N = 100, 
-  prev_year = 2008
-  ) {
-  
+  age_var = c("age", "age_group"),
+  type = c("probability", "incidence", "prevalence"), area_lev, N = 100,
+  prev_year = 2008) {
+
   #### Preparing location/shapefile information ####
   if (inherits(areas, "sf")) {
     areas <- sf::st_drop_geometry(areas)
   }
-  
+
   areas <- areas %>%
     # Add a unique identifier within Admin code and merging to boundaries
     dplyr::group_by(.data$area_level) %>%
     dplyr::mutate(space = dplyr::row_number()) %>%
     dplyr::ungroup()
-  
+
   # wide formatted areas, for changing area levels later
   areas_wide <- areas %>%
     dplyr::select(
       dplyr::all_of(c("area_id", "area_name", "parent_area_id", "area_level"))
     ) %>%
     spread_areas(space = FALSE)
-  
+
   # Model with Probability of MC
   .data$model <- "No program data"
   fit_no_prog <- fit # need to load model with programme data as well
-  
+
   #### Load rates from survival model ####
-  .data <- prepare_sample_data(N = N,
-                               populations = populations,
-                               no_prog_results = .data,
-                               no_prog_tmb_fit = fit_no_prog,
-                               type = type)
-  
-  rm(fit, fit_no_prog, populations); gc()
-  
+  .data <- prepare_sample_data(
+    N = N,
+    populations = populations,
+    no_prog_results = .data,
+    no_prog_tmb_fit = fit_no_prog,
+    type = type
+  )
+
   #### Prepare .data for output ####
-  
+
   # collect .data for lower area hierarchies by joining higher area
   # hierarchies (do so until you reach "area 0")
   .data <- combine_areas(.data, areas_wide, area_lev, join = FALSE)
-  
+
   # aggregate samples for each individual age or age group
   if (age_var == "age") {
     .data <- aggregate_sample(.data)
-  } else .data <- aggregate_sample_age_group(.data)
-  
+  } else {
+    .data <- aggregate_sample_age_group(.data)
+  }
+
   # additional aggregations to perform for prevalence
   if (type == "prevalence") {
     # calculate change in prevalence since prev_year
     data_change_prev_year <- prevalence_change(
-      .data, spec_year = prev_year
+      .data,
+      spec_year = prev_year
     )
-    
+
     # Getting number of people circumcised
     data_n <- n_circumcised(.data)
-    
+
     # add "change from prev_year" and "n_circumcised" .data to .data
     .data <- rbind(.data, data_change_prev_year, data_n)
   }
   # calculate summary statistics (mean, sd, quantiles)
   .data <- posterior_summary_fun(.data)
-  
+
   # Merge regional information on the dataset (i.e. parent area info) & return
   .data <- merge_area_info(.data, areas)
 }
@@ -306,10 +308,10 @@ aggregate_sample <- function(.data,
                                "area_id", "area_name", "year",
                                "age", "age_group", "model", "type"
                              ), ...) {
-  
+
   # global bindings for data.table non-standard evaluation
   .SD <- NULL
-  
+
   # convert .data from list to data.frame, if required
   if (!inherits(.data, "data.frame")) {
     .data <- as.data.frame(data.table::rbindlist(
@@ -317,28 +319,28 @@ aggregate_sample <- function(.data,
       use.names = T, ...
     ))
   }
-  
+
   # ensure aggregation columns are in the data
   aggr_cols <- aggr_cols[aggr_cols %in% names(.data)]
-  
+
   # Multiplying by population to population weight
   .data <- .data %>%
     dplyr::mutate(dplyr::across(dplyr::contains("samp_"), ~ . * population))
-  
+
   # summarise samples by aggr_cols
   .data <- data.table::setDT(.data)[,
-                                    lapply(.SD, sum, na.rm = T),
-                                    by = c(aggr_cols),
-                                    .SDcols = c("population", paste0("samp_", c(1:100)))
+    lapply(.SD, sum, na.rm = T),
+    by = c(aggr_cols),
+    .SDcols = c("population", paste0("samp_", c(1:100)))
   ]
   # divide by population to population weight
   .data <- as.data.frame(.data) %>%
     dplyr::mutate(dplyr::across(dplyr::contains("samp_"), ~ . / population))
-  
+
   return(.data)
 }
 
-#### aggregate_sample_age_group #### 
+#### aggregate_sample_age_group ####
 
 #' @title Produce Population weighted Aggregated Samples for Age Groups
 #' @description Aggregate by area, year, age group (rather than discrete ages)
@@ -361,7 +363,7 @@ aggregate_sample <- function(.data,
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @rdname aggregate_sample_age_group
-#' @keywords internal 
+#' @keywords internal
 aggregate_sample_age_group <- function(results_list,
                                        aggr_cols = c(
                                          "area_id", "area_name",
@@ -378,8 +380,10 @@ aggregate_sample_age_group <- function(results_list,
                                        N = 100) {
   if (inherits(results_list, "data.frame")) {
     message(
-      paste0("requires list from combine_areas (set argument join = FALSE), ",
-            "coercing to list")
+      paste0(
+        "requires list from combine_areas (set argument join = FALSE), ",
+        "coercing to list"
+      )
     )
     results_list <- list(results_list)
   }
@@ -446,7 +450,7 @@ aggregate_sample_age_group <- function(results_list,
   return(results)
 }
 
-#### prevalence_change #### 
+#### prevalence_change ####
 
 # function to get change in prevalence/coverage from a given year
 #' @title Calculate Change in Prevalence/Coverage from a given year.
@@ -457,7 +461,7 @@ aggregate_sample_age_group <- function(results_list,
 #' \code{results}.
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
-#' @rdname prevalence_change 
+#' @rdname prevalence_change
 #' @keywords internal
 prevalence_change <- function(results, spec_year) {
 

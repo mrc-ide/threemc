@@ -22,6 +22,8 @@
 #' @seealso
 #'  \code{\link[threemc]{circ_sample_tmb}}
 #'  \code{\link[stats]{quantile}}
+#'  @importFrom dplyr %>%
+#'  @importFrom rlang .data
 #' @rdname compute_quantiles
 #' @export
 
@@ -29,12 +31,19 @@
 ## maybe add "textProgressBar" to for loop if it's too slow?
 compute_quantiles <- function(out,
                               fit,
+                              area_lev = NULL,
                               probs = c(0.025, 0.5, 0.975),
                               names = FALSE,
                               ...) {
   if (length(probs) != 3) stop("probs should be of length 3")
   # ensure that probs are sorted, regardless of input order
   probs <- sort(probs)
+  
+  # subset to area level of interest, if desired
+  if (!is.null(area_lev)) {
+    out <- out %>% 
+      dplyr::filter(.data$area_level == area_lev)
+  }
 
   # function to do "legwork" of computing quantiles
   quantile_fun <- function(.data, probs = probs, names = names, ...) {

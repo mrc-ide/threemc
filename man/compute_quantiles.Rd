@@ -4,7 +4,14 @@
 \alias{compute_quantiles}
 \title{Calculate Quantiles for Rates and Cumulative Hazard}
 \usage{
-compute_quantiles(out, fit, probs = c(0.025, 0.5, 0.975), names = FALSE, ...)
+compute_quantiles(
+  out,
+  fit,
+  area_lev = NULL,
+  probs = c(0.025, 0.5, 0.975),
+  names = FALSE,
+  ...
+)
 }
 \arguments{
 \item{out}{Shell dataset with a row for every unique record in
@@ -36,4 +43,6 @@ the shell \code{data.frame} \code{out} with estimated empirical circumcision rat
 \seealso{
 \code{\link[threemc]{circ_sample_tmb}}
 \code{\link[stats]{quantile}}
+@importFrom dplyr \%>\%
+@importFrom rlang .data
 }
