@@ -1,7 +1,7 @@
 
 #' @title Calculate Quantiles for Rates and Cumulative Hazard
 #' @description Calculate quantiles for samples of rates and cumulative hazard
-#' outputted from \link[threemc]{circ_sample_tmb}, and add them as columns to
+#' outputted from \link[threemc]{threemc_fit_model}, and add them as columns to
 #' the shell `data.frame` `out` with estimated empirical circumcision rates.
 #'
 #' @param out Shell dataset with a row for every unique record in
@@ -21,6 +21,7 @@
 #' circumcision.
 
 #' @seealso
+#'  \code{\link[threemc]{threemc_fit_model}}
 #'  \code{\link[stats]{quantile}}
 #'  @importFrom dplyr %>%
 #'  @importFrom rlang .data
