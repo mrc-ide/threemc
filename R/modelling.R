@@ -41,13 +41,13 @@
 #' @rdname threemc_fit_model
 #' @export
 threemc_fit_model <- function(
-  dat_tmb, parameters, maps = NULL,
+  dat_tmb, mod, parameters, maps = NULL,
   randoms = c(
     "u_time_mmc", "u_age_mmc", "u_space_mmc",
     "u_agetime_mmc", "u_agespace_mmc", "u_spacetime_mmc",
     "u_age_tmc", "u_space_tmc", "u_agespace_tmc"
   ),
-  mod, sample = TRUE, smaller_fit_obj = TRUE, sdreport = FALSE, N = 1000, ...
+  sample = TRUE, smaller_fit_obj = TRUE, sdreport = FALSE, N = 1000, ...
 ) {
 
   # remove "mmc" from parameter & matrix names if required
