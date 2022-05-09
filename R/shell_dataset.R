@@ -1,5 +1,4 @@
 #' @title Create Shell Dataset for Estimating Empirical Circumcision Rate
-#'
 #' @description  Create a shell dataset with a row for every unique area ID,
 #' area name, year and circumcision age in survey data. Also, computes the
 #' empirical number of person years until circumcision and number of people
@@ -7,7 +6,6 @@
 #' circumcisions, known traditional circumcisions, censored survey entries
 #' (i.e. where surveyed individuals had not been circumcised) and left-censored
 #'  survey entries (i.e. where circumcision occurred at an unknown age).
-#'
 #' @param survey_circumcision Information on male circumcision status from
 #' surveys.
 #' @param population_data Single age male population counts by space and time.
@@ -22,7 +20,6 @@
 #' @param age - Variable with age circumcised or censored. Default: "age"
 #' @param circ Variables with circumcision matrix, Default: "indweight_st"
 #' @param ...  Further arguments passed to or from other methods.
-#'
 #' @seealso
 #'  \code{\link[threemc]{datapack_psnu_area_level}}
 #'  \code{\link[tidyr]{crossing}}
@@ -31,8 +28,8 @@
 #' @return `data.frame` with a row for every unique record in
 #' `survey_circumcision` for a given area. Also includes empirical estimates
 #' for circumcision estimates for each unique record.
+#' @rdname create_shell_dataset
 #' @export
-#'
 #' @importFrom rlang .data
 #' @importFrom dplyr %>%
 create_shell_dataset <- function(survey_circumcision,
@@ -155,4 +152,48 @@ create_shell_dataset <- function(survey_circumcision,
   ## add to out:
   out[, empirical_circ_cols] <- agetime_hazard_matrices
   return(out)
+}
+
+
+#' @title Normalise Survey Weights and apply Kish Coefficients
+#' @description Normalise survey weights and apply Kish coefficients.
+#' @param survey_circumcision Information on male circumcision status from
+#' surveys containing survey weights.
+#' @param strata.norm Stratification variables for normalising survey weights,
+#' Default: c("survey_id", "area_id")
+#' @param strata.kish Stratification variables for estimating and applying the
+#' Kish coefficients, Default: "survey_id"
+#' @return Survey data with normalised survey weights and required variables to
+#' run circumcision model.
+#' @export
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+#' @rdname normalise_weights_kish
+#' @keywords internal
+normalise_weights_kish <- function(survey_circumcision,
+                                   strata.norm = c("survey_id", "area_id"),
+                                   strata.kish = c("survey_id")) {
+
+  # Preparing survey weights for the model
+  survey_circumcision %>%
+    # Standardising survey weights
+    dplyr::group_by(dplyr::across(dplyr::all_of(strata.norm))) %>%
+    dplyr::mutate(
+      indweight_st = .data$indweight / mean(.data$indweight, na.rm = TRUE)
+    ) %>%
+    dplyr::ungroup() %>%
+    # Applying Kish coefficient to the survey weights
+    dplyr::left_join(
+      (survey_circumcision %>%
+        dplyr::group_by(dplyr::across(dplyr::all_of(strata.kish))) %>%
+        dplyr::summarise(
+          N = length(.data$survey_id),
+          Neff = (sum(.data$indweight)^2) /
+            sum(.data$indweight * .data$indweight),
+          ratio = .data$N / .data$Neff,
+          .groups = "drop"
+        )),
+      by = "survey_id"
+    ) %>%
+    dplyr::mutate(indweight_st = .data$indweight_st / .data$ratio)
 }
