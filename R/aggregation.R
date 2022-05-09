@@ -529,7 +529,7 @@ n_circumcised <- function(results) {
 #' @param probs Percentiles to provide quantiles at. Set to NULL to skip
 #' computing quantiles.
 #' @importFrom dplyr %>%
-#' @importfrom rlang :=
+#' @importFrom rlang :=
 #' @rdname posterior_summary_fun
 #' @keywords internal
 posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
