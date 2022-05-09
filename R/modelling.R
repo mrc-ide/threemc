@@ -29,6 +29,8 @@
 #' type (i.e whether they were performed in a medical or traditional setting).
 #' @param sample If set to TRUE, has function also return N samples for
 #' medical, traditional and total circumcisions, Default: TRUE
+#' @param smaller_fit_obj Returns a smaller fit object. Useful for saving the 
+#' fit object for later aggregations. 
 #' @param sdreport If set to TRUE, produces the standard deviation report for
 #' the model, Default: FALSE
 #' @param N Number of samples to be generated, Default: 1000
@@ -44,7 +46,7 @@ threemc_fit_model <- function(
     "u_agetime_mmc", "u_agespace_mmc", "u_spacetime_mmc",
     "u_age_tmc", "u_space_tmc", "u_agespace_tmc"
   ),
-  mod, sample = TRUE, sdreport = FALSE, N = 1000, ...
+  mod, sample = TRUE, smaller_fit_obj = TRUE, sdreport = FALSE, N = 1000, ...
 ) {
 
   # remove "mmc" from parameter & matrix names if required
@@ -93,10 +95,14 @@ threemc_fit_model <- function(
       ...
     )
   }
-
+  
   # sample from TMB fit
   if (sample == TRUE) {
-    return(circ_sample_tmb(obj, opt, nsample = N, sdreport = sdreport))
+    fit <- circ_sample_tmb(obj, opt, nsample = N, sdreport = sdreport)
+    # return smaller fit object
+    if (smaller_fit_obj == TRUE) {
+      fit <- minimise_fit_obj(fit, dat_tmb, parameters)
+    }
   } else {
     return(opt)
   }
@@ -143,5 +149,30 @@ circ_sample_tmb <- function(obj, opt, sdreport = FALSE, nsample = 1000, ...) {
   # ensure names for MC columns in fit have the suffix "_mc"
   fit$sample <- append_mc_name(fit$sample)
 
+  return(fit)
+}
+
+#### minimise_fit_obj #### 
+
+#' @title Minimise Fit Object Size
+#' @description Return minimised fit object. Often useful when saving the fit 
+#' object for later aggregation. 
+#' @param fit Fit object returned by \link[naomi]{sample_tmb}, which includes,
+#' among other things, the optimised parameters and subsequent sample for our 
+#' TMB model.
+##' @param dat_tmb \code{list} of data required for model fitting, outputted
+#' by \link[threemc]{threemc_prepare_model_data}.
+#' @param parameters \code{list} of fixed and random model parameters.
+#' @return Object of class "naomi_fit".
+#' @rdname minimise_fit_obj
+#' @keywords internal
+minimise_fit_obj <- function(fit, dat_tmb, paramaters) {
+  
+  fit_small <- fit
+  fit_small$tmb_data <- dat_tmb
+  fit_small$par_init <- parameters
+  fit_small$sample <- NULL
+  fit_small$obj <- NULL
+  
   return(fit)
 }
