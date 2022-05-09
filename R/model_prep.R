@@ -174,6 +174,7 @@ create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @rdname shell_data_spec_area
+#' @keywords internal
 shell_data_spec_area <- function(dat, area_lev = NULL) {
   if (is.null(area_lev)) {
     message(
