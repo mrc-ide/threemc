@@ -4,7 +4,7 @@
 \alias{minimise_fit_obj}
 \title{Minimise Fit Object Size}
 \usage{
-minimise_fit_obj(fit, dat_tmb, paramaters)
+minimise_fit_obj(fit, dat_tmb, parameters)
 }
 \arguments{
 \item{fit}{Fit object returned by \link[naomi]{sample_tmb}, which includes,
