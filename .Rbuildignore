@@ -23,5 +23,4 @@
 \.*gcov$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-modelling.R
 TAGS

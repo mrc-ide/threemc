@@ -437,7 +437,7 @@ aggregate_sample_age_group <- function(results_list,
 
   # Multiplying by population to population weight
   # (don"t do this for "N performed", if present)
-  results <- results %>%
+  results %>%
     dplyr::mutate(
       dplyr::across(
         dplyr::contains("samp_"), ~ ifelse(grepl("performed", type),
@@ -446,8 +446,6 @@ aggregate_sample_age_group <- function(results_list,
         )
       )
     )
-
-  return(results)
 }
 
 #### prevalence_change ####
@@ -473,7 +471,7 @@ prevalence_change <- function(results, spec_year) {
 
   # join into spec_year_results for corresponding categorical variables and
   # subtract
-  results_change_year <- results %>%
+  results %>%
     tidyr::pivot_longer(dplyr::contains("samp_")) %>%
     dplyr::left_join(spec_year_results) %>%
     dplyr::mutate(value = .data$value - .data$prev_value) %>%
@@ -518,7 +516,7 @@ n_circumcised <- function(results) {
     )
 
   # Append together
-  results_n <- as.data.frame(data.table::rbindlist(n_circ_type, use.names = T))
+  (as.data.frame(data.table::rbindlist(n_circ_type, use.names = T)))
 }
 
 #### posterior_summary_fun ####
@@ -531,6 +529,7 @@ n_circumcised <- function(results) {
 #' @param probs Percentiles to provide quantiles at. Set to NULL to skip
 #' computing quantiles.
 #' @importFrom dplyr %>%
+#' @importFrom rlang :=
 #' @rdname posterior_summary_fun
 #' @keywords internal
 posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {

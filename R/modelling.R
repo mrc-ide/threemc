@@ -1,3 +1,4 @@
+
 #### Main Function #### 
 
 #' @title Produce TMB model fit with sample
@@ -64,7 +65,6 @@ threemc_fit_model <- function(
     parameters <- remove_type_distinction(parameters)
 
     randoms <- stringr::str_remove(randoms, "_mmc")
-    randoms <- randoms[!randoms %like% "_tmc"]
     randoms <- randoms[!grepl("_tmc", randoms)]
   }
 
@@ -166,7 +166,7 @@ circ_sample_tmb <- function(obj, opt, sdreport = FALSE, nsample = 1000, ...) {
 #' @return Object of class "naomi_fit".
 #' @rdname minimise_fit_obj
 #' @keywords internal
-minimise_fit_obj <- function(fit, dat_tmb, paramaters) {
+minimise_fit_obj <- function(fit, dat_tmb, parameters) {
   
   fit_small <- fit
   fit_small$tmb_data <- dat_tmb

@@ -90,7 +90,6 @@ add_area_id <- function(df,
 #' @return \code{data.frame} or list (depending on the value of \code{join})
 #' with results for all area levels less than or equal to \code{area_lev}.
 #' @importFrom dplyr %>%
-#' @importFrom data.table %like%
 #' @importFrom rlang .data
 #' @rdname combine_areas
 #' @keywords internal
@@ -106,7 +105,7 @@ combine_areas <- function(.data,
   if (length(area_levs) == 0) area_levs <- -1
 
   # columns to keep
-  add_keep_cols <- c(add_keep_cols, names(.data)[names(.data) %like% "samp_"])
+  add_keep_cols <- c(add_keep_cols, names(.data)[grepl("samp_", names(.data))])
   if (length(add_keep_cols) == 0) add_keep_cols <- NULL
 
   # collect results for lower area hierarchies by joining higher area

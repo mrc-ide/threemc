@@ -21,6 +21,8 @@ for circumcision estimates for each unique record.}
 \item{fit}{Object containing \code{samples} list for the (cumulative) incidence
 and hazard rate of circumcision for the region(s) in question.}
 
+\item{area_lev}{PSNU area level for specific country}
+
 \item{probs}{Specific quantiles to be calculated,
 Default: c(0.025, 0.5, 0.975)}
 
@@ -37,11 +39,11 @@ circumcision.
 }
 \description{
 Calculate quantiles for samples of rates and cumulative hazard
-outputted from \link[threemc]{circ_sample_tmb}, and add them as columns to
+outputted from \link[threemc]{threemc_fit_model}, and add them as columns to
 the shell \code{data.frame} \code{out} with estimated empirical circumcision rates.
 }
 \seealso{
-\code{\link[threemc]{circ_sample_tmb}}
+\code{\link[threemc]{threemc_fit_model}}
 \code{\link[stats]{quantile}}
 @importFrom dplyr \%>\%
 @importFrom rlang .data

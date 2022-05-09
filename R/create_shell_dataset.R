@@ -105,7 +105,7 @@ create_shell_dataset <- function(survey_circumcision,
   stopifnot(!is.na(survey_circumcision$space))
   
   ## Obtain N person years
-  out_int_mat <- threemc::create_integration_matrix_agetime(
+  out_int_mat <- create_integration_matrix_agetime(
     dat = survey_circumcision,
     time1 = time1,
     time2 = time2,
@@ -135,7 +135,7 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   agetime_hazard_matrices <- lapply(subsets, function(x) {
-    threemc::create_hazard_matrix_agetime(
+    create_hazard_matrix_agetime(
       dat = survey_circumcision,
       areas = areas,
       area_lev = area_lev,
