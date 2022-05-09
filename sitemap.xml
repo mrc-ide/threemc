@@ -31,13 +31,7 @@
     <loc>/reference/append_mc_name.html</loc>
   </url>
   <url>
-    <loc>/reference/circ_sample_tmb.html</loc>
-  </url>
-  <url>
     <loc>/reference/combine_areas.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compile_tmb.html</loc>
   </url>
   <url>
     <loc>/reference/compute_quantiles.html</loc>
@@ -119,5 +113,11 @@
   </url>
   <url>
     <loc>/reference/threemc_aggregate.html</loc>
+  </url>
+  <url>
+    <loc>/reference/threemc_fit_model.html</loc>
+  </url>
+  <url>
+    <loc>/reference/threemc_prepare_model_data.html</loc>
   </url>
 </urlset>

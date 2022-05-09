@@ -46,7 +46,7 @@ stratification variable is also available, creating a 3D hazard function."><!-- 
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create Matrix Selecting Instantaneous Hazard Rate</h1>
-    <small class="dont-index">Source: <a href="https://github.com/mrc-ide/threemc/blob/HEAD/R/create_hazard_matrix_agetime.R" class="external-link"><code>R/create_hazard_matrix_agetime.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/mrc-ide/threemc/blob/HEAD/R/model_prep.R" class="external-link"><code>R/model_prep.R</code></a></small>
     <div class="hidden name"><code>create_hazard_matrix_agetime.Rd</code></div>
     </div>
 
@@ -116,9 +116,11 @@ calculate), Default: NULL</p></dd>
 <dd><p>Variables with circumcision matrix, Default: "circ"</p></dd>
 <dt>aggregated</dt>
 <dd><p><code>agggregated = FALSE</code> treats every area_id as its own
-object, <code>aggregated = TRUE</code> means we only look at area level of interest.</p></dd>
+object, allowing for the use of surveys for lower area hierarchies.
+<code>aggregated = TRUE</code> means we only look at area level of interest.</p></dd>
 <dt>weight</dt>
-<dd><p>weight to apply for each ?</p></dd>
+<dd><p>variable to weigh circumcisions by when aggregating for
+lower area hierarchies (only applicable for <code>aggregated = TRUE</code>)</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>

@@ -52,12 +52,19 @@ the shell data.frame out with estimated empirical circumcision rates."><!-- math
 
     <div class="ref-description">
     <p>Calculate quantiles for samples of rates and cumulative hazard
-outputted from <a href="circ_sample_tmb.html">circ_sample_tmb</a>, and add them as columns to
+outputted from circ_sample_tmb, and add them as columns to
 the shell <code>data.frame</code> <code>out</code> with estimated empirical circumcision rates.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">compute_quantiles</span><span class="op">(</span><span class="va">out</span>, <span class="va">fit</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span>, names <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">compute_quantiles</span><span class="op">(</span>
+  <span class="va">out</span>,
+  <span class="va">fit</span>,
+  area_lev <span class="op">=</span> <span class="cn">NULL</span>,
+  probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span>,
+  names <span class="op">=</span> <span class="cn">FALSE</span>,
+  <span class="va">...</span>
+<span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -87,8 +94,10 @@ circumcision.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p><code><a href="circ_sample_tmb.html">circ_sample_tmb</a></code>
-<code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></code></p></div>
+    <div class="dont-index"><p><code>circ_sample_tmb</code>
+<code><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></code>
+@importFrom dplyr %&gt;%
+@importFrom rlang .data</p></div>
     </div>
 
   </div>

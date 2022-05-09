@@ -46,7 +46,7 @@ left-censored (i.e. age of circumcision unknown) individuals."><!-- mathjax --><
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create Survival Matrices for Selecting Instantaneous Hazard</h1>
-    <small class="dont-index">Source: <a href="https://github.com/mrc-ide/threemc/blob/HEAD/R/create_survival_matrices.R" class="external-link"><code>R/create_survival_matrices.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/mrc-ide/threemc/blob/HEAD/R/model_prep.R" class="external-link"><code>R/model_prep.R</code></a></small>
     <div class="hidden name"><code>create_survival_matrices.Rd</code></div>
     </div>
 
@@ -66,6 +66,7 @@ left-censored (i.e. age of circumcision unknown) individuals.</p>
   age <span class="op">=</span> <span class="st">"age"</span>,
   strat <span class="op">=</span> <span class="st">"space"</span>,
   aggregated <span class="op">=</span> <span class="cn">TRUE</span>,
+  weight <span class="op">=</span> <span class="st">"population"</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -94,7 +95,12 @@ Default: "time2"</p></dd>
 <dd><p>Variable to stratify by in using a 3D hazard function,
 Default: "space"</p></dd>
 <dt>aggregated</dt>
-<dd><p>??</p></dd>
+<dd><p><code>agggregated = FALSE</code> treats every area_id as its own
+object, allowing for the use of surveys for lower area hierarchies.
+<code>aggregated = TRUE</code> means we only look at area level of interest.</p></dd>
+<dt>weight</dt>
+<dd><p>variable to weigh circumcisions by when aggregating for
+lower area hierarchies (only applicable for <code>aggregated = TRUE</code>)</p></dd>
 <dt>...</dt>
 <dd><p>Further arguments passed to or from other methods.</p></dd>
 </dl></div>

@@ -56,7 +56,8 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">spread_areas</span><span class="op">(</span>
   <span class="va">areas</span>,
   min_level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">areas</span><span class="op">$</span><span class="va">area_level</span><span class="op">)</span>,
-  max_level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">areas</span><span class="op">$</span><span class="va">area_level</span><span class="op">)</span>
+  max_level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">areas</span><span class="op">$</span><span class="va">area_level</span><span class="op">)</span>,
+  space <span class="op">=</span> <span class="cn">TRUE</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -68,6 +69,9 @@
 <dd><p>integer specifying the minimum level wanted</p></dd>
 <dt>max_level</dt>
 <dd><p>integer specifying the maximum level wanted</p></dd>
+<dt>space</dt>
+<dd><p>whether to include "space" columns. Excluding these returns the
+same object as <code><a href="https://rdrr.io/pkg/naomi/man/spread_areas.html" class="external-link">naomi::spread_areas</a></code>, Default: TRUE</p></dd>
 </dl></div>
 
   </div>
