@@ -25,9 +25,6 @@
     <loc>/reference/aggregate_sample_age_group.html</loc>
   </url>
   <url>
-    <loc>/reference/aggregate_sample_survey.html</loc>
-  </url>
-  <url>
     <loc>/reference/append_mc_name.html</loc>
   </url>
   <url>
@@ -70,16 +67,10 @@
     <loc>/reference/create_shell_dataset.html</loc>
   </url>
   <url>
-    <loc>/reference/create_shell_dataset_area.html</loc>
-  </url>
-  <url>
     <loc>/reference/create_survival_matrices.html</loc>
   </url>
   <url>
     <loc>/reference/datapack_psnu_area_level.html</loc>
-  </url>
-  <url>
-    <loc>/reference/increment_survey_area.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>
@@ -103,16 +94,13 @@
     <loc>/reference/prepare_sample_data.html</loc>
   </url>
   <url>
-    <loc>/reference/prepare_survey_aggregation.html</loc>
-  </url>
-  <url>
-    <loc>/reference/prepare_survey_data.html</loc>
-  </url>
-  <url>
     <loc>/reference/prevalence_change.html</loc>
   </url>
   <url>
     <loc>/reference/read_circ_data.html</loc>
+  </url>
+  <url>
+    <loc>/reference/shell_data_spec_area.html</loc>
   </url>
   <url>
     <loc>/reference/spread_areas.html</loc>
