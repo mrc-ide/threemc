@@ -1,7 +1,111 @@
+# Various utility functions for functionality used on multiple occasions 
+# throughout package. Generally unexported. 
+
 #### %||% ####
 
 `%||%` <- function(x, y) { # nolint
   if (is.null(x)) y else x
+}
+
+#### read_circ_data (exported) ####
+
+#' @title Function to read in Circumcision Data
+#' @description Function to read in circumcision data to fit model. Handles
+#' csv with \code{\link[data.table]{fread}} (but outputs data as a
+#' `data.frame`), and geographical data with code{\link[sf]{read_sf}} (for which
+#' it also adds unique identifiers for each `area_level`).
+#' @param path Path to data.
+#' @param filters Optional named vector, whose values dictate the values
+#' filtered for in the corresponding column names. Only supports filtering for
+#' one value for each column. default: NULL
+#' @param selected Optional columns to select, removing others, default = NULL
+#' @param ... Further arguments passed to or from other methods.
+#' @seealso
+#'  \code{\link[data.table]{fread}}
+#'  \code{\link[sf]{read_sf}}
+#' @return relevant data set, filtered as desired.
+#' @rdname read_circ_data
+#' @export
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
+
+  ## maybe add a warning for missing "circ" columns for surveys?? And add
+  ## in NAs in this situation (look at KEN for this)
+
+  ## read in data, depending on file type
+  cond <- tools::file_ext(path) %in% c("geojson", "shp", "shx")
+  if (cond == T) {
+    .data <- sf::read_sf(path, ...)
+  } else {
+    # selection prior to loading is allowed by fread
+    .data <- as.data.frame(data.table::fread(path, select = c(selected), ...))
+  }
+
+  ## if desired, recursively filter data with provided `filters` vector
+  if (!is.null(filters)) {
+    cols <- names(filters)
+    vals <- as.vector(filters[seq_along(filters)])
+    for (i in seq_along(filters)) {
+      if (!cols[i] %in% names(.data)) next
+      ## change col i to symbol (if present), evaluate corresponding filter
+      .data <- dplyr::filter(.data, !!rlang::sym(cols[i]) == vals[i])
+    }
+  }
+
+  # Select specific columns, if desired (and present) (no need to do for fread)
+  if (!is.null(selected) & cond == T) {
+    .data <- .data %>%
+      dplyr::select(dplyr::all_of(selected[selected %in% names(.data)]))
+  }
+
+  ## for areas, add unique identifier within Admin code and merge to boundaries
+  if (inherits(.data, "sf")) {
+    .data <- .data %>%
+      dplyr::group_by(.data$area_level) %>%
+      dplyr::mutate(space = dplyr::row_number()) %>%
+      dplyr::ungroup()
+  }
+  return(.data)
+}
+
+#### create_dirs_r (exported) ####
+
+#' @title Recursively Create Missing Directories
+#' @description Function to recursively create directories if any of the
+#' directories in a provided path are missing. Similar to \code{mkdir -p} from 
+#' Bash.
+#' @param dir_path Path to a file or directory which you want to generate.
+#' @rdname create_dirs_r
+#' @export
+create_dirs_r <- function(dir_path) {
+
+  # split by "/"
+  dirs <- stringr::str_split(dir_path, "/")[[1]]
+
+  # check if dir_path is for dir (required) or specific file
+  # does our string end in "/"? Then likely a dir
+  cond <- substr(dir_path, nchar(dir_path), nchar(dir_path))
+  cond <- grepl("/", cond)
+  # does last word contain "."? Likely a file
+  cond <- cond & !grepl(".", dplyr::last(dirs))
+  if (!cond) {
+    dirs <- dirs[-length(dirs)] # remove file name
+  }
+  if (length(dirs) == 0) stop("No missing directories created")
+  # loop through each directory level in target directory, create any missing
+  for (i in seq_along(dirs)) {
+    # "recursively" check directories
+    if (i == 1) {
+      spec_dir <- dirs[i]
+    } else {
+      spec_dir <- paste(dirs[1:i], collapse = "/")
+    }
+    # create if missing
+    if (!dir.exists(spec_dir)) {
+      dir.create(spec_dir)
+    }
+  }
 }
 
 #### add_area_id #### 
@@ -137,4 +241,149 @@ combine_areas <- function(.data,
   } else {
     return(results_list)
   }
+}
+
+#### append_mc_name ####
+
+#' @title Append "mc" to Appropriate Column names
+#' @description Ensure names for MC columns in fit have the suffix "_mc"
+#' @param .data Dataframe/tibble whose columns include "MC" calculations.
+#' @return \code{.data}, with column names appended appropriately.
+#' @rdname append_mc_name
+#' @keywords internal
+append_mc_name <- function(.data) {
+  mmc_tmc <- paste(c("mmc", "tmc"), collapse = "|")
+  locs <- !(grepl(paste(c(mmc_tmc, "mc"), collapse = "|"), names(.data)))
+  names(.data)[locs] <- paste0(names(.data)[locs], "_mc")
+
+  return(.data)
+}
+
+#### create_aggregate_structure ####
+
+#' @title Create a List containing the Hierarchy of levels
+#'
+#' @description Create a list containing all the area dependencies and number
+#' of for each area in the hierarchy
+#'
+#' @param areas `sf` shapefiles for specific country/region.
+#' @param area_lev  PSNU area level for specific country.
+#' @returns A list of length 2 containing:
+#' \itemize{
+#'  \item{"sub_region_list"}{A list of the specific sub-regions contained
+#'  within each space (i.e. for each area_id) (including itself)}
+#'  \item{"n_links_df"}{A dataframe with 2 columns, area_id and ndep, detailing
+#'  the number of sub-regions contained within each area_id (also including
+#'  itself)}
+#' }
+#' @rdname create_aggregate_structure
+#' @keywords internal
+create_aggregate_structure <- function(areas,
+                                       area_lev) {
+  # drop geometry and filter to specified area level
+  areas <- sf::st_drop_geometry(areas) %>%
+    dplyr::filter(.data$area_level <= area_lev)
+
+  # Long to wide hierarchy (Need for new aggregation matrices)
+  areas_wide <- spread_areas(areas)
+
+  # iterate over all area_ids at specific area_lev (i.e. spaces)
+  max_space <- areas %>%
+    dplyr::filter(.data$area_level == area_lev) %>%
+    dplyr::summarise(max(.data$space)) %>%
+    dplyr::pull()
+  area_id_seq <- seq(1, max_space, 1)
+  sub_region_list <- lapply(area_id_seq, function(i) {
+    # Getting areas lower in the hierarchy
+    areas_wide %>%
+      dplyr::filter(dplyr::if_any(dplyr::starts_with("space"), ~ . == i)) %>%
+      dplyr::pull(paste0("space", area_lev))
+  })
+
+  n_sub_region_df <- areas %>%
+    dplyr::distinct(.data$area_id) %>%
+    dplyr::mutate(sp_dep = sapply(sub_region_list, length))
+
+  # Returning list
+  list(sub_region_list = sub_region_list, n_sub_region_df = n_sub_region_df)
+}
+
+
+#### spread_areas ####
+
+#' Spread area hierarchy to wide format
+#'
+#' @param areas area hierarchy data.frame
+#' @param min_level integer specifying the minimum level wanted
+#' @param max_level integer specifying the maximum level wanted
+#' @param space whether to include "space" columns. Excluding these returns the 
+#' same object as \code{naomi::spread_areas}, Default: TRUE
+#'
+#' @export
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data :=
+#' @rdname spread_areas
+#' @keywords internal
+spread_areas <- function(areas,
+                         min_level = min(areas$area_level),
+                         max_level = max(areas$area_level),
+                         space = TRUE) {
+  if (inherits(areas, "sf")) {
+    boundaries <- areas %>% dplyr::select(.data$area_id)
+    areas <- sf::st_drop_geometry(areas)
+  } else {
+    boundaries <- NULL
+  }
+  stopifnot(min_level >= min(areas$area_level))
+  stopifnot(max_level <= max(areas$area_level))
+  areas_wide <- areas %>%
+    dplyr::filter(.data$area_level == min_level) %>%
+    dplyr::select(
+      # What's happening here?
+      `:=`(!!paste0("area_id", min_level), .data$area_id),
+      `:=`(!!paste0("area_name", min_level), .data$area_name),
+      `:=`(!!paste0("space", min_level), .data$space)
+    )
+  
+  # create safe sequence from min_level + 1 to max_level to loop over
+  level_seq <- seq_len(max_level)
+  if (length(level_seq) == 0) {
+    level_seq <- 0
+  } else {
+    level_seq <- level_seq[level_seq >= (min_level + 1)]
+  }
+  
+  if (all(level_seq != 0)) {
+    for (level in level_seq) {
+      areas_wide <- areas_wide %>%
+        dplyr::left_join(
+          areas %>%
+            dplyr::filter(.data$area_level == level) %>%
+            dplyr::select(
+              `:=`(!!paste0("area_id", level), .data$area_id),
+              `:=`(!!paste0("area_name", level), .data$area_name),
+              .data$parent_area_id,
+              `:=`(!!paste0("space", level), .data$space),
+            ),
+          by = stats::setNames(
+            c("parent_area_id"), c(paste0("area_id", level - 1L))
+          )
+        )
+    }
+  }
+  
+  areas_wide$area_id <- areas_wide[[paste0("area_id", max_level)]]
+  if (!is.null(boundaries)) {
+    areas_wide <- sf::st_as_sf(
+      dplyr::left_join(areas_wide, boundaries, by = "area_id")
+    )
+  }
+  
+  # removing "space" columns returns same object as naomi::spread_areas
+  if (space == FALSE) {
+    areas_wide <- areas_wide %>% 
+      dplyr::select(-dplyr::contains("space"))
+  }
+  
+  return(areas_wide)
 }
