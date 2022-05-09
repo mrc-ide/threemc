@@ -6,11 +6,11 @@
 \usage{
 threemc_fit_model(
   dat_tmb,
+  mod,
   parameters,
   maps = NULL,
   randoms = c("u_time_mmc", "u_age_mmc", "u_space_mmc", "u_agetime_mmc",
     "u_agespace_mmc", "u_spacetime_mmc", "u_age_tmc", "u_space_tmc", "u_agespace_tmc"),
-  mod,
   sample = TRUE,
   smaller_fit_obj = TRUE,
   sdreport = FALSE,
@@ -35,6 +35,11 @@ Survival matrices for MMC, TMC, censored and left censored}
 }
 }}
 
+\item{mod}{TMB model, one of either
+"Surv_SpaceAgeTime_ByType_withUnknownType" or "Surv_SpaceAgeTime" if the
+surveys for the country in question make no distinction between circumcision
+type (i.e whether they were performed in a medical or traditional setting).}
+
 \item{parameters}{\code{list} of fixed and random model parameters.}
 
 \item{maps}{\code{list} of factors with value NA, the names of which
@@ -42,11 +47,6 @@ indicate parameters to be kept fixed at their initial value throughout the
 optimisation process.}
 
 \item{randoms}{\code{vector} of random effects.}
-
-\item{mod}{TMB model, one of either
-"Surv_SpaceAgeTime_ByType_withUnknownType" or "Surv_SpaceAgeTime" if the
-surveys for the country in question make no distinction between circumcision
-type (i.e whether they were performed in a medical or traditional setting).}
 
 \item{sample}{If set to TRUE, has function also return N samples for
 medical, traditional and total circumcisions, Default: TRUE}
