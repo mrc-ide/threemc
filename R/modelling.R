@@ -175,5 +175,5 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
   fit_small$sample <- NULL
   fit_small$obj <- NULL
   
-  return(fit)
+  return(fit_small)
 }
