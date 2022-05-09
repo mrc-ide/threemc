@@ -9,6 +9,7 @@
 #'  for circumcision estimates for each unique record.
 #' @param fit Object containing `samples` list for the (cumulative) incidence
 #' and hazard rate of circumcision for the region(s) in question.
+#' @param area_lev PSNU area level for specific country
 #' @param probs Specific quantiles to be calculated,
 #' Default: c(0.025, 0.5, 0.975)
 #' @param names Parameter with \link[stats]{quantile}: logical; if true, the
@@ -20,7 +21,6 @@
 #' circumcision.
 
 #' @seealso
-#'  \code{\link[threemc]{circ_sample_tmb}}
 #'  \code{\link[stats]{quantile}}
 #'  @importFrom dplyr %>%
 #'  @importFrom rlang .data
