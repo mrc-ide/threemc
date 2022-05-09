@@ -1,3 +1,4 @@
+
 #### Main Function #### 
 
 #' @title Produce TMB model fit with sample
@@ -64,7 +65,6 @@ threemc_fit_model <- function(
     parameters <- remove_type_distinction(parameters)
 
     randoms <- stringr::str_remove(randoms, "_mmc")
-    randoms <- randoms[!randoms %like% "_tmc"]
     randoms <- randoms[!grepl("_tmc", randoms)]
   }
 
