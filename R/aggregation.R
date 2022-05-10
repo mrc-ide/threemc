@@ -301,6 +301,7 @@ prepare_sample_data <- function(N = 100,
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
+#' @import data.table
 #' @rdname aggregate_sample
 #' @keywords internal
 aggregate_sample <- function(.data,
@@ -328,7 +329,7 @@ aggregate_sample <- function(.data,
   # Multiplying by population to population weight
   .data <- .data %>%
     dplyr::mutate(dplyr::across(dplyr::contains("samp_"), ~ . * population))
-
+  
   # summarise samples by aggr_cols
   .data <- data.table::setDT(.data)[,
     lapply(.SD, sum, na.rm = T),
