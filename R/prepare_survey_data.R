@@ -169,8 +169,9 @@ prepare_survey_data <- function(areas,
       time1 = .data$yob - start_year + 1,
       time2 = .data$yoc - start_year + 1,
       # Event type
-      event = ifelse(.data$circ_status == 1 & !is.na(.data$circ_age), 1,
-                     ifelse((.data$circ_status == 1 & is.na(.data$circ_age)), 2, 0)
+      event = ifelse(
+        .data$circ_status == 1 & !is.na(.data$circ_age), 1, 
+        ifelse((.data$circ_status == 1 & is.na(.data$circ_age)), 2, 0)
       ),
       # Circumcision age
       circ_age = .data$yoc - .data$yob,
