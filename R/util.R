@@ -173,6 +173,11 @@ add_area_id <- function(df,
       dplyr::all_of(select_cols),
       dplyr::all_of(par$sample_cols)
     )
+  
+  # add missing area_level col, if required
+  if (is.null(df_area_id$area_level)) {
+    df_area_id$area_level <- par$area_lev_select
+  }
   return(df_area_id)
 }
 

@@ -45,9 +45,9 @@ threemc_aggregate <- function(
 
   # wide formatted areas, for changing area levels later
   areas_wide <- areas %>%
-    dplyr::select(
-      dplyr::all_of(c("area_id", "area_name", "parent_area_id", "area_level"))
-    ) %>%
+    dplyr::select(dplyr::all_of(
+        c("area_id", "area_name", "parent_area_id", "area_level", "space")
+    )) %>%
     spread_areas(space = FALSE)
 
   # Model with Probability of MC
@@ -316,7 +316,9 @@ aggregate_sample <- function(.data,
   if (!inherits(.data, "data.frame")) {
     .data <- as.data.frame(data.table::rbindlist(
       .data,
-      use.names = T, ...
+      use.names = TRUE, 
+      fill = TRUE,
+      ...
     ))
   }
 
