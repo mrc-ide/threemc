@@ -301,7 +301,7 @@ prepare_sample_data <- function(N = 100,
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
-#' @import data.table
+#' @importFrom data.table .SD
 #' @rdname aggregate_sample
 #' @keywords internal
 aggregate_sample <- function(.data,
