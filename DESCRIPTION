@@ -42,6 +42,7 @@ Imports:
     splines (>= 3.6.2),
     tidyr (>= 1.1.4),
     data.table (>= 1.14.2),
+    R.utils (>= 2.11.0),
     mgcv (>= 1.8-38),
     TMB (>= 1.7.22),
     naomi (>= 2.3.1),
