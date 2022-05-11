@@ -1,9 +1,14 @@
 
 #### Main Function #### 
 
-#' @title Produce TMB model fit with sample
+#' @title Produce TMB model fit with sample, or re-sample from existing 
+#' optimised model fit. 
 #' @description Optimises threemc objective function and produces samples from
-#' model fit (if so desired).  
+#' model fit (if so desired). If provided with an existing optimised model 
+#' `fit`, can also perform re-sampling. 
+#' @param fit Optional "small" fit object with no `sample`. Specifying `fit` 
+#' means you do not need to specify `dat_tmb` or `parameters`, as argument 
+#' specifications will be overridden by those stored in `fit`. 
 #' @param dat_tmb \code{list} of data required for model fitting, outputted
 #' by \link[threemc]{threemc_prepare_model_data}, which includes:
 #' \itemize{
@@ -41,7 +46,7 @@
 #' @rdname threemc_fit_model
 #' @export
 threemc_fit_model <- function(
-  dat_tmb, mod, parameters, maps = NULL,
+  fit = NULL, dat_tmb = NULL, mod, parameters = NULL, maps = NULL,
   randoms = c(
     "u_time_mmc", "u_age_mmc", "u_space_mmc",
     "u_agetime_mmc", "u_agespace_mmc", "u_spacetime_mmc",
@@ -49,6 +54,30 @@ threemc_fit_model <- function(
   ),
   sample = TRUE, smaller_fit_obj = TRUE, sdreport = FALSE, N = 1000, ...
 ) {
+  
+  # for specified "smaller fit" object (i.e. fit which requires resampling)
+  if (!is.null(fit)) {
+    if (!is.null(fit$sample)) stop("Sample already present in fit object")
+    if (!is.null(dat_tmb) | !is.null(parameters)) {
+      message(paste0(
+       "No need to specify dat_tmb or parameters for non-null fit, as they are",
+       " replaced by those stored in fit"
+      ))
+   }
+   # pull dat_tmb and parameters from small fit 
+   dat_tmb <- fit$tmb_data
+   parameters <- split(fit$par.full, names(fit$par.full))[names(fit$par_init)]
+   is_matrix <- sapply(fit$par_init, is.matrix)
+   parameters[is_matrix] <- Map(matrix,
+                             parameters[is_matrix],
+                             nrow = lapply(fit$par_init[is_matrix], nrow),
+                             ncol = lapply(fit$par_init[is_matrix], ncol))
+
+  } else { # if no fit == NULL, must have non-null dat_tmb & parameters
+    if (is.null(dat_tmb) | is.null(parameters)) {
+      stop("Please specify non-null dat_tmb and parameters")
+    }
+  }
 
   # remove "mmc" from parameter & matrix names if required
   if (mod == "Surv_SpaceAgeTime") {
@@ -73,7 +102,8 @@ threemc_fit_model <- function(
   if (length(randoms) == 0) randoms <- NULL
 
   # Create TMB object
-  obj <- TMB::MakeADFun(dat_tmb,
+  obj <- TMB::MakeADFun(
+    dat_tmb,
     parameters,
     random = randoms,
     map = maps,
@@ -82,6 +112,17 @@ threemc_fit_model <- function(
     DLL = mod,
     ...
   )
+  # for specified fit, simply resample and return
+  if (!is.null(fit)) {
+    fit$obj <- obj
+    fit$obj$fn()
+    # fit <- naomi::sample_tmb(fit, nsample = N)
+    fit <- circ_sample_tmb(
+      fit = fit, obj = obj, nsample = N, sdreport = sdreport
+    )
+    fit$tmb_data <- fit$par_init <- NULL # make fit object smaller
+    return(fit)
+  }
 
   # Run optimiser (use optim if all pars are fixed, nlminb otherwise)
   if (length(maps) == length(obj$par)) {
@@ -98,7 +139,9 @@ threemc_fit_model <- function(
   
   # sample from TMB fit
   if (sample == TRUE) {
-    fit <- circ_sample_tmb(obj, opt, nsample = N, sdreport = sdreport)
+    fit <- circ_sample_tmb(
+      obj = obj, opt = opt, nsample = N, sdreport = sdreport
+    )
     # return smaller fit object
     if (smaller_fit_obj == TRUE) {
       fit <- minimise_fit_obj(fit, dat_tmb, parameters)
@@ -131,20 +174,24 @@ threemc_fit_model <- function(
 #'  \code{\link[naomi]{sample_tmb}}
 #' @rdname circ_sample_tmb
 #' @keywords internal
-circ_sample_tmb <- function(obj, opt, sdreport = FALSE, nsample = 1000, ...) {
+circ_sample_tmb <- function(
+  fit = NULL, obj = NULL, opt, sdreport = FALSE, nsample = 1000, ...
+  ) {
 
-  ## Getting the TMB into "Naomi" format to sample from using the NAOMI package
-  opt$par.fixed <- opt$par
-  opt$par.full <- obj$env$last.par
-  fit <- c(opt, obj = list(obj))
-  class(fit) <- "naomi_fit"
-
-  ## Look at standard deviation report
+  # Getting the TMB into "Naomi" format to sample from using the NAOMI package
+  if (is.null(fit)) {
+    opt$par.fixed <- opt$par
+    opt$par.full <- obj$env$last.par
+    fit <- c(opt, obj = list(obj))
+    class(fit) <- "naomi_fit"  
+  }
+  
+  # Look at standard deviation report
   if (sdreport == TRUE) {
       fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
   }
 
-  ## Generating samples
+  # Generating samples
   fit <- naomi::sample_tmb(fit, nsample = nsample, ...)
 
   # ensure names for MC columns in fit have the suffix "_mc"
