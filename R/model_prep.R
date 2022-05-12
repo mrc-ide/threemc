@@ -578,13 +578,38 @@ create_survival_matrices <- function(out,
     "cens", # censored
     "icens" # left censored
   )
-  
+  # survival matrix names in TMB model
   list_names <- c("A_mmc", "A_tmc", "A_mc", "B", "C")
-  # remove MC if modelling for missing type is undesirable
-  if (!"obs_mc" %in% names(out)) {
-    circs <- circs[-3]
-    list_names <- list_names[-3]
+  
+  # don't model for specific type if missing from out
+  # if all out[[circs[i]]] are 0, create dummy survival matrix of all 0s
+  is_missing <- is_dummy <- c()
+  dummy_hazard_matrices <- vector(mode = "list", length = length(circs))
+  for (i in seq_along(circs)) {
+    if (!circs[i] %in% names(out)) {
+      message(paste0("Not creating survival matrix for type == ", circs[i]))
+      is_missing <- c(is_missing, i)
+    } else if(all(out[[circs[[i]]]] == 0)) {
+      message(paste0("Producing dummy survival matrix for type == ", circs[i]))
+      dummy_hazard_matrices[[i]] <-  Matrix::sparseMatrix(
+        i = 1,
+        j = nrow(out),
+        x = 0,
+        dims = c(1, nrow(out))
+      )
+      is_dummy <- c(is_dummy, i)
+    }
   }
+  if (!is.null(is_missing) || !is.null(is_dummy)) {
+    circs <- circs[-c(is_missing, is_dummy)]
+    dummy_names <- list_names[is_dummy]
+    if (!is.null(is_missing)) list_names <- list_names[-is_missing]
+  }
+  # remove any NULL dummy hazard matrices
+  dummy_hazard_matrices <- dummy_hazard_matrices[-which(
+    sapply(dummy_hazard_matrices, is.null)
+  )]
+  
   # Matrices for selecting instantaneous hazard rate for:
   hazard_matrices <- lapply(circs, function(x) {
     create_hazard_matrix_agetime(
@@ -602,8 +627,16 @@ create_survival_matrices <- function(out,
       ...
     )
   })
+  
+  if (length(dummy_hazard_matrices) != 0) {
+    for (i in seq_along(dummy_hazard_matrices)) {
+      hazard_matrices <- append(
+        hazard_matrices, dummy_hazard_matrices[[i]], is_dummy[i]
+      )
+    }
+  }
   names(hazard_matrices) <- list_names
-
+  
   return(hazard_matrices)
 }
 
