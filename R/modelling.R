@@ -67,6 +67,17 @@ threemc_fit_model <- function(
    # pull dat_tmb and parameters from small fit 
    dat_tmb <- fit$tmb_data
    parameters <- split(fit$par.full, names(fit$par.full))[names(fit$par_init)]
+   if (!is.null(maps)) {
+     # ensure mapped parameters are in the same order as parameters for model
+     mapped_pars <- is.na(names(parameters))
+     param_order <- names(fit$par_init)[mapped_pars]
+     maps <- maps[match(names(maps), param_order)]
+     
+     # replace NAs in parameters with mapped parameters in par_init
+     parameters[mapped_pars] <- fit$par_init[names(fit$par_init) %in% names(maps)]
+     names(parameters)[mapped_pars] <- names(maps)
+   }
+   
    is_matrix <- sapply(fit$par_init, is.matrix)
    parameters[is_matrix] <- Map(matrix,
                              parameters[is_matrix],
