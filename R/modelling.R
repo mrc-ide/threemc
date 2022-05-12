@@ -52,7 +52,7 @@ threemc_fit_model <- function(
     "u_agetime_mmc", "u_agespace_mmc", "u_spacetime_mmc",
     "u_age_tmc", "u_space_tmc", "u_agespace_tmc"
   ),
-  sample = TRUE, smaller_fit_obj = TRUE, sdreport = FALSE, N = 1000, ...
+  sample = TRUE, smaller_fit_obj = FALSE, sdreport = FALSE, N = 1000, ...
 ) {
   
   # for specified "smaller fit" object (i.e. fit which requires resampling)
@@ -213,7 +213,7 @@ circ_sample_tmb <- function(
 #' @param parameters \code{list} of fixed and random model parameters.
 #' @return Object of class "naomi_fit".
 #' @rdname minimise_fit_obj
-#' @keywords internal
+#' @export
 minimise_fit_obj <- function(fit, dat_tmb, parameters) {
   
   fit_small <- fit
