@@ -112,21 +112,21 @@ create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
   # Only doing the matrices on the specified aggregation
   dat <- shell_data_spec_area(dat, area_lev)
 
-  ## Spline definitions
+  # Spline definitions
   k_age <-
     k_dt * (floor(min(dat$age) / k_dt) - 3):(ceiling(max(dat$age) / k_dt) + 3)
 
-  ## Design matrix for the fixed effects
+  # Design matrix for the fixed effects
   X_fixed <- Matrix::sparse.model.matrix(N ~ 1, data = dat)
 
-  ## Design matrix for the temporal random effects
+  # Design matrix for the temporal random effects
   X_time <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(time), data = dat)
 
-  ## Design matrix for the age random effects
+  # Design matrix for the age random effects
   X_age <- splines::splineDesign(k_age, dat$age, outer.ok = TRUE)
   X_age <- methods::as(X_age, "sparseMatrix")
 
-  ## Design matrix for the spatial random effects
+  # Design matrix for the spatial random effects
   if (all(dat$space == 1)) {
     form <- stats::formula(N ~ 1)
   } else {
@@ -134,7 +134,7 @@ create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
   }
   X_space <- Matrix::sparse.model.matrix(form, data = dat)
   
-  ## Design matrix for the interaction random effects
+  # Design matrix for the interaction random effects
   X_agetime <- mgcv::tensor.prod.model.matrix(list(X_time, X_age))
   X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))
   X_spacetime <- Matrix::sparse.model.matrix(
@@ -143,7 +143,7 @@ create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
       group_indices())),
     data = dat
   )
-  ## return design matrices as list
+  # return design matrices as list
   output <- list(
     "X_fixed_mmc"     = X_fixed,
     "X_fixed_tmc"     = X_fixed,
@@ -189,7 +189,7 @@ shell_data_spec_area <- function(dat, area_lev = NULL) {
     # Resetting counter on space
     dplyr::mutate(space = .data$space - min(.data$space) + 1)
 
-  ## Returning matrix
+  # Returning matrix
   return(dat)
 }
 
@@ -248,8 +248,8 @@ create_integration_matrices <- function(out,
   out$time2 <- out$time
   out$age <- out$circ_age + 1
 
-  ## Matrix for selecting instantaneous hazard rate
-  ## Note: must be kept in CamelCase to agree with syntax for tmb::MakeAdFun
+  # Matrix for selecting instantaneous hazard rate
+  # Note: must be kept in CamelCase to agree with syntax for tmb::MakeAdFun
   IntMat1 <- create_integration_matrix_agetime(
     dat = out,
     time1 = time1,
@@ -260,7 +260,7 @@ create_integration_matrices <- function(out,
     ...
   )
 
-  ## Matrix for selecting instantaneous hazard rate
+  # Matrix for selecting instantaneous hazard rate
   IntMat2 <- create_integration_matrix_agetime_lag(
     dat = out,
     time1 = "time1",
@@ -340,7 +340,7 @@ create_integration_matrix_agetime <- function(dat,
   dat$time1_cap2 <- dat[[time1]] - timecaps[1] + 1
   dat$time2_cap2 <- dat[[time2]] - timecaps[1] + 1
 
-  ## If no stratification variable create a dummy variable
+  # If no stratification variable create a dummy variable
   if (is.null(strat)) {
     strat <- "strat"
     dat$strat <- 1
@@ -457,7 +457,7 @@ create_integration_matrix_agetime_lag <- function(dat,
   dat$time1_cap2 <- dat[[time1]] - timecaps[1] + 1
   dat$time2_cap2 <- dat[[time2]] - timecaps[1] + 1
 
-  ## If no stratification variable create a dummy variable
+  # If no stratification variable create a dummy variable
   if (is.null(strat)) {
     strat <- "strat"
     dat$strat <- 1
@@ -570,7 +570,7 @@ create_survival_matrices <- function(out,
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
 
-  ## calculate empirical agetime hazard matrices for different circ types
+  # calculate empirical agetime hazard matrices for different circ types
   circs <- c(
     "obs_mmc", # medical circumcision rate
     "obs_tmc", # traditional circumcision rate,
@@ -578,13 +578,39 @@ create_survival_matrices <- function(out,
     "cens", # censored
     "icens" # left censored
   )
+  # survival matrix names in TMB model
   list_names <- c("A_mmc", "A_tmc", "A_mc", "B", "C")
-  # remove MC if modelling for missing type is undesirable
-  if (!"obs_mc" %in% names(out)) {
-    circs <- circs[-3]
-    list_names <- list_names[-3]
+  
+  # don't model for specific type if missing from out
+  # if all out[[circs[i]]] are 0, create dummy survival matrix of all 0s
+  is_missing <- is_dummy <- c()
+  dummy_hazard_matrices <- vector(mode = "list", length = length(circs))
+  for (i in seq_along(circs)) {
+    if (!circs[i] %in% names(out)) {
+      message(paste0("Not creating survival matrix for type == ", circs[i]))
+      is_missing <- c(is_missing, i)
+    } else if(all(out[[circs[[i]]]] == 0)) {
+      message(paste0("Producing dummy survival matrix for type == ", circs[i]))
+      dummy_hazard_matrices[[i]] <-  Matrix::sparseMatrix(
+        i = 1,
+        j = nrow(out),
+        x = 0,
+        dims = c(1, nrow(out))
+      )
+      is_dummy <- c(is_dummy, i)
+    }
   }
-  ## Matrices for selecting instantaneous hazard rate for:
+  if (!is.null(is_missing) || !is.null(is_dummy)) {
+    circs <- circs[-c(is_missing, is_dummy)]
+    dummy_names <- list_names[is_dummy]
+    if (!is.null(is_missing)) list_names <- list_names[-is_missing]
+  }
+  # remove any NULL dummy hazard matrices
+  dummy_hazard_matrices <- dummy_hazard_matrices[-which(
+    sapply(dummy_hazard_matrices, is.null)
+  )]
+  
+  # Matrices for selecting instantaneous hazard rate for:
   hazard_matrices <- lapply(circs, function(x) {
     create_hazard_matrix_agetime(
       dat = out,
@@ -601,8 +627,16 @@ create_survival_matrices <- function(out,
       ...
     )
   })
+  
+  if (length(dummy_hazard_matrices) != 0) {
+    for (i in seq_along(dummy_hazard_matrices)) {
+      hazard_matrices <- append(
+        hazard_matrices, dummy_hazard_matrices[[i]], is_dummy[i]
+      )
+    }
+  }
   names(hazard_matrices) <- list_names
-
+  
   return(hazard_matrices)
 }
 
@@ -671,24 +705,24 @@ create_hazard_matrix_agetime <- function(dat,
     pmax(1, as.numeric(dat[[time1]]) - timecaps[1] + 1)
   )
 
-  ## Integration matrix for cumulative hazard
+  # Integration matrix for cumulative hazard
   dat$time2_cap <- pmin(
     timecaps[2] - timecaps[1] + 1,
     pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1)
   )
 
-  ## If no stratification variable create a dummy variable
+  # If no stratification variable create a dummy variable
   if (is.null(strat)) {
     strat <- "strat"
     dat$strat <- 1
   }
 
-  ## Number of dimensions in the hazard function
+  # Number of dimensions in the hazard function
   if (is.null(Ntime)) Ntime <- max(dat[, "time1_cap", drop = TRUE])
   if (is.null(Nage)) Nage <- max(dat[age])
   if (is.null(Nstrat)) Nstrat <- max(dat[strat])
 
-  ## Subsetting data if necessary
+  # Subsetting data if necessary
   if (!is.null(subset)) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
@@ -696,7 +730,7 @@ create_hazard_matrix_agetime <- function(dat,
   # If the selection matrices need to be taken from one reference aggregation
   # then we get a list of the hierarchical structure to that level
   if (aggregated == TRUE) {
-    ## If no weighting variable create a dummy variable
+    # If no weighting variable create a dummy variable
     if (is.null(weight)) {
       weight <- "weight"
       dat$weight <- 1
@@ -763,7 +797,7 @@ create_hazard_matrix_agetime <- function(dat,
     # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))
 
-    ## Column entries for hazard matrix
+    # Column entries for hazard matrix
     cols <- unlist(apply(dat2, 1, function(x) {
       Ntime * Nage * (as.numeric(x[strat]) - 1) + Ntime *
         (as.numeric(x[age]) - 1) + as.numeric(x["time2_cap"])
@@ -772,8 +806,8 @@ create_hazard_matrix_agetime <- function(dat,
     vals <- dat2[[circ]]
   }
 
-  ## Outputting sparse hazard matrix which selects the
-  ## corresponding incidence rates for the likelihood.
+  # Outputting sparse hazard matrix which selects the
+  # corresponding incidence rates for the likelihood.
   A <- Matrix::sparseMatrix(
     i = rows,
     j = cols,
@@ -781,7 +815,7 @@ create_hazard_matrix_agetime <- function(dat,
     dims = c(nrow(dat2), Ntime * Nage * Nstrat)
   )
 
-  ## Returning matrix
+  # Returning matrix
   return(A)
 }
 
@@ -864,15 +898,15 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
 create_rw_prec_matrix <- function(dim,
                                   order = 1,
                                   offset.diag = TRUE) {
-  ## Creating structure matrix
+  # Creating structure matrix
   Q <- diff(diag(dim), differences = order)
   Q <- t(Q) %*% Q
-  ## Adding offset to diagonal if required
+  # Adding offset to diagonal if required
   if (offset.diag) {
     diag(Q) <- diag(Q) + 1E-6
   }
-  ## Converting to sparse matrix
+  # Converting to sparse matrix
   Q <- methods::as(Q, "sparseMatrix")
-  ## Returning matrix
+  # Returning matrix
   return(Q)
 }
