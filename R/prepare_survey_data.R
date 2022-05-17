@@ -74,7 +74,7 @@ prepare_survey_data <- function(areas,
     # for (i in seq_along(survey_circumcision)) {
       # pull country
       cntry <- unique(survey_circumcision[[i]]$iso3)
-      print(cntry)
+      
       # parse country specific psnu area levels if desired
       if (inherits(area_lev, "data.frame")) {
         area_lev <- area_lev %>%
