@@ -4,7 +4,8 @@
 #'  normalise survey weights and apply Kish coefficients.
 #' @param areas \code{sf} shapefiles for specific country/region.
 #' @param survey_circumcision - Information on male circumcision status from
-#' surveys.
+#' surveys. If this is a list or contains more than one country, the function is 
+#' performed recursively for each country present, returning a list. 
 #' @param survey_individuals - Information on the individuals surveyed.
 #' @param survey_clusters - Information on the survey clusters.
 #' @param area_lev - Desired admin boundary level to perform the analysis on.
@@ -41,9 +42,82 @@ prepare_survey_data <- function(areas,
                                 norm_kisk_weights = TRUE,
                                 strata.norm = c("survey_id", "area_id"),
                                 strata.kish = c("survey_id")) {
+
+  # if survey_circumcision is a list or contains more than one country,
+  # apply function recursively for each iso3
+  is_list <- inherits(survey_circumcision, "list")
+
+  # split based on iso3 if not already a list and containing > 1 country
+  if (!is_list && length(unique(survey_circumcision$iso3)) != 1) {
+    survey_circumcision <- split(survey_circumcision, survey_circumcision$iso3)
+    survey_individuals <- split(survey_individuals, survey_individuals$iso3)
+    survey_clusters <- split(survey_clusters, survey_clusters$iso3)
+    areas <- split(areas, areas$iso3)
+    
+    # arrange and filter for country to ensure splitting is the same
+    equal_splits <- function(x, survey_circumcision) {
+      x <- x[names(x) %in% names(survey_circumcision)] # same names
+      return(x[order(names(survey_circumcision))]) # order names 
+    } 
+    survey_individuals <- equal_splits(survey_individuals, survey_circumcision)
+    survey_clusters<- equal_splits(survey_clusters, survey_circumcision)
+    areas <- equal_splits(areas, survey_circumcision)
+  }
+  if (inherits(survey_circumcision, "list")) {
+    message(paste0(
+      "survey_circumcision supplied is a list and/or contains multiple",
+      " countries, applying function recursively for each country present"
+    ))
+
+    # loop over each country
+    surveys <- lapply(seq_along(survey_circumcision), function(i) {
+    # for (i in seq_along(survey_circumcision)) {
+      # pull country
+      cntry <- unique(survey_circumcision[[i]]$iso3)
+      
+      # parse country specific psnu area levels if desired
+      if (inherits(area_lev, "data.frame")) {
+        area_lev <- area_lev %>%
+          dplyr::filter(.data$iso3 == cntry) %>%
+          dplyr::pull(.data$psnu_area_level)
+
+        # if area_level is missing, assume most common area lev in surveys
+        if (length(area_lev) == 0) {
+          area_lev <- table(as.numeric(
+            substr(survey_clusters[[i]]$geoloc_area_id, 5, 5)
+          ))
+          area_lev <- as.numeric(names(area_lev)[area_lev == max(area_lev)])
+        }
+      }
+      # apply function recursively for each country
+      prepare_survey_data(
+        areas               = dplyr::filter(areas[[i]], .data$iso3 == cntry),
+        survey_circumcision = dplyr::filter(
+          survey_circumcision[[i]], .data$iso3 == cntry
+        ),
+        survey_individuals  = dplyr::filter(
+          survey_individuals[[i]], .data$iso3 == cntry
+        ),
+        survey_clusters     = dplyr::filter(
+          survey_clusters[[i]], .data$iso3 == cntry
+        ),
+        area_lev            = area_lev,
+        start_year          = start_year,
+        cens_year           = cens_year,
+        cens_age            = cens_age,
+        rm_missing_type     = rm_missing_type,
+        norm_kisk_weights   = norm_kisk_weights,
+        strata.norm         = strata.norm,
+        strata.kish         = strata.kish
+      )
+    })
+    names(surveys) <- names(survey_circumcision)
+    return(surveys)
+  }
+  
   
   # Merging circumcision and individuals survey datasets ---------------------
-  
+ 
   # pull original surveys
   orig_surveys <- unique(survey_circumcision$survey_id)
   
