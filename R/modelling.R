@@ -74,7 +74,9 @@ threemc_fit_model <- function(
      maps <- maps[match(names(maps), param_order)]
      
      # replace NAs in parameters with mapped parameters in par_init
-     parameters[mapped_pars] <- fit$par_init[names(fit$par_init) %in% names(maps)]
+     parameters[mapped_pars] <- fit$par_init[
+       names(fit$par_init) %in% names(maps)
+     ]
      names(parameters)[mapped_pars] <- names(maps)
    }
    
@@ -131,12 +133,12 @@ threemc_fit_model <- function(
     fit <- circ_sample_tmb(
       fit = fit, obj = obj, nsample = N, sdreport = sdreport
     )
-    fit$tmb_data <- fit$par_init <- NULL # make fit object smaller
+    fit$tmb_data <- fit$par_init <- NULL # make fit object smaller for saving
     return(fit)
   }
 
   # Run optimiser (use optim if all pars are fixed, nlminb otherwise)
-  if (length(maps) == length(obj$par)) {
+  if (length(obj$par) == 0) {
     opt <- do.call(stats::optim, obj, ...)
   } else {
     opt <- stats::nlminb(
@@ -194,8 +196,8 @@ circ_sample_tmb <- function(
     opt$par.fixed <- opt$par
     opt$par.full <- obj$env$last.par
     fit <- c(opt, obj = list(obj))
-    class(fit) <- "naomi_fit"  
-  }
+  } 
+  class(fit) <- "naomi_fit"  
   
   # Look at standard deviation report
   if (sdreport == TRUE) {
