@@ -138,7 +138,7 @@ threemc_fit_model <- function(
   }
 
   # Run optimiser (use optim if all pars are fixed, nlminb otherwise)
-  if (length(obj$par) == 0  || length(maps) == length(obj$par)) {
+  if (length(obj$par) == 0) {
     opt <- do.call(stats::optim, obj, ...)
   } else {
     opt <- stats::nlminb(
