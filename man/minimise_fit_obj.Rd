@@ -23,4 +23,3 @@ Object of class "naomi_fit".
 Return minimised fit object. Often useful when saving the fit
 object for later aggregation.
 }
-\keyword{internal}

@@ -2,23 +2,29 @@
 % Please edit documentation in R/modelling.R
 \name{threemc_fit_model}
 \alias{threemc_fit_model}
-\title{Produce TMB model fit with sample}
+\title{Produce TMB model fit with sample, or re-sample from existing
+optimised model fit.}
 \usage{
 threemc_fit_model(
-  dat_tmb,
+  fit = NULL,
+  dat_tmb = NULL,
   mod,
-  parameters,
+  parameters = NULL,
   maps = NULL,
   randoms = c("u_time_mmc", "u_age_mmc", "u_space_mmc", "u_agetime_mmc",
     "u_agespace_mmc", "u_spacetime_mmc", "u_age_tmc", "u_space_tmc", "u_agespace_tmc"),
   sample = TRUE,
-  smaller_fit_obj = TRUE,
+  smaller_fit_obj = FALSE,
   sdreport = FALSE,
   N = 1000,
   ...
 )
 }
 \arguments{
+\item{fit}{Optional "small" fit object with no \code{sample}. Specifying \code{fit}
+means you do not need to specify \code{dat_tmb} or \code{parameters}, as argument
+specifications will be overridden by those stored in \code{fit}.}
+
 \item{dat_tmb}{\code{list} of data required for model fitting, outputted
 by \link[threemc]{threemc_prepare_model_data}, which includes:
 \itemize{
@@ -67,5 +73,6 @@ samples and standard deviation report (if desired).
 }
 \description{
 Optimises threemc objective function and produces samples from
-model fit (if so desired).
+model fit (if so desired). If provided with an existing optimised model
+\code{fit}, can also perform re-sampling.
 }
