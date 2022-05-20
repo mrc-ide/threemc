@@ -24,7 +24,8 @@ prepare_survey_data(
 
 \item{survey_circumcision}{\itemize{
 \item Information on male circumcision status from
-surveys.
+surveys. If this is a list or contains more than one country, the function is
+performed recursively for each country present, returning a list.
 }}
 
 \item{survey_individuals}{\itemize{

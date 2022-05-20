@@ -4,7 +4,14 @@
 \alias{circ_sample_tmb}
 \title{Sample TMB fit for Circumcision Model}
 \usage{
-circ_sample_tmb(obj, opt, sdreport = FALSE, nsample = 1000, ...)
+circ_sample_tmb(
+  fit = NULL,
+  obj = NULL,
+  opt,
+  sdreport = FALSE,
+  nsample = 1000,
+  ...
+)
 }
 \arguments{
 \item{obj}{TMB object/AD model outputted by \link[TMB]{MakeADFun}.}
