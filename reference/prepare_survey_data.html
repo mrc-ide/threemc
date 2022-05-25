@@ -60,8 +60,8 @@ normalise survey weights and apply Kish coefficients.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">prepare_survey_data</span><span class="op">(</span>
   <span class="va">areas</span>,
   <span class="va">survey_circumcision</span>,
-  <span class="va">survey_individuals</span>,
-  <span class="va">survey_clusters</span>,
+  survey_individuals <span class="op">=</span> <span class="cn">NULL</span>,
+  survey_clusters <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">area_lev</span>,
   start_year <span class="op">=</span> <span class="fl">2006</span>,
   cens_year <span class="op">=</span> <span class="cn">NULL</span>,
