@@ -129,7 +129,6 @@ threemc_fit_model <- function(
   if (!is.null(fit)) {
     fit$obj <- obj
     fit$obj$fn()
-    # fit <- naomi::sample_tmb(fit, nsample = N)
     fit <- circ_sample_tmb(
       fit = fit, obj = obj, nsample = N, sdreport = sdreport
     )

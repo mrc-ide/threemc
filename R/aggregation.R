@@ -435,7 +435,7 @@ aggregate_sample_age_group <- function(results_list,
   })
   # join together
   results <- as.data.frame(data.table::rbindlist(
-    lapply(results, data.table::rbindlist)
+    rlang::squash(results)
   ))
 
   # Multiplying by population to population weight
