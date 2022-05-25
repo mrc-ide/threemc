@@ -589,7 +589,7 @@ create_survival_matrices <- function(out,
     if (!circs[i] %in% names(out)) {
       message(paste0("Not creating survival matrix for type == ", circs[i]))
       is_missing <- c(is_missing, i)
-    } else if(all(out[[circs[[i]]]] == 0)) {
+    } else if (all(out[[circs[[i]]]] == 0)) {
       message(paste0("Producing dummy survival matrix for type == ", circs[i]))
       dummy_hazard_matrices[[i]] <-  Matrix::sparseMatrix(
         i = 1,
