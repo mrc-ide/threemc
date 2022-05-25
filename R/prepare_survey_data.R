@@ -49,7 +49,8 @@ prepare_survey_data <- function(areas,
 
   # Check if cluster & individuals data is provided; if not, assume sufficient 
   # data is included in survey_circumcision alone
-  is_add_data_present <- !is.null(survey_clusters) & !is.na(survey_individuals)
+  is_add_data_present <- !is.null(survey_clusters) &
+                         !is.null(survey_individuals)
 
   # split based on iso3 if not already a list and containing > 1 country
   if (!is_list && length(unique(survey_circumcision$iso3)) != 1) {
