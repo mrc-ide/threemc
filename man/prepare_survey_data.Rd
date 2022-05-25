@@ -7,8 +7,8 @@
 prepare_survey_data(
   areas,
   survey_circumcision,
-  survey_individuals,
-  survey_clusters,
+  survey_individuals = NULL,
+  survey_clusters = NULL,
   area_lev,
   start_year = 2006,
   cens_year = NULL,
