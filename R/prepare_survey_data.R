@@ -54,6 +54,7 @@ prepare_survey_data <- function(areas,
 
   # split based on iso3 if not already a list and containing > 1 country
   if (!is_list && length(unique(survey_circumcision$iso3)) != 1) {
+    
     survey_circumcision <- split(survey_circumcision, survey_circumcision$iso3)
 
     # arrange and filter for country to ensure splitting is the same
@@ -61,7 +62,6 @@ prepare_survey_data <- function(areas,
       x <- x[names(x) %in% names(survey_circumcision)] # same names
       return(x[order(names(survey_circumcision))]) # order names
     }
-    areas <- equal_splits(areas, survey_circumcision)
 
     # If cluster & individuals data are null, splitting would produce an error
     if (is_add_data_present) {
@@ -82,7 +82,7 @@ prepare_survey_data <- function(areas,
 
     # loop over each country
     surveys <- lapply(seq_along(survey_circumcision), function(i) {
-
+      
       # pull country
       cntry <- unique(survey_circumcision[[i]]$iso3)
 
@@ -93,7 +93,7 @@ prepare_survey_data <- function(areas,
           dplyr::pull(.data$psnu_area_level)
         # if area_level is missing, assume most common area lev in surveys
         if (length(area_lev) == 0) {
-          if (!is_add_data_present) {
+          if (is_add_data_present) {
             area_lev <- table(as.numeric(substr(
               # "area_id" column in survey_clusters may be "geoloc_area_id"
               dplyr::pull(
@@ -102,7 +102,7 @@ prepare_survey_data <- function(areas,
             )))
           } else {
             area_lev <- table(as.numeric(
-              substr(survey_circumcision$area_id, 5, 5)
+              substr(survey_circumcision[[i]]$area_id, 5, 5)
             ))
           }
           area_lev <- as.numeric(names(area_lev)[area_lev == max(area_lev)])
@@ -123,7 +123,7 @@ prepare_survey_data <- function(areas,
 
       # apply function recursively for each country
       prepare_survey_data(
-        areas = dplyr::filter(areas[[i]], .data$iso3 == cntry),
+        areas = dplyr::filter(areas, .data$iso3 == cntry),
         survey_circumcision = dplyr::filter(
           survey_circumcision[[i]], .data$iso3 == cntry
         ),
