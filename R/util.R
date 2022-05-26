@@ -175,7 +175,7 @@ add_area_id <- function(df,
     )
   
   # add missing area_level col, if required
-  if (is.null(df_area_id$area_level)) {
+  if (!"area_level" %in% names(df_area_id)) {
     df_area_id$area_level <- par$area_lev_select
   }
   return(df_area_id)
