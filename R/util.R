@@ -35,7 +35,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
 
   ## read in data, depending on file type
   cond <- tools::file_ext(path) %in% c("geojson", "shp", "shx")
-  if (cond == T) {
+  if (cond) {
     .data <- sf::read_sf(path, ...)
   } else {
     # selection prior to loading is allowed by fread
@@ -54,7 +54,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   }
 
   # Select specific columns, if desired (and present) (no need to do for fread)
-  if (!is.null(selected) & cond == T) {
+  if (!is.null(selected) & cond) {
     .data <- .data %>%
       dplyr::select(dplyr::all_of(selected[selected %in% names(.data)]))
   }
@@ -141,13 +141,13 @@ add_area_id <- function(df,
   # only select columns in our dataframe ("model" may be missing,
   # and `age` and `age_group` are interchangable)
   select_cols <- c("year", "age", "age_group", "population", "type", "model")
-  select_cols <- select_cols[select_cols %in% names(df)]
   # additional columns to keep, if supplied
   if (!is.null(add_keep_cols)) {
     select_cols <- unique(c(select_cols, add_keep_cols))
   }
   # remove columns which interfere with select below
   select_cols <- select_cols[!select_cols %in% c("area_id", "area_name")]
+  select_cols <- select_cols[select_cols %in% names(df)]
 
   df_area_id <- df %>%
     # join in area names for chosen area_id
@@ -175,9 +175,7 @@ add_area_id <- function(df,
     )
   
   # add missing area_level col, if required
-  if (!"area_level" %in% names(df_area_id)) {
-    df_area_id$area_level <- par$area_lev_select
-  }
+  df_area_id$area_level <- par$area_lev_select
   return(df_area_id)
 }
 
@@ -241,7 +239,7 @@ combine_areas <- function(.data,
   if (join) {
     return(as.data.frame(data.table::rbindlist(
       results_list,
-      use.names = T, ...
+      use.names = TRUE, ...
     )))
   } else {
     return(results_list)
