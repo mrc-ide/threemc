@@ -66,7 +66,16 @@ threemc_fit_model <- function(
    }
    # pull dat_tmb and parameters from small fit 
    dat_tmb <- fit$tmb_data
-   parameters <- split(fit$par.full, names(fit$par.full))[names(fit$par_init)]
+   parameters <- split(fit$par.full, names(fit$par.full))
+   # pull different parameters depending on whether the model has mmc/tmc split
+   if (mod == "Surv_SpaceAgeTime_ByType_withUnknownType") {
+     parameters <- parameters[names(fit$par_init)]
+   } else {
+     parameters <- parameters[
+       stringr::str_remove_all(names(fit$par_init), "_mmc|_tmc")
+     ]
+   }
+   
    if (!is.null(maps)) {
      # ensure mapped parameters are in the same order as parameters for model
      mapped_pars <- is.na(names(parameters))
@@ -105,9 +114,7 @@ threemc_fit_model <- function(
     names(dat_tmb)[names(dat_tmb) == "A_mc"] <- "A"
 
     parameters <- remove_type_distinction(parameters)
-
-    randoms <- stringr::str_remove(randoms, "_mmc")
-    randoms <- randoms[!grepl("_tmc", randoms)]
+    randoms <- unique(stringr::str_remove(randoms, "_tmc|_mmc"))
   }
 
   # Only have named random parameters
