@@ -90,7 +90,8 @@ create_shell_dataset <- function(survey_circumcision,
         dplyr::select(
           .data$area_id, .data$year,
           circ_age = .data$age, .data$population
-        ) 
+        ),
+      by = c("area_id", "year", "circ_age")
     )
 
   ## Add `space` to survey_circumcision observations
