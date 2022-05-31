@@ -67,13 +67,17 @@ threemc_fit_model <- function(
    # pull dat_tmb and parameters from small fit 
    dat_tmb <- fit$tmb_data
    parameters <- split(fit$par.full, names(fit$par.full))
+   init_params <- fit$par_init
    # pull different parameters depending on whether the model has mmc/tmc split
    if (mod == "Surv_SpaceAgeTime_ByType_withUnknownType") {
      parameters <- parameters[names(fit$par_init)]
    } else {
-     parameters <- parameters[
-       stringr::str_remove_all(names(fit$par_init), "_mmc|_tmc")
-     ]
+     # only need names and lengths, not values
+     names(init_params) <- stringr::str_remove_all(
+       names(init_params), "_mmc|_tmc"
+     )
+     init_params <- init_params[!duplicated(names(init_params))]
+     parameters <- parameters[names(init_params)]
      # remove duplicate parameters
      parameters <- parameters[!duplicated(names(parameters))]
    }
@@ -81,25 +85,24 @@ threemc_fit_model <- function(
    if (!is.null(maps)) {
      # ensure mapped parameters are in the same order as parameters for model
      mapped_pars <- is.na(names(parameters))
-     param_order <- names(fit$par_init)[mapped_pars]
+     param_order <- names(init_params)[mapped_pars]
      maps <- maps[match(names(maps), param_order)]
      
      # replace NAs in parameters with mapped parameters in par_init
-     parameters[mapped_pars] <- fit$par_init[
-       names(fit$par_init) %in% names(maps)
+     parameters[mapped_pars] <- init_params[
+       names(init_params) %in% names(maps)
      ]
      names(parameters)[mapped_pars] <- names(maps)
    }
    
-   is_matrix <- sapply(fit$par_init, is.matrix)
+   # is_matrix <- sapply(fit$par_init, is.matrix)
+   is_matrix <- sapply(init_params, is.matrix)
    parameters[is_matrix] <- Map(matrix,
                              parameters[is_matrix],
-                             nrow = lapply(fit$par_init[is_matrix], nrow),
-                             ncol = lapply(fit$par_init[is_matrix], ncol))
-   # remove any added, unnamed parameters
-   parameters <- parameters[!names(parameters) == ""]
-
-  } else { # if no fit == NULL, must have non-null dat_tmb & parameters
+                             nrow = lapply(init_params[is_matrix], nrow),
+                             ncol = lapply(init_params[is_matrix], ncol))
+  # if no fit == NULL, must have non-null dat_tmb & parameters
+  } else { 
     if (is.null(dat_tmb) | is.null(parameters)) {
       stop("Please specify non-null dat_tmb and parameters")
     }
