@@ -96,6 +96,8 @@ threemc_fit_model <- function(
                              parameters[is_matrix],
                              nrow = lapply(fit$par_init[is_matrix], nrow),
                              ncol = lapply(fit$par_init[is_matrix], ncol))
+   # remove any added, unnamed parameters
+   parameters <- parameters[!names(parameters) == ""]
 
   } else { # if no fit == NULL, must have non-null dat_tmb & parameters
     if (is.null(dat_tmb) | is.null(parameters)) {
