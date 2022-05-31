@@ -74,6 +74,8 @@ threemc_fit_model <- function(
      parameters <- parameters[
        stringr::str_remove_all(names(fit$par_init), "_mmc|_tmc")
      ]
+     # remove duplicate parameters
+     parameters <- parameters[!duplicated(names(parameters))]
    }
    
    if (!is.null(maps)) {
