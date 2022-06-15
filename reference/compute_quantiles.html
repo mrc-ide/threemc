@@ -73,24 +73,39 @@ the shell <code>data.frame</code> <code>out</code> with estimated empirical circ
 <dd><p>Shell dataset with a row for every unique record in
 circumcision survey data for a given area. Also includes empirical estimates
 for circumcision estimates for each unique record.</p></dd>
+
+
 <dt>fit</dt>
 <dd><p>Object containing <code>samples</code> list for the (cumulative) incidence
 and hazard rate of circumcision for the region(s) in question.</p></dd>
+
+
 <dt>area_lev</dt>
 <dd><p>PSNU area level for specific country</p></dd>
+
+
 <dt>probs</dt>
 <dd><p>Specific quantiles to be calculated,
 Default: c(0.025, 0.5, 0.975)</p></dd>
+
+
 <dt>names</dt>
 <dd><p>Parameter with <a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a>: logical; if true, the
 result has a names attribute. Set to FALSE for speedup with many probs,
 Default: FALSE</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Further arguments passed to <a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Input <code>out</code><code>data.frame</code>, including columns with quantiles for
+    
+
+<p>Input <code>out</code></p>
+<p></p>
+<p><code>data.frame</code>, including columns with quantiles for
 hazard rates etc for different circumcision types, and for overall
 circumcision.</p>
     </div>
@@ -114,7 +129,7 @@ circumcision.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

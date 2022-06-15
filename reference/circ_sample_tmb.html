@@ -71,17 +71,26 @@ deviation report outputted by <a href="https://rdrr.io/pkg/TMB/man/sdreport.html
     <h2>Arguments</h2>
     <dl><dt>obj</dt>
 <dd><p>TMB object/AD model outputted by <a href="https://rdrr.io/pkg/TMB/man/MakeADFun.html" class="external-link">MakeADFun</a>.</p></dd>
+
+
 <dt>opt</dt>
 <dd><p>Optimised TMB model, outputted by optimisation function such
 as <a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">nlminb</a> or <a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim</a>.</p></dd>
+
+
 <dt>nsample</dt>
 <dd><p>Number of samples to be generated, Default: 1000</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Further arguments passed to <a href="https://rdrr.io/pkg/naomi/man/sample_tmb.html" class="external-link">sample_tmb</a>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Object of class "naomi_fit", containing the original TMB object
+    
+
+<p>Object of class "naomi_fit", containing the original TMB object
 ("obj"), the standard deviation report for optimised AD model (from
 <a href="https://rdrr.io/pkg/TMB/man/sdreport.html" class="external-link">sdreport</a>) and <code>n_samples</code> samples for the (cumulative) incidence
 and hazard rate of circumcision for the region(s) in question.</p>
@@ -104,7 +113,7 @@ and hazard rate of circumcision for the region(s) in question.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

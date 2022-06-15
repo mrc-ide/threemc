@@ -83,48 +83,79 @@ stratification variable is also available, creating a 3D hazard function.</p>
 with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.</p></dd>
+
+
 <dt>areas</dt>
 <dd><p><code>sf</code> shapefiles for specific country/region.</p></dd>
+
+
 <dt>area_lev</dt>
 <dd><p>PSNU area level for specific country.</p></dd>
+
+
 <dt>subset</dt>
 <dd><p>Subset for dataset, Default: NULL</p></dd>
+
+
 <dt>time1</dt>
 <dd><p>Variable name for time of birth, Default: "time1"</p></dd>
+
+
 <dt>time2</dt>
 <dd><p>Variable name for time circumcised or censored,
 Default: "time2"</p></dd>
+
+
 <dt>timecaps</dt>
 <dd><p>Window to fix temporal dimension before and after,
 Default: c(1, Inf)</p></dd>
+
+
 <dt>Ntime</dt>
 <dd><p>Number of time points (if NULL, function will calculate),
 Default: NULL</p></dd>
+
+
 <dt>age</dt>
 <dd><ul><li><p>Variable with age circumcised or censored. Default: "age"</p></li>
 </ul></dd>
+
+
 <dt>Nage</dt>
 <dd><p>Number of age groups (if NULL, function will calculate),
 Default: NULL</p></dd>
+
+
 <dt>strat</dt>
 <dd><p>Variable to stratify by in using a 3D hazard function,
 Default: NULL</p></dd>
+
+
 <dt>Nstrat</dt>
 <dd><p>Number of stratification groups (if NULL, function will
 calculate), Default: NULL</p></dd>
+
+
 <dt>circ</dt>
 <dd><p>Variables with circumcision matrix, Default: "circ"</p></dd>
+
+
 <dt>aggregated</dt>
 <dd><p><code>agggregated = FALSE</code> treats every area_id as its own
 object, allowing for the use of surveys for lower area hierarchies.
 <code>aggregated = TRUE</code> means we only look at area level of interest.</p></dd>
+
+
 <dt>weight</dt>
 <dd><p>variable to weigh circumcisions by when aggregating for
 lower area hierarchies (only applicable for <code>aggregated = TRUE</code>)</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Matrix for selecting instantaneous hazard rate.</p>
+    
+
+<p>Matrix for selecting instantaneous hazard rate.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
@@ -143,7 +174,7 @@ lower area hierarchies (only applicable for <code>aggregated = TRUE</code>)</p><
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

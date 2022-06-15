@@ -77,50 +77,75 @@ normalise survey weights and apply Kish coefficients.</p>
     <h2>Arguments</h2>
     <dl><dt>areas</dt>
 <dd><p><code>sf</code> shapefiles for specific country/region.</p></dd>
+
+
 <dt>survey_circumcision</dt>
 <dd><ul><li><p>Information on male circumcision status from
 surveys. If this is a list or contains more than one country, the function
 is performed for each country present, returning a list.</p></li>
 </ul></dd>
+
+
 <dt>survey_individuals</dt>
 <dd><ul><li><p>Information on the individuals surveyed.</p></li>
 </ul></dd>
+
+
 <dt>survey_clusters</dt>
 <dd><ul><li><p>Information on the survey clusters.</p></li>
 </ul></dd>
+
+
 <dt>area_lev</dt>
 <dd><ul><li><p>Desired admin boundary level to perform the analysis on.</p></li>
 </ul></dd>
+
+
 <dt>start_year</dt>
 <dd><ul><li><p>Year to begin the analysis on, Default: 2006</p></li>
 </ul></dd>
+
+
 <dt>cens_year</dt>
 <dd><ul><li><p>Year to censor the circumcision data by (Sometimes some
 weirdness at the final survey year, e.g. v small number of MCs),
 Default: NULL</p></li>
 </ul></dd>
+
+
 <dt>cens_age</dt>
 <dd><ul><li><p>Age to censor the circumcision data at, Default: 59</p></li>
 </ul></dd>
+
+
 <dt>rm_missing_type</dt>
 <dd><ul><li><p>Indicator to decide whether you would like to keep
 surveys where there is no MMC/TMC disinction. These surveys may still be
 useful for determining MC levels, Default: FALSE</p></li>
 </ul></dd>
+
+
 <dt>norm_kisk_weights</dt>
 <dd><ul><li><p>Indicator to decide whether to normalise survey
 weights and apply Kish coefficients, Default: TRUE</p></li>
 </ul></dd>
+
+
 <dt>strata.norm</dt>
 <dd><p>Stratification variables for normalising survey weights,
 Default: c("survey_id", "area_id")</p></dd>
+
+
 <dt>strata.kish</dt>
 <dd><p>Stratification variables for estimating and applying the
 Kish coefficients, Default: "survey_id"</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Survey data with required variables to run circumcision model.</p>
+    
+
+<p>Survey data with required variables to run circumcision model.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
@@ -139,7 +164,7 @@ Kish coefficients, Default: "survey_id"</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>
