@@ -85,6 +85,11 @@ prepare_survey_data <- function(areas,
       
       # pull country
       cntry <- unique(survey_circumcision[[i]]$iso3)
+      
+      if (cntry == "LBR" && cens_age > 29) {
+        cens_age <- 29
+        message("for LBR, age must be censored to those under 29 (at least)")
+      }
 
       # parse country specific psnu area levels if desired
       if (inherits(area_lev, "data.frame")) {
