@@ -249,7 +249,11 @@ prepare_sample_data <- function(N = 100,
           dplyr::select(
             dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
             .data$population
-          ))
+          )),
+        # don't join by area_name, in case character encoding etc causes errors
+        by = names(tmp)[
+          names(tmp) %in% names(populations) & names(results) != "area_name"
+        ]
       ) %>%
       dplyr::relocate(.data$population, .before = .data$samp_1)
 
