@@ -241,20 +241,19 @@ prepare_sample_data <- function(N = 100,
         .data$year, .data$age,
         .data$type, .data$model,
         dplyr::contains("samp_")
-      ) %>%
-      # join in region populations
-      dplyr::left_join(
-        # only keep relevant columns in populations
-        (populations %>%
-          dplyr::select(
-            dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
-            .data$population
-          )),
+      ) 
+    
+    # only keep relevant columns in populations for left_join
+    populations_append <- populations %>% 
+      dplyr::select(
+        dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
+        .data$population,
         # don't join by area_name, in case character encoding etc causes errors
-        by = names(tmp)[
-          names(tmp) %in% names(populations) & names(tmp) != "area_name"
-        ]
-      ) %>%
+        -matches("area_name")
+      )
+      tmp <- tmp %>% 
+      # join in region populations
+      dplyr::left_join(populations_append) %>%
       dplyr::relocate(.data$population, .before = .data$samp_1)
 
     # filter out na populations, with an appropriate message
