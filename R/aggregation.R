@@ -252,7 +252,7 @@ prepare_sample_data <- function(N = 100,
           )),
         # don't join by area_name, in case character encoding etc causes errors
         by = names(tmp)[
-          names(tmp) %in% names(populations) & names(results) != "area_name"
+          names(tmp) %in% names(populations) & names(tmp) != "area_name"
         ]
       ) %>%
       dplyr::relocate(.data$population, .before = .data$samp_1)
