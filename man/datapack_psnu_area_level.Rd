@@ -17,7 +17,7 @@ respective country. Inferences on larger regions (i.e. lower PSNU area
 levels) can be made by aggregating results for higher area levels. The
 dataset contains the following fields:
 \itemize{
-\item{\code{iso3}}{character ISO3 codes for various Sub-Saharan African
+\item{\code{iso3}}{character ISO3 codes for Sub-Saharan African
 countries.}
 \item{\code{psnu_area_level}}{integer The sub national level considered
 to be the organizational level in which a country has prioritised their
