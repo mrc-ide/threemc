@@ -151,6 +151,7 @@ add_area_id <- function(df,
 
   df_area_id <- df %>%
     # join in area names for chosen area_id
+    dplyr::select(-dplyr::contains("area_name")) %>%
     dplyr::left_join(df_areas_wide %>%
       dplyr::select(
         # current level

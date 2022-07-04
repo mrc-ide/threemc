@@ -258,6 +258,7 @@ prepare_survey_data <- function(areas,
   for (i in seq_len(max(areas$area_level))) {
     survey_circumcision <- survey_circumcision %>%
       ## Merging on boundary information
+      dplyr::select(-dplyr::matches("area_name")) %>%
       dplyr::left_join(areas, by = "area_id") %>%
       ## Altering area
       dplyr::mutate(

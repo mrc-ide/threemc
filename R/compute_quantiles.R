@@ -39,10 +39,10 @@ compute_quantiles <- function(out,
   if (length(probs) != 3) stop("probs should be of length 3")
   # ensure that probs are sorted, regardless of input order
   probs <- sort(probs)
-  
+
   # subset to area level of interest, if desired
   if (!is.null(area_lev)) {
-    out <- out %>% 
+    out <- out %>%
       dplyr::filter(.data$area_level == area_lev)
   }
 

@@ -746,6 +746,7 @@ create_hazard_matrix_agetime <- function(dat,
     # Merging on number of times to
     # replicate to the main dataset
     dat <- dat %>%
+      dplyr::select(-dplyr::matches("area_level")) %>%
       dplyr::left_join(
         areas_agg$n_sub_region_df,
         by = "area_id"
