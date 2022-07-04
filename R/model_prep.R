@@ -32,6 +32,7 @@
 #'    }
 #' }
 #' @rdname threemc_prepare_model_data
+#' @importFrom R.utils Arguments
 #' @export
 threemc_prepare_model_data <- function(
   # data
