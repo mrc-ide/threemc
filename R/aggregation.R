@@ -249,7 +249,7 @@ prepare_sample_data <- function(N = 100,
         dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
         .data$population,
         # don't join by area_name, in case character encoding etc causes errors
-        -matches("area_name")
+        -dplyr::matches("area_name")
       )
       tmp <- tmp %>% 
       # join in region populations
