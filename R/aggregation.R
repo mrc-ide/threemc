@@ -610,12 +610,13 @@ merge_area_info <- function(results, areas) {
 
   # Merging regional information on the dataset (i.e. parent area info)
   results <- results %>%
+    # remove area_name if present to avoid mishaps with strange characters
     dplyr::select(-dplyr::matches("area_name")) %>%
     # Adding region information
     dplyr::left_join(
       (areas %>%
         dplyr::select(.data$area_id:.data$area_level)),
-      by = c("area_id", "area_name")
+      by = c("area_id")
     ) %>%
     dplyr::relocate(.data$area_level, .after = "area_name") %>%
     dplyr::left_join(
