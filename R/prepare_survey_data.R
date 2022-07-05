@@ -278,7 +278,7 @@ prepare_survey_data <- function(areas,
     # Note: inner_join will remove observations that don't
     #       corresponding to a location in "areas"
     dplyr::inner_join(
-      dplyr::select(areas, .data$area_id, .data$area_name),
+      dplyr::select(areas, .data$area_id, .data$area_name, .data$area_level),
       by = "area_id"
     ) %>%
     dplyr::mutate(
