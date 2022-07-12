@@ -125,6 +125,9 @@ prepare_survey_data <- function(areas,
       } else {
         survey_individuals_spec <- survey_clusters_spec <- NULL
       }
+      survey_circumcision_spec <- dplyr::filter(
+        survey_circumcision[[i]], .data$iso3 == cntry
+      )
 
       # apply function recursively for each country
       prepare_survey_data(
@@ -146,6 +149,19 @@ prepare_survey_data <- function(areas,
     })
     names(surveys) <- names(survey_circumcision)
     return(surveys)
+  }
+  
+  # if we set cens_year == TRUE, calculate cens_year as max survey year
+  if (!is.null(cens_year) && cens_year == TRUE) {
+    message("cens_year set to TRUE, calculated as last survey year")
+    if (!is.null(survey_clusters)) {
+      surveys <- survey_clusters$survey_id
+    } else {
+      surveys <- survey_circumcision$survey_id
+    }
+    cens_year <- max(as.numeric(
+      substr(unique(surveys), 4, 7)
+    ))
   }
 
 
@@ -182,7 +198,14 @@ prepare_survey_data <- function(areas,
         by = c("survey_id", "cluster_id")
       )
   }
-
+  
+  # Add column of NAs for missing age columns
+  age_cols <- c("circ_age", "age")
+  if (sum(age_cols %in% names(survey_circumcision)) < 2) {
+    missing_age_cols <- age_cols[!age_cols %in% names(survey_circumcision)]
+    survey_circumcision[, missing_age_cols] <- NA
+  }
+  
   # Remove those with missing circumcison status
   survey_circumcision <- survey_circumcision %>%
     dplyr::filter(
