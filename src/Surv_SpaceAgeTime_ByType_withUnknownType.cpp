@@ -275,10 +275,10 @@ Type objective_function<Type>::operator() ()
   REPORT(haz);         // Total hazard rate
   REPORT(inc_tmc);     // Traditional circumcision incidence rate
   REPORT(inc_mmc);     // Medical circumcision incidence rate
-  REPORT(inc);     // Medical circumcision incidence rate
+  REPORT(inc);         // Total circumcision incidence rate
   REPORT(cum_inc_tmc); // Traditional circumcision cumulative incidence rate
   REPORT(cum_inc_mmc); // Medical circumcision cumulative incidence rate
-  REPORT(cum_inc); // Medical circumcision cumulative incidence rate
+  REPORT(cum_inc);     // Total circumcision cumulative incidence rate
   REPORT(surv);        // Survival probabilities
   
   /////////////////////////////////////////
