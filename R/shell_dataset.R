@@ -35,6 +35,8 @@
 create_shell_dataset <- function(survey_circumcision,
                                  population_data,
                                  areas,
+                                 start_year = 2006,
+                                 end_year = 2021,
                                  area_lev = NULL,
                                  time1 = "time1",
                                  time2 = "time2",
@@ -74,12 +76,12 @@ create_shell_dataset <- function(survey_circumcision,
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
   out <- tidyr::crossing(areas_model,
-    "year" = seq(2006, 2021, by = 1),
+    "year" = seq(start_year, end_year, by = 1),
     "circ_age" = 0:max(survey_circumcision$circ_age, na.rm = TRUE)
   ) %>%
     ## Getting time and age variable
     dplyr::mutate(
-      time = .data$year - 2006 + 1,
+      time = .data$year - start_year + 1,
       age = .data$circ_age + 1
     ) %>%
     ## Sorting dataset

@@ -290,7 +290,9 @@ prepare_survey_data <- function(areas,
           as.character(.data$parent_area_id)
         )
       ) %>%
-      dplyr::select(-.data$parent_area_id, -.data$area_name, -.data$area_level)
+      dplyr::select(
+        -c(.data$parent_area_id, .data$area_name, .data$area_level)
+      )
   }
 
   # Final preparation of circumcision variables ------------------------------
