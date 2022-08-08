@@ -6,6 +6,7 @@
 #'
 #' @useDynLib Surv_SpaceAgeTime
 #' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType
+#' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType_No_AgeTime_Interaction
 #' @noRd
 #' @keywords internal
 .dummy <- function() {
