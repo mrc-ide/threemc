@@ -18,6 +18,7 @@
 #' @param N Number of samples to be generated, Default: 100
 #' @param prev_year If type == "prevalence", choose year to compare prevalence
 #' with.
+#' @param ... Further arguments to internal functions. 
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
@@ -30,7 +31,9 @@ threemc_aggregate <- function(
   # options
   age_var = c("age", "age_group"),
   type = c("probability", "incidence", "prevalence"), area_lev, N = 100,
-  prev_year = 2008) {
+  prev_year = 2008,
+  ...
+  ) {
 
   #### Preparing location/shapefile information ####
   if (inherits(areas, "sf")) {
@@ -71,9 +74,9 @@ threemc_aggregate <- function(
 
   # aggregate samples for each individual age or age group
   if (age_var == "age") {
-    .data <- aggregate_sample(.data)
+    .data <- aggregate_sample(.data, ...)
   } else {
-    .data <- aggregate_sample_age_group(.data)
+    .data <- aggregate_sample_age_group(.data, ...)
   }
 
   # additional aggregations to perform for prevalence
@@ -91,7 +94,7 @@ threemc_aggregate <- function(
     .data <- rbind(.data, data_change_prev_year, data_n)
   }
   # calculate summary statistics (mean, sd, quantiles)
-  .data <- posterior_summary_fun(.data)
+  .data <- posterior_summary_fun(.data, ...)
 
   # Merge regional information on the dataset (i.e. parent area info) & return
   .data <- merge_area_info(.data, areas)
@@ -423,7 +426,7 @@ aggregate_sample_age_group <- function(results_list,
         dplyr::select(-.data$age)
       # Getting summarising samples
       x <- data.table::setDT(x)[,
-        lapply(.SD, sum, na.rm = T),
+        lapply(.SD, sum, na.rm = TRUE),
         by = c(aggr_cols),
         .SDcols = c("population", paste0("samp_", c(1:N)))
       ]
