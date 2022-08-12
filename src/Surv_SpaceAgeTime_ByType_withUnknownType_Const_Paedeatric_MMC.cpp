@@ -32,7 +32,6 @@ Type objective_function<Type>::operator() ()
   ////////////////////////
   // Survival analysis matrices
   DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting instantaneous hazard for medically circumcised pop
-  DATA_SPARSE_MATRIX(A_mmc_paed); // Matrix selecting instantaneous hazard for medically circumcised pop (aged < specified age)
   DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
   DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
   DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
@@ -238,40 +237,38 @@ Type objective_function<Type>::operator() ()
   /// Estimating hazard rate ///
   //////////////////////////////
   // Medical hazard rate
-  vector<Type> haz_mmc = X_fixed_mmc * u_fixed_mmc + 
-    X_time_mmc * u_time_mmc * sigma_time_mmc + 
-    X_space_mmc * u_space_mmc * sigma_space_mmc + 
-    X_age_mmc * u_age_mmc * sigma_age_mmc + 
-    X_agetime_mmc * u_agetime_mmc_v * sigma_agetime_mmc + 
-    X_agespace_mmc * u_agespace_mmc_v * sigma_agespace_mmc + 
-    X_spacetime_mmc * u_spacetime_mmc_v * sigma_spacetime_mmc;
-  
-  // hazard rate for paedatric ages	
-  vector<Type> haz_mmc_paed = X_fixed_mmc_paed * u_fixed_mmc_paed +
-    X_space_mmc_paed * u_space_mmc_paed * sigma_space_mmc_paed + 
-    X_age_mmc_paed * u_age_mmc_paed * sigma_age_mmc_paed + 
-    X_agespace_mmc_paed * u_agespace_mmc_paed_v * sigma_agespace_mmc_paed;
-  
+  vector<Type> haz_mmc = 
+	  // Peadiatric part of the MMC process 
+	  X_fixed_mmc_paed * u_fixed_mmc_paed +
+		  X_space_mmc_paed * u_space_mmc_paed * sigma_space_mmc_paed + 
+			  X_age_mmc_paed * u_age_mmc_paed * sigma_age_mmc_paed + 
+				  X_agespace_mmc_paed * u_agespace_mmc_paed_v * sigma_agespace_mmc_paed + 
+	  // Adult part of the MMC process
+	  X_fixed_mmc * u_fixed_mmc + 
+		  X_time_mmc * u_time_mmc * sigma_time_mmc + 
+			  X_space_mmc * u_space_mmc * sigma_space_mmc + 
+				  X_age_mmc * u_age_mmc * sigma_age_mmc + 
+					  X_agetime_mmc * u_agetime_mmc_v * sigma_agetime_mmc + 
+						  X_agespace_mmc * u_agespace_mmc_v * sigma_agespace_mmc + 
+							  X_spacetime_mmc * u_spacetime_mmc_v * sigma_spacetime_mmc;
+
   // Traditional hazard rate	
   vector<Type> haz_tmc = X_fixed_tmc * u_fixed_tmc +
-    X_space_tmc * u_space_tmc * sigma_space_tmc + 
-    X_age_tmc * u_age_tmc * sigma_age_tmc + 
-    X_agespace_tmc * u_agespace_tmc_v * sigma_agespace_tmc;
+	  X_space_tmc * u_space_tmc * sigma_space_tmc + 
+		  X_age_tmc * u_age_tmc * sigma_age_tmc + 
+			  X_agespace_tmc * u_agespace_tmc_v * sigma_agespace_tmc;
   
   // Rates on [0,1] scale 
   haz_tmc = invlogit_vec(haz_tmc);
-  haz_mmc_paed = invlogit_vec(haz_mmc_paed);
   haz_mmc = invlogit_vec(haz_mmc);
   
   // Adjustment such that \lambda_mmc + \lambda_tmc \in [0,1]  
   // Medical rate to only take from the remaining proportion 
   // not taken through traditional circumcision (1 - \lambda_tmc)
-  // haz_mmc = haz_mmc * (1 - haz_tmc);
-  haz_mmc = haz_mmc * (1 - haz_tmc - haz_mmc_paed);
+  haz_mmc = haz_mmc * (1 - haz_tmc);
   
   // Total hazard rate
-  // vector<Type> haz = haz_mmc + haz_tmc;
-  vector<Type> haz = haz_mmc + haz_mmc_paed + haz_tmc;
+  vector<Type> haz = haz_mmc + haz_tmc;
   
   // Survival probabilities
   vector<Type> logprob  = log(Type(1.0) - haz);
@@ -281,25 +278,19 @@ Type objective_function<Type>::operator() ()
   
   // Incidence 
   vector<Type> inc_tmc = haz_tmc * surv_lag;
-  vector<Type> inc_mmc_paed = haz_mmc_paed * surv_lag;
   vector<Type> inc_mmc = haz_mmc * surv_lag;
   vector<Type> inc = haz * surv_lag;
   
   // Cumulative incidence 
   vector<Type> cum_inc_tmc = IntMat1 * inc_tmc;
-  vector<Type> cum_inc_mmc_paed = IntMat1 * inc_mmc_paed;
   vector<Type> cum_inc_mmc = IntMat1 * inc_mmc;
-  // vector<Type> cum_inc = cum_inc_tmc + cum_inc_mmc;
-  vector<Type> cum_inc = cum_inc_tmc + cum_inc_mmc + cum_inc_mmc_paed;
+  vector<Type> cum_inc = cum_inc_tmc + cum_inc_mmc;
   
   //////////////////
   /// Likelihood ///
   //////////////////
   // Getting likelihood for those medically circumcised
   nll -= (A_mmc * log(inc_mmc)).sum();
-  
-  // Getting likelihood for paedren traditionally circumcised
-  nll -= (A_mmc_paed * log(inc_mmc_paed)).sum();
   
   // Getting likelihood for those traditionally circumcised
   nll -= (A_tmc * log(inc_tmc)).sum();
@@ -317,14 +308,11 @@ Type objective_function<Type>::operator() ()
   /// Reporting variables ///
   ///////////////////////////
   REPORT(haz_mmc);     // Medical hazard rate
-  REPORT(haz_mmc_paed);     // Medical paediatric hazard rate
   REPORT(haz_tmc);     // Traditional hazard rate
   REPORT(haz);         // Total hazard rate
-  REPORT(inc_mmc_paed);     // Medical paediatric circumcision incidence rate
   REPORT(inc_tmc);     // Traditional circumcision incidence rate
   REPORT(inc_mmc);     // Medical circumcision incidence rate
   REPORT(inc);         // Total circumcision incidence rate
-  REPORT(cum_inc_mmc_paed); // Medical paediatric circumcision cumulative incidence rate
   REPORT(cum_inc_tmc); // Traditional circumcision cumulative incidence rate
   REPORT(cum_inc_mmc); // Medical circumcision cumulative incidence rate
   REPORT(cum_inc);     // Total circumcision cumulative incidence rate
