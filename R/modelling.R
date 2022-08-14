@@ -102,6 +102,7 @@ threemc_fit_model <- function(
                              ncol = lapply(init_params[is_matrix], ncol))
   # if no fit == NULL, must have non-null dat_tmb & parameters
   } else { 
+    
     if (is.null(dat_tmb) | is.null(parameters)) {
       stop("Please specify non-null dat_tmb and parameters")
     }
