@@ -89,14 +89,14 @@ Type objective_function<Type>::operator() ()
   
   // Standard deviations 
   PARAMETER(logsigma_age_mmc);            Type sigma_age_mmc            = exp(logsigma_age_mmc);
+  PARAMETER(logsigma_age_mmc_paed);      Type sigma_age_mmc_paed      = exp(logsigma_age_mmc_paed);
   PARAMETER(logsigma_time_mmc);           Type sigma_time_mmc           = exp(logsigma_time_mmc);
   PARAMETER(logsigma_space_mmc);          Type sigma_space_mmc          = exp(logsigma_space_mmc);
+  PARAMETER(logsigma_space_mmc_paed);    Type sigma_space_mmc_paed    = exp(logsigma_space_mmc_paed);
   PARAMETER(logsigma_agetime_mmc);        Type sigma_agetime_mmc        = exp(logsigma_agetime_mmc);
   PARAMETER(logsigma_agespace_mmc);       Type sigma_agespace_mmc       = exp(logsigma_agespace_mmc);
-  PARAMETER(logsigma_spacetime_mmc);      Type sigma_spacetime_mmc      = exp(logsigma_spacetime_mmc);
-  PARAMETER(logsigma_age_mmc_paed);      Type sigma_age_mmc_paed      = exp(logsigma_age_mmc_paed);
-  PARAMETER(logsigma_space_mmc_paed);    Type sigma_space_mmc_paed    = exp(logsigma_space_mmc_paed);
   PARAMETER(logsigma_agespace_mmc_paed); Type sigma_agespace_mmc_paed = exp(logsigma_agespace_mmc_paed);
+  PARAMETER(logsigma_spacetime_mmc);      Type sigma_spacetime_mmc      = exp(logsigma_spacetime_mmc);
   PARAMETER(logsigma_age_tmc);            Type sigma_age_tmc            = exp(logsigma_age_tmc);
   PARAMETER(logsigma_space_tmc);          Type sigma_space_tmc          = exp(logsigma_space_tmc);
   PARAMETER(logsigma_agespace_tmc);       Type sigma_agespace_tmc       = exp(logsigma_agespace_tmc);
@@ -106,10 +106,10 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logitrho_mmc_time2);  Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_time3);  Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_age1);   Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_age2);   Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_age3);   Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_paed_age1);   Type rho_mmc_paed_age1   = geninvlogit(logitrho_mmc_paed_age1,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_age2);   Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_paed_age2);   Type rho_mmc_paed_age2   = geninvlogit(logitrho_mmc_paed_age2,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_age3);   Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_tmc_age1);   Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_tmc_age2);   Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
   
