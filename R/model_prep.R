@@ -199,7 +199,7 @@ create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
 #' spatial and random effects, for both medical and traditional circumcision.
 #' @param paed_age_cutoff Age at which to no longer consider an individual as 
 #' part of the "paediatric" population of a country, Default: 10
-#' @importFrom dplyr %>%
+#' @importFrom rlang .data
 #' @keywords internal
 split_mmc_design_matrices_paed <- function(
     out, area_lev, design_matrices, paed_age_cutoff = 10
@@ -208,7 +208,7 @@ split_mmc_design_matrices_paed <- function(
   # TODO: What order should these design matrices be in?
   if (!is.null(paed_age_cutoff)) {
     # pull out for area level of interest
-    out_spec_area_lev <- filter(out, area_level == area_lev)
+    out_spec_area_lev <- dplyr::filter(out, .data$area_level == area_lev)
     # identify rows corresponding to paediatric and adult circumcisions
     paed_age_rows <- which(out_spec_area_lev$circ_age < paed_age_cutoff)
     adult_age_rows <- which(out_spec_area_lev$circ_age >= paed_age_cutoff)
@@ -239,7 +239,7 @@ split_mmc_design_matrices_paed <- function(
     
     # append mmc design matrices with adult and paediatric mmc matrices
     design_matrices[grepl("mmc", names(design_matrices))] <- 
-      design_matrices_mmc
+      design_matrices_mmc_adult
     design_matrices <- c(design_matrices, design_matrices_mmc_paed)
   }
   return(design_matrices)
