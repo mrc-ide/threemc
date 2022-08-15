@@ -15,6 +15,9 @@
 #' @param weight variable to weigh circumcisions by when aggregating for 
 #' lower area hierarchies (only applicable for `aggregated = TRUE`) 
 #' @param k_dt Age knot spacing in spline definitions, Default: 5
+#' @param paed_age_cutoff Age at which to split MMC design matrices between 
+#' paediatric and non-paediatric populations, the former of which are constant
+#' over time. Set to NULL if not desired, Default: NULL
 #' @param ... Additional arguments to be passed to functions which create
 #' matrices. 
 #' @return \code{list} of data required for model fitting, including:
