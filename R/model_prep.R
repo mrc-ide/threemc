@@ -64,9 +64,11 @@ threemc_prepare_model_data <- function(
   )
   
   # Have piecewise mmc design matrices for paediatric and non-paediatric pops
-  design_matrices <- split_mmc_design_matrices_paed(
-    out, area_lev, design_matrices, paed_age_cutoff
-  )
+  if (!is.null(paed_age_cutoff)) {
+    design_matrices <- split_mmc_design_matrices_paed(
+      out, area_lev, design_matrices, paed_age_cutoff
+    )   
+  }
   
   # Create integration matrices for selecting the instantaneous hazard rate
   integration_matrices <- create_integration_matrices(
