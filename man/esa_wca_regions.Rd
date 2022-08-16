@@ -19,8 +19,8 @@ North-South-East-West categorisation.
 countries.}
 \item{\code{region}}{character ESA-WCA categorisation for each
 \code{iso3}}
-\item{\code{four_region}}{character North-South-East-West categorisation for
-each \code{iso3}}
+\item{\code{four_region}}{character North-South-East-West categorisation
+for each \code{iso3}}
 }
 }
 \keyword{datasets}

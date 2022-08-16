@@ -9,6 +9,8 @@ create_shell_dataset(
   population_data,
   areas,
   area_lev = NULL,
+  start_year = 2006,
+  end_year = 2021,
   time1 = "time1",
   time2 = "time2",
   strat = "space",
@@ -27,6 +29,11 @@ surveys.}
 
 \item{area_lev}{PSNU area level for specific country. Defaults to the
 maximum area level found in \code{areas} if not supplied.}
+
+\item{start_year}{First year in shell dataset, Default: 2006}
+
+\item{end_year}{Last year in shell dataset, which is also the year to
+forecast/model until, Default: 2021}
 
 \item{time1}{Variable name for time of birth, Default: "time1"}
 

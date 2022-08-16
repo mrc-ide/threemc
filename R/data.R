@@ -27,8 +27,8 @@ NULL
 #'   countries.}
 #'   \item{\code{region}}{character ESA-WCA categorisation for each 
 #'   \code{iso3}}
-#'   \item{\code{four_region}}{character North-South-East-West categorisation for 
-#'   each \code{iso3}}
+#'   \item{\code{four_region}}{character North-South-East-West categorisation 
+#'   for each \code{iso3}}
 #' }
 #' @format A \code{data.frame} with 38 rows and 3 variables:
 #' @docType data

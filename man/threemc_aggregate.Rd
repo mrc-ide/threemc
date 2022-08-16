@@ -13,7 +13,8 @@ threemc_aggregate(
   type = c("probability", "incidence", "prevalence"),
   area_lev,
   N = 100,
-  prev_year = 2008
+  prev_year = 2008,
+  ...
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ to aggregate for. Can be one of "probability", "incidence" or "prevalence".}
 
 \item{prev_year}{If type == "prevalence", choose year to compare prevalence
 with.}
+
+\item{...}{Further arguments to internal functions.}
 }
 \value{
 \code{data.frame} with samples aggregated by \code{aggr_cols} and

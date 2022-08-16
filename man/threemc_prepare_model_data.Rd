@@ -7,10 +7,11 @@
 threemc_prepare_model_data(
   out,
   areas,
-  area_lev,
+  area_lev = NULL,
   aggregated = TRUE,
   weight = "population",
   k_dt = 5,
+  paed_age_cutoff = NULL,
   ...
 )
 }
@@ -32,6 +33,10 @@ object, allowing for the use of surveys for lower area hierarchies.
 lower area hierarchies (only applicable for \code{aggregated = TRUE})}
 
 \item{k_dt}{Age knot spacing in spline definitions, Default: 5}
+
+\item{paed_age_cutoff}{Age at which to split MMC design matrices between
+paediatric and non-paediatric populations, the former of which are constant
+over time. Set to NULL if not desired, Default: NULL}
 
 \item{...}{Additional arguments to be passed to functions which create
 matrices.}

@@ -12,6 +12,9 @@
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. Defaults to the
 #' maximum area level found in `areas` if not supplied.
+#' @param start_year First year in shell dataset, Default: 2006
+#' @param end_year Last year in shell dataset, which is also the year to 
+#' forecast/model until, Default: 2021
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,
 #' Default: "time2"
@@ -35,9 +38,9 @@
 create_shell_dataset <- function(survey_circumcision,
                                  population_data,
                                  areas,
+                                 area_lev = NULL,
                                  start_year = 2006,
                                  end_year = 2021,
-                                 area_lev = NULL,
                                  time1 = "time1",
                                  time2 = "time2",
                                  strat = "space",

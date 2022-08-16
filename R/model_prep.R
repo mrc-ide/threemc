@@ -15,6 +15,9 @@
 #' @param weight variable to weigh circumcisions by when aggregating for 
 #' lower area hierarchies (only applicable for `aggregated = TRUE`) 
 #' @param k_dt Age knot spacing in spline definitions, Default: 5
+#' @param paed_age_cutoff Age at which to split MMC design matrices between 
+#' paediatric and non-paediatric populations, the former of which are constant
+#' over time. Set to NULL if not desired, Default: NULL
 #' @param ... Additional arguments to be passed to functions which create
 #' matrices. 
 #' @return \code{list} of data required for model fitting, including:
@@ -36,43 +39,68 @@
 #' @export
 threemc_prepare_model_data <- function(
   # data
-  out, areas, 
+  out, 
+  areas, 
   # options
-  area_lev, aggregated = TRUE, weight = "population", k_dt = 5, ...
+  area_lev        = NULL, 
+  aggregated      = TRUE, 
+  weight          = "population", 
+  k_dt            = 5, 
+  paed_age_cutoff = NULL,
+  ...
 ) {
+  
+  if (is.null(area_lev)) {
+    message(
+      "area_lev arg missing, taken as maximum area level in shell dataset"
+    )
+    area_lev <- max(out$area_level, na.rm = TRUE)
+  }
   
   # Create design matrices for fixed effects and temporal, age, space and
   # interaction random effects
-  design_matrices <- create_design_matrices(dat = out,
-                                            area_lev = area_lev,
-                                            k_dt = k_dt)
+  design_matrices <- create_design_matrices(
+    dat = out, area_lev = area_lev, k_dt = k_dt
+  )
+  
+  # Have piecewise mmc design matrices for paediatric and non-paediatric pops
+  if (!is.null(paed_age_cutoff)) {
+    design_matrices <- split_mmc_design_matrices_paed(
+      out, area_lev, design_matrices, paed_age_cutoff
+    )   
+  }
   
   # Create integration matrices for selecting the instantaneous hazard rate
-  integration_matrices <- create_integration_matrices(out,
-                                                      area_lev = area_lev,
-                                                      time1 = "time1",
-                                                      time2 = "time2",
-                                                      age = "age",
-                                                      strat = "space",
-                                                      ...)
+  integration_matrices <- create_integration_matrices(
+    out, 
+    area_lev = area_lev,
+    time1    = "time1",
+    time2    = "time2",
+    age      = "age",
+    strat    = "space",
+    ...
+  )
   
   # create survival matrices for MMC, TMC, censored and left censored
-  survival_matrices <- create_survival_matrices(out,
-                                                areas = areas,
-                                                area_lev = area_lev,
-                                                time1 = "time1",
-                                                time2 = "time2",
-                                                age = "age",
-                                                strat = "space",
-                                                aggregated = aggregated,
-                                                weight = weight, 
-                                                ...)
+  survival_matrices <- create_survival_matrices(
+    out,
+    areas      = areas,
+    area_lev   = area_lev,
+    time1      = "time1",
+    time2      = "time2",
+    age        = "age",
+    strat      = "space",
+    aggregated = aggregated,
+    weight     = weight, 
+    ...
+  )
   
   # Precision/Adjacency matrix for the spatial random effects
-  Q_space <- list("Q_space" =
-                    create_icar_prec_matrix(sf_obj    = areas,
-                                            area_lev  = area_lev,
-                                            row.names = "space"))
+  Q_space <- list(
+    "Q_space" = create_icar_prec_matrix(
+      sf_obj = areas, area_lev  = area_lev, row.names = "space"
+    )
+  )
   
   # Combine Data for tmb model
   return(c(design_matrices, integration_matrices, survival_matrices, Q_space))
@@ -161,6 +189,68 @@ create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
   return(output)
 }
 
+#### split_mmc_design_matrices_paed ####
+
+#' @title Split MMC Design Matrices between adult and paediatric populations
+#'
+#' @description Take MMC-related design matrices and effectively "split" 
+#' them into two parts; one paediatric set of design matrices which does not 
+#' include any time-related components, and one non-paediatric set.
+#'
+#' @param out Shell dataset used for modelling
+#' @param area_lev  PSNU area level for specific country. Defaults to the
+#' Defaults to the maximum area level found in `dat` if not supplied.
+#' @param design_matrices Design matrices for fixed effects and temporal, age,
+#' spatial and random effects, for both medical and traditional circumcision.
+#' @param paed_age_cutoff Age at which to no longer consider an individual as 
+#' part of the "paediatric" population of a country, Default: 10
+#' @importFrom rlang .data
+#' @keywords internal
+split_mmc_design_matrices_paed <- function(
+    out, area_lev, design_matrices, paed_age_cutoff = 10
+  ) {
+  
+  # TODO: What order should these design matrices be in?
+  if (!is.null(paed_age_cutoff)) {
+    # pull out for area level of interest
+    out_spec_area_lev <- dplyr::filter(out, .data$area_level == area_lev)
+    # identify rows corresponding to paediatric and adult circumcisions
+    paed_age_rows <- which(out_spec_area_lev$circ_age < paed_age_cutoff)
+    adult_age_rows <- which(out_spec_area_lev$circ_age >= paed_age_cutoff)
+    
+    # pull mmc-related design matrices
+    design_matrices_mmc <- design_matrices[
+      grepl("mmc", names(design_matrices))
+    ]
+    # pull non-time matrices; these will be paediatric mmc design matrices
+    design_matrices_mmc_paed <- design_matrices_mmc[
+      !grepl("time", names(design_matrices_mmc))
+    ]
+    # append names with "_paed"
+    names(design_matrices_mmc_paed) <- paste0(
+      names(design_matrices_mmc_paed), "_paed"
+    )
+    
+    # in adult mmc design matrices, set all rows for paediatric circs to 0
+    design_matrices_mmc_adult <- lapply(design_matrices_mmc, function(x) {
+      x[paed_age_rows, ] <- 0
+      return(x)
+    })
+    # do the opposite for paediatric mmc design matrices
+    design_matrices_mmc_paed <- lapply(design_matrices_mmc_paed, function(x) {
+      x[adult_age_rows, ] <- 0
+      return(x)
+    })
+    
+    # append mmc design matrices with adult and paediatric mmc matrices
+    design_matrices[grepl("mmc", names(design_matrices))] <- 
+      design_matrices_mmc_adult
+    design_matrices <- c(design_matrices, design_matrices_mmc_paed)
+  }
+  return(design_matrices)
+}
+    
+
 #### shell_data_spec_area ####
 
 #' @title Subset and Prepare Shell Dataset to Only One Admin Boundary
@@ -196,10 +286,6 @@ shell_data_spec_area <- function(dat, area_lev = NULL) {
 
 
 #### create_integration_matrices #### 
-
-
-# function to create integration matrices for selecting instantaneous hazard
-# rate
 
 #' @title Create Integration Matrices for Selecting Instantaneous Hazard
 #' @description Create (unlagged and lagged) integration matrices for selecting
