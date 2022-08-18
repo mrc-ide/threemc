@@ -69,7 +69,7 @@ threemc_fit_model <- function(
    parameters <- split(fit$par.full, names(fit$par.full))
    init_params <- fit$par_init
    # pull different parameters depending on whether the model has mmc/tmc split
-   if (mod == "Surv_SpaceAgeTime_ByType_withUnknownType") {
+   if (mod != "Surv_SpaceAgeTime") {
      parameters <- parameters[names(fit$par_init)]
    } else {
      # only need names and lengths, not values
