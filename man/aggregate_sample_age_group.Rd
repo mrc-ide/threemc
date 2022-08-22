@@ -2,15 +2,15 @@
 % Please edit documentation in R/aggregation.R
 \name{aggregate_sample_age_group}
 \alias{aggregate_sample_age_group}
-\title{Produce Population weighted Aggregated Samples for Age Groups}
+\title{Produce Population weighted Aggregations for Age Groups}
 \usage{
 aggregate_sample_age_group(
   results_list,
   aggr_cols = c("area_id", "area_name", "year", "model", "type"),
+  num_cols,
   age_groups = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39",
-    "40-44", "45-49", "50-54", "54-59", "0+", "10+", "15+", "15-24", "10-24", "15-29",
-    "10-29", "15-39", "10-39", "15-49", "10-49"),
-  N = 100
+    "40-44", "45-49", "50-54", "54-59", "0+", "10+", "15+", "10-24", "15-24", "10-29",
+    "15-29", "10-39", "15-39", "10-49", "15-49")
 )
 }
 \arguments{
@@ -21,21 +21,21 @@ area populations, with un-aggregated samples.}
 \item{aggr_cols}{Columns to aggregate samples by, Default:
 c("area_id", "area_name", "year", "model", "type")}
 
+\item{num_cols}{\code{numeric} columns to aggregate.}
+
 \item{age_groups}{Age groups to aggregate by, Default:
 c("0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
 "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
 "0+",    "10+",   "15+",   "15-24", "10-24", 15-29",
 "10-29", "15-39", "10-39", "15-49", "10-49")}
-
-\item{N}{Number of samples to summarise, Default: NULL}
 }
 \value{
 \code{data.frame} with samples aggregated by \code{aggr_cols} and
 weighted by population.
 }
 \description{
-Aggregate by area, year, age group (rather than discrete ages)
-and type (weighted by population), and convert to a percentage/probability.
+Aggregate specified \code{numeric} columns by population-weighted
+age groups (rather than single year ages), split by specified categories.
 }
 \seealso{
 \code{\link[threemc]{combine_areas}}
