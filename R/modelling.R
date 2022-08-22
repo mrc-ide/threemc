@@ -58,7 +58,7 @@ threemc_fit_model <- function(
   # for specified "smaller fit" object (i.e. fit which requires resampling)
   if (!is.null(fit)) {
     if (!is.null(fit$sample)) stop("Sample already present in fit object")
-    if (!is.null(dat_tmb) | !is.null(parameters)) {
+    if (!is.null(dat_tmb) || !is.null(parameters)) {
       message(paste0(
        "No need to specify dat_tmb or parameters for non-null fit, as they are",
        " replaced by those stored in fit"
@@ -103,7 +103,7 @@ threemc_fit_model <- function(
   # if no fit == NULL, must have non-null dat_tmb & parameters
   } else {
     
-    if (is.null(dat_tmb) | is.null(parameters)) {
+    if (is.null(dat_tmb) || is.null(parameters)) {
       
       stop("Please specify non-null dat_tmb and parameters")
     }

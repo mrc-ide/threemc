@@ -30,7 +30,9 @@ threemc_aggregate <- function(
   .data, fit, areas, populations, # datasets
   # options
   age_var = c("age", "age_group"),
-  type = c("probability", "incidence", "prevalence"), area_lev, N = 100,
+  type = c("probability", "incidence", "prevalence"), 
+  area_lev, 
+  N = 100,
   prev_year = 2008,
   ...
   ) {
@@ -76,7 +78,11 @@ threemc_aggregate <- function(
   if (age_var == "age") {
     .data <- aggregate_sample(.data, ...)
   } else {
-    .data <- aggregate_sample_age_group(.data, ...)
+    .data <- aggregate_sample_age_group(
+      .data, 
+      num_cols = c(paste0("samp_", seq_len(N))), 
+      ...
+    )
   }
 
   # additional aggregations to perform for prevalence
@@ -134,7 +140,7 @@ prepare_sample_data <- function(N = 100,
   if (is.null(no_prog_results) && is.null(prog_results)) {
     stop("cannot have prog_results == no_prog_results == NULL")
   }
-  if (!type %in% c("probability", "incidence", "prevalence") |
+  if (!type %in% c("probability", "incidence", "prevalence") ||
     length(type) > 1) {
     stop("Please choose a valid type
          (one of 'probability', 'incidence', 'prevalence'")
@@ -338,7 +344,7 @@ aggregate_sample <- function(.data,
   
   # summarise samples by aggr_cols
   .data <- data.table::setDT(.data)[,
-    lapply(.SD, sum, na.rm = T),
+    lapply(.SD, sum, na.rm = TRUE),
     by = c(aggr_cols),
     .SDcols = c("population", paste0("samp_", c(1:100)))
   ]
@@ -351,20 +357,20 @@ aggregate_sample <- function(.data,
 
 #### aggregate_sample_age_group ####
 
-#' @title Produce Population weighted Aggregated Samples for Age Groups
-#' @description Aggregate by area, year, age group (rather than discrete ages)
-#' and type (weighted by population), and convert to a percentage/probability.
+#' @title Produce Population weighted Aggregations for Age Groups
+#' @description Aggregate specified `numeric` columns by population-weighted 
+#' age groups (rather than single year ages), split by specified categories.
 #' @param results_list list of \code{data.frame}s outputted by
 #' \code{\link[threemc]{combine_areas}} with \code{join = FALSE}, including
 #' area populations, with un-aggregated samples.
 #' @param aggr_cols Columns to aggregate samples by, Default:
 #' c("area_id", "area_name", "year", "model", "type")
+#' @param num_cols `numeric` columns to aggregate.
 #' @param age_groups Age groups to aggregate by, Default:
 #' c("0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
 #' "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
 #' "0+",    "10+",   "15+",   "15-24", "10-24", 15-29",
 #' "10-29", "15-39", "10-39", "15-49", "10-49")
-#' @param N Number of samples to summarise, Default: NULL
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @seealso
@@ -373,20 +379,25 @@ aggregate_sample <- function(.data,
 #' @importFrom rlang .data
 #' @rdname aggregate_sample_age_group
 #' @keywords internal
-aggregate_sample_age_group <- function(results_list,
-                                       aggr_cols = c(
-                                         "area_id", "area_name",
-                                         "year", "model", "type"
-                                       ),
-                                       age_groups = c(
-                                         "0-4", "5-9", "10-14", "15-19",
-                                         "20-24", "25-29", "30-34", "35-39",
-                                         "40-44", "45-49", "50-54", "54-59",
-                                         "0+", "10+", "15+", "15-24", "10-24",
-                                         "15-29", "10-29", "15-39",
-                                         "10-39", "15-49", "10-49"
-                                       ),
-                                       N = 100) {
+aggregate_sample_age_group <- function(
+    results_list,
+    aggr_cols  = c("area_id", "area_name", "year", "model", "type"),
+    num_cols, 
+    age_groups = c(
+      # five-year age groups
+      "0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29", 
+      "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
+      # age groups with only minimum cutoff
+      "0+", "10+", "15+", 
+      # other, wider age groups of interest
+      "10-24", "15-24", "10-29", "15-29", 
+      "10-39", "15-39", "10-49", "15-49"
+    )
+) {
+  
+  # global bindings for data.table non-standard evaluation
+  .SD <- NULL
+  
   if (inherits(results_list, "data.frame")) {
     message(
       paste0(
@@ -396,17 +407,16 @@ aggregate_sample_age_group <- function(results_list,
     )
     results_list <- list(results_list)
   }
-
-  # global bindings for data.table non-standard evaluation
-  .SD <- NULL
-
+  
   # Multiplying by population to population weight
   results_list <- lapply(results_list, function(x) {
     x %>%
       dplyr::mutate(
-        dplyr::across(dplyr::contains("samp_"), ~ . * population)
-      )
+        dplyr::across(dplyr::any_of(num_cols), ~ . * .data$population)
+      ) %>% 
+      dplyr::relocate(dplyr::any_of(num_cols), .after = dplyr::everything())
   })
+  
   # aggregate sample for each age group
   results <- lapply(seq_along(age_groups), function(i) {
     # If upper limit use this split
@@ -421,40 +431,42 @@ aggregate_sample_age_group <- function(results_list,
     }
     results_list_loop <- lapply(results_list, function(x) {
       x <- x %>%
+        dplyr::distinct() %>%
         # take results for age group i
         dplyr::filter(.data$age >= age1, .data$age <= age2) %>%
         dplyr::select(-.data$age)
       # Getting summarising samples
       x <- data.table::setDT(x)[,
-        lapply(.SD, sum, na.rm = TRUE),
-        by = c(aggr_cols),
-        .SDcols = c("population", paste0("samp_", c(1:N)))
+                                lapply(.SD, sum, na.rm = TRUE),
+                                by = c(aggr_cols),
+                                .SDcols = c("population", num_cols)
       ]
-      x <- x %>%
-        # Adding age group
-        dplyr::mutate(age_group = age_groups[i])
+      # Adding age group
+      dplyr::mutate(x, age_group = age_groups[i])
     })
     # Printing index
     print(age_groups[i])
     # return ages
     return(results_list_loop)
   })
+  
   # join together
   results <- as.data.frame(data.table::rbindlist(
     rlang::squash(results)
   ))
-
+  
   # Multiplying by population to population weight
   # (don"t do this for "N performed", if present)
-  results %>%
+  results <- results %>%
     dplyr::mutate(
       dplyr::across(
-        dplyr::contains("samp_"), ~ ifelse(grepl("performed", type),
-          .,
-          . / population
+        dplyr::any_of(num_cols), ~ ifelse(
+          grepl("performed", type), ., . / population
         )
       )
     )
+  
+  return(results)
 }
 
 #### prevalence_change ####
@@ -471,16 +483,20 @@ aggregate_sample_age_group <- function(results_list,
 #' @rdname prevalence_change
 #' @keywords internal
 prevalence_change <- function(results, spec_year) {
-
+  
   # pull samples from coverage in chosen year
   spec_year_results <- results %>%
     dplyr::filter(.data$year == spec_year) %>%
     dplyr::select(-c(.data$year, .data$population)) %>%
     tidyr::pivot_longer(dplyr::contains("samp_"), values_to = "prev_value")
+  
+  if (nrow(spec_year_results) == 0) {
+    stop("Please choose a different year to draw comparisons with")
+  } 
 
-  # join into spec_year_results for corresponding categorical variables and
-  # subtract
+  # join into spec_year_results for corresponding categorical vars & subtract
   results %>%
+    dplyr::filter(.data$year > spec_year) %>% 
     tidyr::pivot_longer(dplyr::contains("samp_")) %>%
     dplyr::left_join(spec_year_results) %>%
     dplyr::mutate(value = .data$value - .data$prev_value) %>%
@@ -502,7 +518,7 @@ prevalence_change <- function(results, spec_year) {
 n_circumcised <- function(results) {
 
   # Getting number of circumcised men
-  n_circ <- split(results, results$type)
+  n_circ <- dplyr::group_split(results, .data$type)
 
   # get circumcised population by type
   n_circ_type <- lapply(n_circ, function(x) {
@@ -525,7 +541,7 @@ n_circumcised <- function(results) {
     )
 
   # Append together
-  (as.data.frame(data.table::rbindlist(n_circ_type, use.names = T)))
+  (as.data.frame(data.table::rbindlist(n_circ_type, use.names = TRUE)))
 }
 
 #### posterior_summary_fun ####

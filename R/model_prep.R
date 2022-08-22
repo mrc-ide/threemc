@@ -436,7 +436,7 @@ create_integration_matrix_agetime <- function(dat,
   # Number of dimensions in the hazard function
   if (is.null(Ntime)) Ntime <- max(dat[["time1_cap"]])
   if (is.null(Nage)) Nage <- max(dat[age])
-  if (is.null(strat) == FALSE & is.null(Nstrat)) Nstrat <- max(dat[strat])
+  if (is.null(strat) == FALSE && is.null(Nstrat)) Nstrat <- max(dat[strat])
 
   # Subsetting data if necessary
   if (is.null(subset) == FALSE) {
@@ -553,7 +553,7 @@ create_integration_matrix_agetime_lag <- function(dat,
   # Number of dimensions in the hazard function
   if (is.null(Ntime)) Ntime <- max(dat[, "time1_cap", drop = TRUE])
   if (is.null(Nage)) Nage <- max(dat[age])
-  if (!is.null(strat) & is.null(Nstrat)) Nstrat <- max(dat[strat])
+  if (!is.null(strat) && is.null(Nstrat)) Nstrat <- max(dat[strat])
   # Subsetting data if necessary
   if (!is.null(subset)) {
     dat <- subset(dat, eval(parse(text = subset)))

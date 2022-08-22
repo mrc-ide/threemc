@@ -8,7 +8,7 @@
 #'  survey entries (i.e. where circumcision occurred at an unknown age).
 #' @param survey_circumcision Information on male circumcision status from
 #' surveys.
-#' @param population_data Single age male population counts by space and time.
+#' @param populations Single age male population counts by space and time.
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. Defaults to the
 #' maximum area level found in `areas` if not supplied.
@@ -36,7 +36,7 @@
 #' @importFrom rlang .data
 #' @importFrom dplyr %>%
 create_shell_dataset <- function(survey_circumcision,
-                                 population_data,
+                                 populations,
                                  areas,
                                  area_lev = NULL,
                                  start_year = 2006,
@@ -91,7 +91,7 @@ create_shell_dataset <- function(survey_circumcision,
     dplyr::arrange(.data$space, .data$age, .data$time) %>%
     ## Adding population data on to merge
     dplyr::left_join(
-      population_data %>%
+      populations %>%
         dplyr::select(
           .data$area_id, .data$year,
           circ_age = .data$age, .data$population
@@ -202,4 +202,142 @@ normalise_weights_kish <- function(survey_circumcision,
       by = "survey_id"
     ) %>%
     dplyr::mutate(indweight_st = .data$indweight_st / .data$ratio)
+}
+
+
+#' @title Use model shell dataset to estimate empirical circumcision rates
+#' @description  Takes the shell dataset with a row for every unique area ID,
+#' area name, year and circumcision age in survey data outputed by 
+#' \link[threemc]{create_shell_dataset} and returns the empirical circumcision
+#' rates for each row, aggregated to age groups from single ages. Also converts
+#' from wide format to long format. 
+#' @param out Shell dataset outputted by \link[threemc]{create_shell_dataset}
+#' @param areas `sf` shapefiles for specific country/region.
+#' @param area_lev  PSNU area level for specific country. Defaults to the
+#' maximum area level found in `areas` if not supplied.
+#' @param populations Single age male population counts by space and time.
+#' @param age_groups Age groups to aggregate by, Default:
+#' c("0-4",   "5-9",   "10-14", "15-19",
+#'   "20-24", "25-29", "30-34", "35-39",
+#'   "40-44", "45-49", "50-54", "54-59",
+#'   "15-24", "10-24", "15-29", "10-29", 
+#'   "15-39", "10-39", "15-49", "10-49"
+#' )
+#' @seealso
+#'  \code{\link[threemc]{create_shell_dataset}}
+#' @rdname threemc_empirical_rates
+#' @export
+#' @importFrom rlang .data
+#' @importFrom dplyr %>%
+threemc_empirical_rates <- function(
+    out, 
+    areas,
+    area_lev,
+    populations, 
+    age_groups = c(
+      # 5-year age groups from 0 to 60
+      "0-4",   "5-9",   "10-14", "15-19",
+      "20-24", "25-29", "30-34", "35-39",
+      "40-44", "45-49", "50-54", "54-59",
+      # other, wider age groups of interest
+      "15-24", "10-24", "15-29", "10-29", 
+      "15-39", "10-39", "15-49", "10-49"
+    )
+) {
+  
+  # wide formatted areas, for changing area levels later
+  areas_wide <- areas %>%
+    dplyr::select(
+      contains("area"), .data$space
+    ) %>%
+    threemc::spread_areas()
+    
+  results <- out %>%
+        # calculate MC as MC + MMC + TMC
+        dplyr::mutate(
+            obs_mc = dplyr::case_when(
+                !is.na(.data$obs_mmc) & 
+                  !is.na(.data$obs_tmc) ~ .data$obs_mc + 
+                                          .data$obs_mmc + 
+                                          .data$obs_tmc,
+                !is.na(.data$obs_mmc)   ~ .data$obs_mc + .data$obs_mmc,
+                !is.na(.data$obs_tmc)   ~ .data$obs_mc + .data$obs_tmc,
+                TRUE                    ~ .data$obs_mc
+            )
+        ) %>%
+        # pivot empirical person year columns to the one column
+        tidyr::pivot_longer(
+            cols = .data$obs_mmc:.data$obs_mc, 
+            names_to = "type", 
+            values_to = "mean"
+        ) %>%
+        # Only keep required columns
+        dplyr::select(
+          .data$area_id:.data$age, .data$type, .data$N, .data$mean
+        ) %>%
+        # Calculate empirical rates
+        dplyr::mutate(
+          mean = ifelse(
+            .data$mean == 0 | .data$N == 0, 0, .data$mean / .data$N
+          )
+        ) %>%
+        # remove person years column
+        dplyr::select(-.data$N) %>%
+        # remove 0s, so taking log doesn't give -Inf
+        dplyr::mutate(mean = ifelse(.data$mean == 0, NA_real_, .data$mean))
+    
+    # only keep relevant columns in populations for left_join
+    populations_append <- populations %>%
+        dplyr::select(
+            names(results)[names(results) %in% names(populations)],
+            .data$population,
+            # don't join by area_name, in case character encoding causes errors
+            -dplyr::matches("area_name")
+        )
+    
+    # join in region populations
+    results <- dplyr::left_join(results, populations_append)
+    
+    # Add parent areas
+    results <- combine_areas(
+        # for now, ignore results for lower area levels
+        filter(results, area_level == area_lev),
+        areas_wide,
+        area_lev,
+        add_keep_cols = "mean",
+        join = FALSE,
+        fill = TRUE
+    )
+    
+    # ensure there is no duplication
+    results <- results %>%
+        dplyr::bind_rows() %>%
+        dplyr::distinct() %>%
+        dplyr::group_split(.data$area_level, .keep = TRUE)
+    
+    # aggregate to population-weighted age groups
+    results <- aggregate_sample_age_group(
+      results, 
+      aggr_cols  = c("area_id", "area_name", "year", "type"),
+      num_cols   = "mean",
+      age_groups = age_groups
+    )
+    
+    # Merge regional information on the dataset
+    merge_empirical_rates <- function(.data) {
+        merge_area_info(.data, sf::st_drop_geometry(areas)) %>%
+            dplyr::mutate(
+                iso3 = substr(.data$area_id, 0, 3),
+                type = dplyr::case_when(
+                    # match type with that outputted by threemc_aggregate
+                    .data$type == "obs_mc" ~ "MC probability",
+                    .data$type == "obs_mmc" ~ "MMC probability",
+                    .data$type == "obs_tmc" ~ "TMC probability"
+                )
+            ) %>%
+            dplyr::relocate(.data$iso3) %>%
+            dplyr::relocate(dplyr::contains("age"), .after = .data$year)
+    }
+    
+    return(merge_empirical_rates(results))
 }
