@@ -30,7 +30,9 @@ threemc_aggregate <- function(
   .data, fit, areas, populations, # datasets
   # options
   age_var = c("age", "age_group"),
-  type = c("probability", "incidence", "prevalence"), area_lev, N = 100,
+  type = c("probability", "incidence", "prevalence"), 
+  area_lev, 
+  N = 100,
   prev_year = 2008,
   ...
   ) {
