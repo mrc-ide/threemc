@@ -91,7 +91,7 @@ create_shell_dataset <- function(survey_circumcision,
     dplyr::arrange(.data$space, .data$age, .data$time) %>%
     ## Adding population data on to merge
     dplyr::left_join(
-      population_data %>%
+      populations %>%
         dplyr::select(
           .data$area_id, .data$year,
           circ_age = .data$age, .data$population
