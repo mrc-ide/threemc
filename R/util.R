@@ -54,7 +54,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   }
 
   # Select specific columns, if desired (and present) (no need to do for fread)
-  if (!is.null(selected) & cond) {
+  if (!is.null(selected) && cond) {
     .data <- .data %>%
       dplyr::select(dplyr::all_of(selected[selected %in% names(.data)]))
   }

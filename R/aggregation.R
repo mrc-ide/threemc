@@ -140,7 +140,7 @@ prepare_sample_data <- function(N = 100,
   if (is.null(no_prog_results) && is.null(prog_results)) {
     stop("cannot have prog_results == no_prog_results == NULL")
   }
-  if (!type %in% c("probability", "incidence", "prevalence") |
+  if (!type %in% c("probability", "incidence", "prevalence") ||
     length(type) > 1) {
     stop("Please choose a valid type
          (one of 'probability', 'incidence', 'prevalence'")
@@ -344,7 +344,7 @@ aggregate_sample <- function(.data,
   
   # summarise samples by aggr_cols
   .data <- data.table::setDT(.data)[,
-    lapply(.SD, sum, na.rm = T),
+    lapply(.SD, sum, na.rm = TRUE),
     by = c(aggr_cols),
     .SDcols = c("population", paste0("samp_", c(1:100)))
   ]
@@ -437,7 +437,7 @@ aggregate_sample_age_group <- function(
         dplyr::select(-.data$age)
       # Getting summarising samples
       x <- data.table::setDT(x)[,
-                                lapply(.SD, sum, na.rm = T),
+                                lapply(.SD, sum, na.rm = TRUE),
                                 by = c(aggr_cols),
                                 .SDcols = c("population", num_cols)
       ]
@@ -541,7 +541,7 @@ n_circumcised <- function(results) {
     )
 
   # Append together
-  (as.data.frame(data.table::rbindlist(n_circ_type, use.names = T)))
+  (as.data.frame(data.table::rbindlist(n_circ_type, use.names = TRUE)))
 }
 
 #### posterior_summary_fun ####
