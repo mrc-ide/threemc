@@ -86,7 +86,7 @@ threemc_aggregate <- function(
   }
 
   # additional aggregations to perform for prevalence
-  if (type == "prevalence") {
+  if (type == "prevalence" && prev_year %in% .data$year) {
     # calculate change in prevalence since prev_year
     data_change_prev_year <- prevalence_change(
       .data,
