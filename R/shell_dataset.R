@@ -73,14 +73,18 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   areas_model <- areas_model %>%
-    dplyr::filter(.data$area_level <= area_lev) %>%
+    dplyr::filter(
+      .data$area_level <= area_lev, 
+      # be sure not to include other countries (loop if > 1 country required)
+      substr(.data$area_id, 0, 3) %in% substr(survey_circumcision$area_id, 0, 3)
+    ) %>%
     dplyr::select(.data$area_id, .data$area_name, .data$area_level, .data$space)
 
   ## create skeleton dataset with row for every unique area_id, area_name,
   ## space, year and circ_age
   out <- tidyr::crossing(areas_model,
-    "year" = seq(start_year, end_year, by = 1),
-    "circ_age" = 0:max(survey_circumcision$circ_age, na.rm = TRUE)
+    "year"     = seq(start_year, end_year, by = 1),
+    "circ_age" = c(0, seq_len(max(survey_circumcision$circ_age, na.rm = TRUE)))
   ) %>%
     ## Getting time and age variable
     dplyr::mutate(
