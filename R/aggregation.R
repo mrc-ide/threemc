@@ -18,7 +18,7 @@
 #' @param N Number of samples to be generated, Default: 100
 #' @param prev_year If type == "prevalence", choose year to compare prevalence
 #' with.
-#' @param ... Further arguments to internal functions. 
+#' @param ... Further arguments to internal functions.
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
@@ -30,8 +30,8 @@ threemc_aggregate <- function(
   .data, fit, areas, populations, # datasets
   # options
   age_var = c("age", "age_group"),
-  type = c("probability", "incidence", "prevalence"), 
-  area_lev, 
+  type = c("probability", "incidence", "prevalence"),
+  area_lev,
   N = 100,
   prev_year = 2008,
   ...
@@ -79,8 +79,8 @@ threemc_aggregate <- function(
     .data <- aggregate_sample(.data, ...)
   } else {
     .data <- aggregate_sample_age_group(
-      .data, 
-      num_cols = c(paste0("samp_", seq_len(N))), 
+      .data,
+      num_cols = c(paste0("samp_", seq_len(N))),
       ...
     )
   }
@@ -250,17 +250,17 @@ prepare_sample_data <- function(N = 100,
         .data$year, .data$age,
         .data$type, .data$model,
         dplyr::contains("samp_")
-      ) 
-    
+      )
+
     # only keep relevant columns in populations for left_join
-    populations_append <- populations %>% 
+    populations_append <- populations %>%
       dplyr::select(
         dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
         .data$population,
         # don't join by area_name, in case character encoding etc causes errors
         -dplyr::matches("area_name")
       )
-      tmp <- tmp %>% 
+      tmp <- tmp %>%
       # join in region populations
       dplyr::left_join(populations_append) %>%
       dplyr::relocate(.data$population, .before = .data$samp_1)
@@ -329,7 +329,7 @@ aggregate_sample <- function(.data,
   if (!inherits(.data, "data.frame")) {
     .data <- as.data.frame(data.table::rbindlist(
       .data,
-      use.names = TRUE, 
+      use.names = TRUE,
       fill = TRUE,
       ...
     ))
@@ -341,7 +341,7 @@ aggregate_sample <- function(.data,
   # Multiplying by population to population weight
   .data <- .data %>%
     dplyr::mutate(dplyr::across(dplyr::contains("samp_"), ~ . * population))
-  
+
   # summarise samples by aggr_cols
   .data <- data.table::setDT(.data)[,
     lapply(.SD, sum, na.rm = TRUE),
@@ -358,7 +358,7 @@ aggregate_sample <- function(.data,
 #### aggregate_sample_age_group ####
 
 #' @title Produce Population weighted Aggregations for Age Groups
-#' @description Aggregate specified `numeric` columns by population-weighted 
+#' @description Aggregate specified `numeric` columns by population-weighted
 #' age groups (rather than single year ages), split by specified categories.
 #' @param results_list list of \code{data.frame}s outputted by
 #' \code{\link[threemc]{combine_areas}} with \code{join = FALSE}, including
@@ -382,22 +382,22 @@ aggregate_sample <- function(.data,
 aggregate_sample_age_group <- function(
     results_list,
     aggr_cols  = c("area_id", "area_name", "year", "model", "type"),
-    num_cols, 
+    num_cols,
     age_groups = c(
       # five-year age groups
-      "0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29", 
+      "0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
       "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
       # age groups with only minimum cutoff
-      "0+", "10+", "15+", 
+      "0+", "10+", "15+",
       # other, wider age groups of interest
-      "10-24", "15-24", "10-29", "15-29", 
+      "10-24", "15-24", "10-29", "15-29",
       "10-39", "15-39", "10-49", "15-49"
     )
 ) {
-  
+
   # global bindings for data.table non-standard evaluation
   .SD <- NULL
-  
+
   if (inherits(results_list, "data.frame")) {
     message(
       paste0(
@@ -407,16 +407,16 @@ aggregate_sample_age_group <- function(
     )
     results_list <- list(results_list)
   }
-  
+
   # Multiplying by population to population weight
   results_list <- lapply(results_list, function(x) {
     x %>%
       dplyr::mutate(
         dplyr::across(dplyr::any_of(num_cols), ~ . * .data$population)
-      ) %>% 
+      ) %>%
       dplyr::relocate(dplyr::any_of(num_cols), .after = dplyr::everything())
   })
-  
+
   # aggregate sample for each age group
   results <- lapply(seq_along(age_groups), function(i) {
     # If upper limit use this split
@@ -449,12 +449,12 @@ aggregate_sample_age_group <- function(
     # return ages
     return(results_list_loop)
   })
-  
+
   # join together
   results <- as.data.frame(data.table::rbindlist(
     rlang::squash(results)
   ))
-  
+
   # Multiplying by population to population weight
   # (don"t do this for "N performed", if present)
   results <- results %>%
@@ -465,7 +465,7 @@ aggregate_sample_age_group <- function(
         )
       )
     )
-  
+
   return(results)
 }
 
@@ -483,20 +483,20 @@ aggregate_sample_age_group <- function(
 #' @rdname prevalence_change
 #' @keywords internal
 prevalence_change <- function(results, spec_year) {
-  
+
   # pull samples from coverage in chosen year
   spec_year_results <- results %>%
     dplyr::filter(.data$year == spec_year) %>%
     dplyr::select(-c(.data$year, .data$population)) %>%
     tidyr::pivot_longer(dplyr::contains("samp_"), values_to = "prev_value")
-  
+
   if (nrow(spec_year_results) == 0) {
     stop("Please choose a different year to draw comparisons with")
-  } 
+  }
 
   # join into spec_year_results for corresponding categorical vars & subtract
   results %>%
-    dplyr::filter(.data$year > spec_year) %>% 
+    dplyr::filter(.data$year > spec_year) %>%
     tidyr::pivot_longer(dplyr::contains("samp_")) %>%
     dplyr::left_join(spec_year_results) %>%
     dplyr::mutate(value = .data$value - .data$prev_value) %>%

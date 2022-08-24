@@ -47,14 +47,14 @@ prepare_survey_data <- function(areas,
   # apply function recursively for each iso3
   is_list <- inherits(survey_circumcision, "list")
 
-  # Check if cluster & individuals data is provided; if not, assume sufficient 
+  # Check if cluster & individuals data is provided; if not, assume sufficient
   # data is included in survey_circumcision alone
   is_add_data_present <- !is.null(survey_clusters) &
                          !is.null(survey_individuals)
 
   # split based on iso3 if not already a list and containing > 1 country
   if (!is_list && length(unique(survey_circumcision$iso3)) != 1) {
-    
+
     survey_circumcision <- split(survey_circumcision, survey_circumcision$iso3)
 
     # arrange and filter for country to ensure splitting is the same
@@ -82,14 +82,21 @@ prepare_survey_data <- function(areas,
 
     # loop over each country
     surveys <- lapply(seq_along(survey_circumcision), function(i) {
-      
+
       # pull country
       cntry <- unique(survey_circumcision[[i]]$iso3)
-      
+
       if (cntry == "LBR" && cens_age > 29) {
         cens_age <- 29
         message("for LBR, age must be censored to those under 29 (at least)")
       }
+      
+      # pull latest and first censoring year from survey_id
+      survey_years <- as.numeric(substr(unique(
+        survey_circumcision[[i]]$survey_id), 4, 7)
+      )
+      cens_year <- max(survey_years)
+      start_year <- max(min(survey_years), start_year) 
 
       # parse country specific psnu area levels if desired
       if (inherits(area_lev, "data.frame")) {
@@ -113,7 +120,7 @@ prepare_survey_data <- function(areas,
           area_lev <- as.numeric(names(area_lev)[area_lev == max(area_lev)])
         }
       }
-      
+
       # filter specific country entries in additional dfs, if they are provided
       if (is_add_data_present) {
         survey_individuals_spec <- dplyr::filter(
@@ -131,26 +138,26 @@ prepare_survey_data <- function(areas,
 
       # apply function recursively for each country
       prepare_survey_data(
-        areas = dplyr::filter(areas, .data$iso3 == cntry),
+        areas               = dplyr::filter(areas, .data$iso3 == cntry),
         survey_circumcision = dplyr::filter(
           survey_circumcision[[i]], .data$iso3 == cntry
         ),
-        survey_individuals = survey_individuals_spec,
-        survey_clusters = survey_clusters_spec,
-        area_lev = area_lev,
-        start_year = start_year,
-        cens_year = cens_year,
-        cens_age = cens_age,
-        rm_missing_type = rm_missing_type,
-        norm_kisk_weights = norm_kisk_weights,
-        strata.norm = strata.norm,
-        strata.kish = strata.kish
+        survey_individuals  = survey_individuals_spec,
+        survey_clusters     = survey_clusters_spec,
+        area_lev            = area_lev,
+        start_year          = start_year,
+        cens_year           = cens_year,
+        cens_age            = cens_age,
+        rm_missing_type     = rm_missing_type,
+        norm_kisk_weights   = norm_kisk_weights,
+        strata.norm         = strata.norm,
+        strata.kish         = strata.kish
       )
     })
     names(surveys) <- names(survey_circumcision)
     return(surveys)
   }
-  
+
   # if we set cens_year == TRUE, calculate cens_year as max survey year
   if (!is.null(cens_year) && cens_year == TRUE) {
     message("cens_year set to TRUE, calculated as last survey year")
@@ -169,7 +176,7 @@ prepare_survey_data <- function(areas,
 
   # pull original surveys
   orig_surveys <- unique(survey_circumcision$survey_id)
-  
+
   # Join survey data sources together, if they been provided as joined already
   if (is_add_data_present) {
 
@@ -198,14 +205,14 @@ prepare_survey_data <- function(areas,
         by = c("survey_id", "cluster_id")
       )
   }
-  
+
   # Add column of NAs for missing age columns
   age_cols <- c("circ_age", "age")
   if (sum(age_cols %in% names(survey_circumcision)) < 2) {
     missing_age_cols <- age_cols[!age_cols %in% names(survey_circumcision)]
     survey_circumcision[, missing_age_cols] <- NA
   }
-  
+
   # Remove those with missing circumcison status
   survey_circumcision <- survey_circumcision %>%
     dplyr::filter(

@@ -1,14 +1,14 @@
 
-#### Main Function #### 
+#### Main Function ####
 
-#' @title Produce TMB model fit with sample, or re-sample from existing 
-#' optimised model fit. 
+#' @title Produce TMB model fit with sample, or re-sample from existing
+#' optimised model fit.
 #' @description Optimises threemc objective function and produces samples from
-#' model fit (if so desired). If provided with an existing optimised model 
-#' `fit`, can also perform re-sampling. 
-#' @param fit Optional "small" fit object with no `sample`. Specifying `fit` 
-#' means you do not need to specify `dat_tmb` or `parameters`, as argument 
-#' specifications will be overridden by those stored in `fit`. 
+#' model fit (if so desired). If provided with an existing optimised model
+#' `fit`, can also perform re-sampling.
+#' @param fit Optional "small" fit object with no `sample`. Specifying `fit`
+#' means you do not need to specify `dat_tmb` or `parameters`, as argument
+#' specifications will be overridden by those stored in `fit`.
 #' @param dat_tmb \code{list} of data required for model fitting, outputted
 #' by \link[threemc]{threemc_prepare_model_data}, which includes:
 #' \itemize{
@@ -35,13 +35,13 @@
 #' type (i.e whether they were performed in a medical or traditional setting).
 #' @param sample If set to TRUE, has function also return N samples for
 #' medical, traditional and total circumcisions, Default: TRUE
-#' @param smaller_fit_obj Returns a smaller fit object. Useful for saving the 
-#' fit object for later aggregations. 
+#' @param smaller_fit_obj Returns a smaller fit object. Useful for saving the
+#' fit object for later aggregations.
 #' @param sdreport If set to TRUE, produces the standard deviation report for
 #' the model, Default: FALSE
 #' @param N Number of samples to be generated, Default: 1000
 #' @param ... Further arguments passed to internal functions.
-#' @return TMB model fit, including optimised parameters, hessian matrix, 
+#' @return TMB model fit, including optimised parameters, hessian matrix,
 #' samples and standard deviation report (if desired).
 #' @rdname threemc_fit_model
 #' @export
@@ -54,7 +54,7 @@ threemc_fit_model <- function(
   ),
   sample = TRUE, smaller_fit_obj = FALSE, sdreport = FALSE, N = 1000, ...
 ) {
-  
+
   # for specified "smaller fit" object (i.e. fit which requires resampling)
   if (!is.null(fit)) {
     if (!is.null(fit$sample)) stop("Sample already present in fit object")
@@ -64,7 +64,7 @@ threemc_fit_model <- function(
        " replaced by those stored in fit"
       ))
    }
-   # pull dat_tmb and parameters from small fit 
+   # pull dat_tmb and parameters from small fit
    dat_tmb <- fit$tmb_data
    parameters <- split(fit$par.full, names(fit$par.full))
    init_params <- fit$par_init
@@ -81,20 +81,20 @@ threemc_fit_model <- function(
      # remove duplicate parameters
      parameters <- parameters[!duplicated(names(parameters))]
    }
-   
+
    if (!is.null(maps)) {
      # ensure mapped parameters are in the same order as parameters for model
      mapped_pars <- is.na(names(parameters))
      param_order <- names(init_params)[mapped_pars]
      maps <- maps[match(names(maps), param_order)]
-     
+
      # replace NAs in parameters with mapped parameters in par_init
      parameters[mapped_pars] <- init_params[
        names(init_params) %in% names(maps)
      ]
      names(parameters)[mapped_pars] <- names(maps)
    }
-   
+
    is_matrix <- sapply(init_params, is.matrix)
    parameters[is_matrix] <- Map(matrix,
                              parameters[is_matrix],
@@ -102,9 +102,9 @@ threemc_fit_model <- function(
                              ncol = lapply(init_params[is_matrix], ncol))
   # if no fit == NULL, must have non-null dat_tmb & parameters
   } else {
-    
+
     if (is.null(dat_tmb) || is.null(parameters)) {
-      
+
       stop("Please specify non-null dat_tmb and parameters")
     }
   }
@@ -163,7 +163,7 @@ threemc_fit_model <- function(
       ...
     )
   }
-  
+
   # sample from TMB fit
   if (sample == TRUE) {
     fit <- circ_sample_tmb(
@@ -210,9 +210,9 @@ circ_sample_tmb <- function(
     opt$par.fixed <- opt$par
     opt$par.full <- obj$env$last.par
     fit <- c(opt, obj = list(obj))
-  } 
-  class(fit) <- "naomi_fit"  
-  
+  }
+  class(fit) <- "naomi_fit"
+
   # Look at standard deviation report
   if (sdreport == TRUE) {
       fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
@@ -227,13 +227,13 @@ circ_sample_tmb <- function(
   return(fit)
 }
 
-#### minimise_fit_obj #### 
+#### minimise_fit_obj ####
 
 #' @title Minimise Fit Object Size
-#' @description Return minimised fit object. Often useful when saving the fit 
-#' object for later aggregation. 
+#' @description Return minimised fit object. Often useful when saving the fit
+#' object for later aggregation.
 #' @param fit Fit object returned by \link[naomi]{sample_tmb}, which includes,
-#' among other things, the optimised parameters and subsequent sample for our 
+#' among other things, the optimised parameters and subsequent sample for our
 #' TMB model.
 ##' @param dat_tmb \code{list} of data required for model fitting, outputted
 #' by \link[threemc]{threemc_prepare_model_data}.
@@ -242,12 +242,12 @@ circ_sample_tmb <- function(
 #' @rdname minimise_fit_obj
 #' @export
 minimise_fit_obj <- function(fit, dat_tmb, parameters) {
-  
+
   fit_small <- fit
   fit_small$tmb_data <- dat_tmb
   fit_small$par_init <- parameters
   fit_small$sample <- NULL
   fit_small$obj <- NULL
-  
+
   return(fit_small)
 }

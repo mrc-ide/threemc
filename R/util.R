@@ -1,5 +1,5 @@
-# Various utility functions for functionality used on multiple occasions 
-# throughout package. Generally unexported. 
+# Various utility functions for functionality used on multiple occasions
+# throughout package. Generally unexported.
 
 #### %||% ####
 
@@ -73,7 +73,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
 
 #' @title Recursively Create Missing Directories
 #' @description Function to recursively create directories if any of the
-#' directories in a provided path are missing. Similar to \code{mkdir -p} from 
+#' directories in a provided path are missing. Similar to \code{mkdir -p} from
 #' Bash.
 #' @param dir_path Path to a file or directory which you want to generate.
 #' @rdname create_dirs_r
@@ -108,7 +108,7 @@ create_dirs_r <- function(dir_path) {
   }
 }
 
-#### add_area_id #### 
+#### add_area_id ####
 
 #' @title Change \code{area_id} from one hierarchy level to another
 #' @description Function to change \code{area_id} from one hierarchy level to
@@ -174,7 +174,7 @@ add_area_id <- function(df,
       dplyr::all_of(select_cols),
       dplyr::all_of(par$sample_cols)
     )
-  
+
   # add missing area_level col, if required
   df_area_id$area_level <- par$area_lev_select
   return(df_area_id)
@@ -320,7 +320,7 @@ create_aggregate_structure <- function(areas,
 #' @param areas area hierarchy data.frame
 #' @param min_level integer specifying the minimum level wanted
 #' @param max_level integer specifying the maximum level wanted
-#' @param space whether to include "space" columns. Excluding these returns the 
+#' @param space whether to include "space" columns. Excluding these returns the
 #' same object as \code{naomi::spread_areas}, Default: TRUE
 #'
 #' @export
@@ -348,7 +348,7 @@ spread_areas <- function(areas,
       `:=`(!!paste0("area_name", min_level), .data$area_name),
       `:=`(!!paste0("space", min_level), .data$space)
     )
-  
+
   # create safe sequence from min_level + 1 to max_level to loop over
   level_seq <- seq_len(max_level)
   if (length(level_seq) == 0) {
@@ -356,7 +356,7 @@ spread_areas <- function(areas,
   } else {
     level_seq <- level_seq[level_seq >= (min_level + 1)]
   }
-  
+
   if (all(level_seq != 0)) {
     for (level in level_seq) {
       areas_wide <- areas_wide %>%
@@ -375,19 +375,19 @@ spread_areas <- function(areas,
         )
     }
   }
-  
+
   areas_wide$area_id <- areas_wide[[paste0("area_id", max_level)]]
   if (!is.null(boundaries)) {
     areas_wide <- sf::st_as_sf(
       dplyr::left_join(areas_wide, boundaries, by = "area_id")
     )
   }
-  
+
   # removing "space" columns returns same object as naomi::spread_areas
   if (space == FALSE) {
-    areas_wide <- areas_wide %>% 
+    areas_wide <- areas_wide %>%
       dplyr::select(-dplyr::contains("space"))
   }
-  
+
   return(areas_wide)
 }

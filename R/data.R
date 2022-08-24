@@ -19,15 +19,15 @@
 NULL
 
 #' @title WCA - ESA key for Sub-Saharan African countries
-#' @description Western and Central Africa (WCA) - Eastern and Southern Africa 
-#' (ESA) categorisation for Sub-Saharan African countries. Also includes 
-#' North-South-East-West categorisation. 
+#' @description Western and Central Africa (WCA) - Eastern and Southern Africa
+#' (ESA) categorisation for Sub-Saharan African countries. Also includes
+#' North-South-East-West categorisation.
 #' \itemize{
 #'   \item{\code{iso3}}{character ISO3 codes for Sub-Saharan African
 #'   countries.}
-#'   \item{\code{region}}{character ESA-WCA categorisation for each 
+#'   \item{\code{region}}{character ESA-WCA categorisation for each
 #'   \code{iso3}}
-#'   \item{\code{four_region}}{character North-South-East-West categorisation 
+#'   \item{\code{four_region}}{character North-South-East-West categorisation
 #'   for each \code{iso3}}
 #' }
 #' @format A \code{data.frame} with 38 rows and 3 variables:
