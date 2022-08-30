@@ -53,15 +53,16 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">threemc_prepare_model_data</span><span class="op">(</span>
-  <span class="va">out</span>,
-  <span class="va">areas</span>,
-  <span class="va">area_lev</span>,
-  aggregated <span class="op">=</span> <span class="cn">TRUE</span>,
-  weight <span class="op">=</span> <span class="st">"population"</span>,
-  k_dt <span class="op">=</span> <span class="fl">5</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">threemc_prepare_model_data</span><span class="op">(</span></span>
+<span>  <span class="va">out</span>,</span>
+<span>  <span class="va">areas</span>,</span>
+<span>  area_lev <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  aggregated <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  weight <span class="op">=</span> <span class="st">"population"</span>,</span>
+<span>  k_dt <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  paed_age_cutoff <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -94,6 +95,12 @@ lower area hierarchies (only applicable for <code>aggregated = TRUE</code>)</p><
 
 <dt>k_dt</dt>
 <dd><p>Age knot spacing in spline definitions, Default: 5</p></dd>
+
+
+<dt>paed_age_cutoff</dt>
+<dd><p>Age at which to split MMC design matrices between
+paediatric and non-paediatric populations, the former of which are constant
+over time. Set to NULL if not desired, Default: NULL</p></dd>
 
 
 <dt>...</dt>
@@ -129,7 +136,7 @@ Survival matrices for MMC, TMC, censored and left censored</p></li>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

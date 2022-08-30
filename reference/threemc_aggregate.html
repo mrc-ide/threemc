@@ -55,17 +55,18 @@ and convert to a percentage/probability.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">threemc_aggregate</span><span class="op">(</span>
-  <span class="va">.data</span>,
-  <span class="va">fit</span>,
-  <span class="va">areas</span>,
-  <span class="va">populations</span>,
-  age_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"age_group"</span><span class="op">)</span>,
-  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"probability"</span>, <span class="st">"incidence"</span>, <span class="st">"prevalence"</span><span class="op">)</span>,
-  <span class="va">area_lev</span>,
-  N <span class="op">=</span> <span class="fl">100</span>,
-  prev_year <span class="op">=</span> <span class="fl">2008</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">threemc_aggregate</span><span class="op">(</span></span>
+<span>  <span class="va">.data</span>,</span>
+<span>  <span class="va">fit</span>,</span>
+<span>  <span class="va">areas</span>,</span>
+<span>  <span class="va">populations</span>,</span>
+<span>  age_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"age_group"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"probability"</span>, <span class="st">"incidence"</span>, <span class="st">"prevalence"</span><span class="op">)</span>,</span>
+<span>  <span class="va">area_lev</span>,</span>
+<span>  N <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  prev_year <span class="op">=</span> <span class="fl">2008</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -111,6 +112,10 @@ to aggregate for. Can be one of "probability", "incidence" or "prevalence".</p><
 <dd><p>If type == "prevalence", choose year to compare prevalence
 with.</p></dd>
 
+
+<dt>...</dt>
+<dd><p>Further arguments to internal functions.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -132,7 +137,7 @@ weighted by population.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

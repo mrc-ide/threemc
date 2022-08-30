@@ -73,6 +73,9 @@
     <loc>/reference/datapack_psnu_area_level.html</loc>
   </url>
   <url>
+    <loc>/reference/esa_wca_regions.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
   </url>
   <url>
@@ -106,10 +109,16 @@
     <loc>/reference/shell_data_spec_area.html</loc>
   </url>
   <url>
+    <loc>/reference/split_mmc_design_matrices_paed.html</loc>
+  </url>
+  <url>
     <loc>/reference/spread_areas.html</loc>
   </url>
   <url>
     <loc>/reference/threemc_aggregate.html</loc>
+  </url>
+  <url>
+    <loc>/reference/threemc_empirical_rates.html</loc>
   </url>
   <url>
     <loc>/reference/threemc_fit_model.html</loc>
