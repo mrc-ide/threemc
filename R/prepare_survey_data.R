@@ -171,6 +171,12 @@ prepare_survey_data <- function(areas,
     ))
   }
 
+  # remove area_level column if present, to avoid row duplication
+  survey_circumcision <- dplyr::select(
+      survey_circumcision,
+      -dplyr::matches("area_level")
+  )
+
 
   # Merging circumcision and individuals survey datasets ---------------------
 
