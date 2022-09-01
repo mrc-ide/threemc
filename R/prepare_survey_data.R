@@ -323,16 +323,29 @@ prepare_survey_data <- function(areas,
       # Time interval for the individual
       time1 = .data$yob - start_year + 1,
       time2 = .data$yoc - start_year + 1,
-      # Event type
+      # Event type 
       event = ifelse(
+        # event 1 == circumcised and circumcision age known, 0 uncircumcised
         .data$circ_status == 1 & !is.na(.data$circ_age), 1,
+        # event 2 == left censored, event 0 == uncircumcised/censored
         ifelse((.data$circ_status == 1 & is.na(.data$circ_age)), 2, 0)
       ),
       # Circumcision age
       circ_age = .data$yoc - .data$yob,
       age = .data$circ_age + 1
     )
-
+  
+  # give message on censored individuals
+  event_tbl <- table(survey_circumcision$event)
+  names(event_tbl) <- c(
+    "Uncircumised/right censored (event 0)", 
+    "Uncensored (event 1)",
+    "Left censored (event 2)"
+    )
+  message(
+    paste0(utils::capture.output(event_tbl), collapse = "\n")
+  )
+  
   # Adding circumcision type to dataset
   survey_circumcision <- survey_circumcision %>%
     # Type of circumcision
