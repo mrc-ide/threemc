@@ -244,6 +244,7 @@ threemc_empirical_rates <- function(
       "20-24", "25-29", "30-34", "35-39",
       "40-44", "45-49", "50-54", "54-59",
       # other, wider age groups of interest
+      "0+",    "10+",   "15+",
       "15-24", "10-24", "15-29", "10-29",
       "15-39", "10-39", "15-49", "10-49"
     )
@@ -252,7 +253,7 @@ threemc_empirical_rates <- function(
   # wide formatted areas, for changing area levels later
   areas_wide <- areas %>%
     dplyr::select(
-      contains("area"), .data$space
+      dplyr::contains("area"), .data$space
     ) %>%
     threemc::spread_areas()
 
@@ -305,7 +306,7 @@ threemc_empirical_rates <- function(
     # Add parent areas
     results <- combine_areas(
         # for now, ignore results for lower area levels
-        filter(results, area_level == area_lev),
+        dplyr::filter(results, .data$area_level == area_lev),
         areas_wide,
         area_lev,
         add_keep_cols = "mean",
