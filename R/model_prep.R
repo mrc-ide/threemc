@@ -108,7 +108,7 @@ threemc_prepare_model_data <- function(
   # Precision matrix for temporal random effects
   Q_time <- list(
     "Q_time" = create_rw_prec_matrix(
-      dim   = nrow(Q_space[[1]]), # same dims as Q_space
+      dim   = ncol(design_matrices$X_time_mmc), # same dims as Q_space
       order = rw_order,
       ...
     )
