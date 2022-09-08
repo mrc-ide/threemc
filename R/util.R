@@ -391,3 +391,17 @@ spread_areas <- function(areas,
 
   return(areas_wide)
 }
+
+#' Convert integer CMC date to integer Julian calendar year
+#'
+#' @param cmc_date integer specifying date as CMC (Century-month code)
+#' @return integer Julian calendar year equivalent to CMC date. 
+#' 
+#' @rdname cmc_date_to_year_num
+#' @keywords internal
+cmc_date_to_year_num <- function(cmc_date) {
+  
+  # calculate year from CMC date
+  year  <- 1900 + floor((cmc_date - 1) / 12)
+  return(year)
+}
