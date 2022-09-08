@@ -130,6 +130,7 @@ threemc_fit_model <- function(
   if (length(randoms) == 0) randoms <- NULL
 
   # Create TMB object
+  message("Creating TMB object...\n")
   obj <- TMB::MakeADFun(
     dat_tmb,
     parameters,
@@ -140,10 +141,12 @@ threemc_fit_model <- function(
     DLL = mod,
     ...
   )
-  # for specified fit, simply resample and return
+  # for specified fit, simply re-sample and return
   if (!is.null(fit)) {
     fit$obj <- obj
+    message("re-optimising...\n")
     fit$obj$fn()
+    message("sampling...\n")
     fit <- circ_sample_tmb(
       fit = fit, obj = obj, nsample = N, sdreport = sdreport
     )
@@ -153,8 +156,10 @@ threemc_fit_model <- function(
 
   # Run optimiser (use optim if all pars are fixed, nlminb otherwise)
   if (length(obj$par) == 0) {
+    message("optimising...\n")
     opt <- do.call(stats::optim, obj, ...)
   } else {
+    message("optimising...\n")
     opt <- stats::nlminb(
       start   = obj$par,
       obj     = obj$fn,
@@ -166,11 +171,13 @@ threemc_fit_model <- function(
 
   # sample from TMB fit
   if (sample == TRUE) {
+    message("sampling...\n")
     fit <- circ_sample_tmb(
       obj = obj, opt = opt, nsample = N, sdreport = sdreport
     )
     # return smaller fit object
     if (smaller_fit_obj == TRUE) {
+      message("minimising fit object size...\n")
       fit <- minimise_fit_obj(fit, dat_tmb, parameters)
     }
     return(fit)
