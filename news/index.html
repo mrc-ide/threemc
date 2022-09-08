@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">threemc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.21</span>
       </span>
     </div>
 
@@ -48,15 +48,18 @@
     </div>
 
     <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.21" id="threemc-0121">threemc 0.1.21<a class="anchor" aria-label="anchor" href="#threemc-0121"></a></h2>
+<ul><li>Replace loop in <code>aggregate_sample_age_group</code> with method which uses <code>left_join</code>, ~4x faster for SWZ, likely scales much better for larger countries.</li></ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.2" id="threemc-012">threemc 0.1.2<a class="anchor" aria-label="anchor" href="#threemc-012"></a></h2>
+<ul><li>Conditionals added to produce design matrices when modelling at the country level, where the adjacency matrix will just be a 1x1 matrix with entry 0.</li></ul></div>
+    <div class="section level2">
 <h2 class="page-header" data-toc-text="0.1.1" id="threemc-011">threemc 0.1.1<a class="anchor" aria-label="anchor" href="#threemc-011"></a></h2>
 <ul><li>Added a <code>NEWS.md</code> file to track changes to the package.</li>
 <li>Change title: (Matt’s) Multi-Level Model of Male Circumcision in Sub-Saharan Africa</li>
 <li>Remove wildcard matching (<code><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">dplyr::any_of()</a></code>, <code><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">dplyr::contains()</a></code>) from survey data set construction.</li>
 <li>Don’t reference the <code>space</code> index in the survey data set; only add when merging survey data to the model frame.</li>
 </ul></div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.1.2" id="threemc-012">threemc 0.1.2<a class="anchor" aria-label="anchor" href="#threemc-012"></a></h2>
-<ul><li>Conditionals added to produce design matrices when modelling at the country level, where the adjacency matrix will just be a 1x1 matrix with entry 0.</li></ul></div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
