@@ -102,6 +102,20 @@ create_shell_dataset <- function(survey_circumcision,
         ),
       by = c("area_id", "year", "circ_age")
     )
+  
+  if (all(!is.na(out$population)) == FALSE) {
+    na_pop_areas <- out %>%
+      dplyr::filter(is.na(.data$population)) %>%
+      dplyr::distinct(.data$area_id, .data$area_name)
+    message(paste(
+      "missing populations for the following (now removed) areas:",
+    ))
+    message(
+      paste0(utils::capture.output(na_pop_areas), collapse = "\n")
+    )
+    out <- out %>%
+        dplyr::filter(!is.na(.data$population))
+  }
 
   ## Add `space` to survey_circumcision observations
   survey_circumcision <- survey_circumcision %>%
