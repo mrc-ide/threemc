@@ -355,11 +355,15 @@ prepare_survey_data <- function(areas,
   
   # give message on censored individuals
   event_tbl <- table(survey_circumcision$event)
-  names(event_tbl) <- c(
+  
+  # more informative event names for table 
+  tbl_names <- c(
     "Uncircumised/right censored (event 0)", 
     "Uncensored (event 1)",
     "Left censored (event 2)"
-    )
+  )
+  names(event_tbl) <- tbl_names[as.numeric(names(event_tbl)) + 1]
+  
   message(
     paste0(utils::capture.output(event_tbl), collapse = "\n")
   )
