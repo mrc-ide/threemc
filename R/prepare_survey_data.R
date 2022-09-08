@@ -232,11 +232,12 @@ prepare_survey_data <- function(areas,
     dplyr::mutate(
       # Survey year
       year = as.numeric(substr(.data$survey_id, 4, 7)),
-      # Year of Birth (estimated as no DOB filly yet)
-      yob = .data$year - .data$age,
-      # If circumcision age > age of the individual set, reset circumcision age
+      # Year of Birth (estimated from date of birth CMC date)
+      yob = cmc_date_to_year_num(.data$dob_cmc), 
+      # If circumcision age > age, reset circumcision age
       circ_age = ifelse(.data$circ_age > .data$age, NA_real_, .data$circ_age)
     )
+  
 
   # Censoring if necessary ---------------------------------------------------
 
@@ -246,23 +247,37 @@ prepare_survey_data <- function(areas,
       # Censoring individuals from analysis at cens_age
       dplyr::mutate(
         # No circumcision after cens_age
-        circ_status = ifelse(.data$circ_status == 1 &
+        circ_status = ifelse(
+          .data$circ_status == 1 &
           !is.na(.data$circ_age) &
-          .data$circ_age > cens_age, 0, .data$circ_status),
+          .data$circ_age > cens_age, 
+          0, 
+          .data$circ_status
+        ),
         # Resetting age at circumcision
-        circ_age = ifelse(.data$circ_age > cens_age, NA,
+        circ_age = ifelse(
+          .data$circ_age > cens_age, 
+          NA,
           .data$circ_age
         ),
         # Resetting age for everyone else
-        age = ifelse(.data$age > cens_age, cens_age,
+        age = ifelse(
+          .data$age > cens_age, 
+          cens_age,
           .data$age
-        ),
-        # Year of circ/censoring (estimated using the age as no date of circ)
-        yoc = ifelse(!is.na(.data$circ_age), .data$yob + .data$circ_age,
-          .data$yob + .data$age
         )
       )
   }
+  
+  survey_circumcision <- survey_circumcision %>% 
+    mutate(
+      # circ/censoring year (estimated using age as no circ date available)
+      yoc = ifelse(
+        !is.na(.data$circ_age), 
+        .data$yob + .data$circ_age, # circumcision/left censoring age
+        .data$yob + .data$age       # right censoring age
+      )
+    )
 
   # Censoring at cens_year if assumed no circumcisions after a certain year
   if (!is.null(cens_year)) {
@@ -278,10 +293,14 @@ prepare_survey_data <- function(areas,
         0.0, .data$circ_status
         ),
         # circ censoring year / censor year in cens_year - 1 at cens_year - 1
-        yoc = ifelse(.data$yoc == cens_year, cens_year - 1, .data$yoc)
+        yoc = ifelse(
+          .data$yoc == cens_year, 
+          cens_year - 1, 
+          .data$yoc
+        )
       )
   }
-
+  
   # Setting desired level aggregation ----------------------------------------
 
   if (inherits(areas, "sf")) areas <- sf::st_drop_geometry(areas)
