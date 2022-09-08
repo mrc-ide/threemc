@@ -15,7 +15,7 @@
 #' Default: NULL
 #' @param cens_age - Age to censor the circumcision data at, Default: 59
 #' @param rm_missing_type - Indicator to decide whether you would like to keep
-#' surveys where there is no MMC/TMC disinction. These surveys may still be
+#' surveys where there is no MMC/TMC distinction. These surveys may still be
 #' useful for determining MC levels, Default: FALSE
 #' @param norm_kisk_weights - Indicator to decide whether to normalise survey
 #' weights and apply Kish coefficients, Default: TRUE
@@ -219,7 +219,7 @@ prepare_survey_data <- function(areas,
     survey_circumcision[, missing_age_cols] <- NA
   }
 
-  # Remove those with missing circumcison status
+  # Remove those with missing circumcision status
   survey_circumcision <- survey_circumcision %>%
     dplyr::filter(
       !is.na(.data$circ_status),
@@ -331,9 +331,8 @@ prepare_survey_data <- function(areas,
 
   # Preparing circumcision variables for the model
   survey_circumcision <- survey_circumcision %>%
-    # Merging on the region index
-    # Note: inner_join will remove observations that don't
-    #       corresponding to a location in "areas"
+    # Merging on the region index (inner_join removes observations that don't
+    # correspond to a location in "areas")
     dplyr::inner_join(
       dplyr::select(areas, .data$area_id, .data$area_name, .data$area_level),
       by = "area_id"
