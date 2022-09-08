@@ -400,21 +400,19 @@ spread_areas <- function(areas,
 #' an age group with an upper age of `max_age`.
 #' @param max_age Maximum age for age groups with no upper limit, Default: 60
 #' 
-#' @export
 #' @rdname match_age_group_to_ages
 #' @keywords internal
 match_age_group_to_ages <- function(age_group, max_age = 60) {
+    # if age_group ~ "x-x", expand age group from lower to upper age
     if (grepl("-", age_group)) {
-      
       age_bounds <- as.integer(strsplit(age_group, "-")[[1]])
       ages <- age_bounds[1]:dplyr::last(age_bounds)
-      
     } else {
-      
+      # if age group ~ "x+", take ages from x to max_age
       lower_age <- as.integer(gsub("+", "", age_group, fixed = TRUE))
       ages <- lower_age:max_age
     }
-    
+    # return data frame of single ages within provided age_group 
     return(data.frame("age_group" = age_group, "age" = ages))
 }
  
