@@ -56,7 +56,7 @@ Default: NULL
 
 \item{rm_missing_type}{\itemize{
 \item Indicator to decide whether you would like to keep
-surveys where there is no MMC/TMC disinction. These surveys may still be
+surveys where there is no MMC/TMC distinction. These surveys may still be
 useful for determining MC levels, Default: FALSE
 }}
 
