@@ -112,7 +112,7 @@ threemc_prepare_model_data <- function(
   # Precision matrix for temporal random effects
   if (!is.null(rw_order)) { 
       stopifnot(rw_order %in% c(1, 2))
-      message("Random Walk ", rw_order " temporal prior specified")
+      message("Random Walk ", rw_order, " temporal prior specified")
       Q_time <- list(
         "Q_time" = create_rw_prec_matrix(
         dim   = ncol(design_matrices$X_time_mmc), # same dims as Q_space
