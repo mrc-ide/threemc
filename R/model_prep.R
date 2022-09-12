@@ -107,7 +107,9 @@ threemc_prepare_model_data <- function(
   )
   
   # returned list
-  dat_tmb <- c(design_matrices, integration_matrices, survival_matrices)
+  dat_tmb <- c(
+    design_matrices, integration_matrices, survival_matrices, Q_space
+  )
 
   # Precision matrix for temporal random effects
   if (!is.null(rw_order)) { 
