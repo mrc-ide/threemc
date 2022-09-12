@@ -18,8 +18,9 @@
 #' @param paed_age_cutoff Age at which to split MMC design matrices between
 #' paediatric and non-paediatric populations, the former of which are constant
 #' over time. Set to NULL if not desired, Default: NULL
-#' @param rw_order Order of the random walk used for temporal precision matrix,
-#' Default: 1
+#' @param rw_order Order of the random walk used for temporal precision matrix.
+#' Setting to NULL assumes you wish to specify an AR 1 temporal prior. 
+#' Default: NULL
 #' @param ... Additional arguments to be passed to functions which create
 #' matrices.
 #' @return \code{list} of data required for model fitting, including:
@@ -49,7 +50,7 @@ threemc_prepare_model_data <- function(
   weight          = "population",
   k_dt            = 5,
   paed_age_cutoff = NULL,
-  rw_order        = 1,
+  rw_order        = NULL,
   ...
 ) {
 
@@ -105,19 +106,24 @@ threemc_prepare_model_data <- function(
     )
   )
   
+  # returned list
+  dat_tmb <- c(design_matrices, integration_matrices, survival_matrices)
+
   # Precision matrix for temporal random effects
-  Q_time <- list(
-    "Q_time" = create_rw_prec_matrix(
-      dim   = ncol(design_matrices$X_time_mmc), # same dims as Q_space
-      order = rw_order,
-      ...
-    )
-  )
+  if (!is.null(rw_order)) { 
+      stopifnot(rw_order %in% c(1, 2))
+      message("Random Walk ", rw_order " temporal prior specified")
+      Q_time <- list(
+        "Q_time" = create_rw_prec_matrix(
+        dim   = ncol(design_matrices$X_time_mmc), # same dims as Q_space
+        order = rw_order,
+        ...
+      )
+      dat_tmb <- c(dat_tmb, Q_time) 
+  ) else message ("Assuming AR 1 temporal prior specified")
 
   # Combine Data for TMB model
-  return(c(
-    design_matrices, integration_matrices, survival_matrices, Q_space, Q_time
-  ))
+  return(dat_tmb)
 }
 
 #### create_design_matrices ####
