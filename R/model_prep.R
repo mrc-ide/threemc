@@ -123,7 +123,9 @@ threemc_prepare_model_data <- function(
       )
     )
     dat_tmb <- c(dat_tmb, Q_time) 
-  } else message ("Assuming AR 1 temporal prior specified")
+  } else {
+    message("Assuming AR 1 temporal prior specified")
+  }
 
   # Combine Data for TMB model
   return(dat_tmb)

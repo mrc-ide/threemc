@@ -415,4 +415,3 @@ match_age_group_to_ages <- function(age_group, max_age = 60) {
     # return data frame of single ages within provided age_group 
     return(data.frame("age_group" = age_group, "age" = ages))
 }
- 
