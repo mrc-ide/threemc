@@ -53,7 +53,8 @@ Type objective_function<Type>::operator() ()
   DATA_SPARSE_MATRIX(X_agespace_tmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
   
   // Precision matrices 
-  DATA_SPARSE_MATRIX(Q_space); // Aggregation matrix for number of circumcisions performed
+  DATA_SPARSE_MATRIX(Q_space); // Precision matrix for spatial random effects
+  DATA_SPARSE_MATRIX(Q_time); // Precision matrix for spatial process
   
   //////////////////
   /// Parameters ///
@@ -81,7 +82,7 @@ Type objective_function<Type>::operator() ()
   
   // Standard deviations 
   PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
-  PARAMETER(logsigma_time_mmc);      Type sigma_time_mmc      = exp(logsigm_time_mmc);
+  PARAMETER(logsigma_time_mmc);      Type sigma_time_mmc      = exp(logsigma_time_mmc);
   PARAMETER(logsigma_space_mmc);     Type sigma_space_mmc     = exp(logsigma_space_mmc);
   // PARAMETER(logsigma_agetime_mmc);   Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
   PARAMETER(logsigma_agespace_mmc);  Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
@@ -91,9 +92,6 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logsigma_agespace_tmc);  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
   
   // Autocorrelation parameters 
-  PARAMETER(logitrho_mmc_time1);  Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_time2);  Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_time3);  Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_age1);   Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_age2);   Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_age3);   Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
@@ -165,9 +163,9 @@ Type objective_function<Type>::operator() ()
   /// Prior on the interaction random effects ///
   ///////////////////////////////////////////////
   // Interactions: space-time (GMRF x AR1), age-time (AR1 x AR1) and age-space (AR1 x GMRF)
-  // nll += SEPARABLE(AR1(rho_mmc_time2), AR1(rho_mmc_age2))(u_agetime_mmc);
+  // nll += SEPARABLE(GMRF(Q_time), AR1(rho_mmc_age2))(u_agetime_mmc);
   nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_age3))(u_agespace_mmc);
-  nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_time3))(u_spacetime_mmc);
+  nll += SEPARABLE(GMRF(Q_space), GMRF(Q_time))(u_spacetime_mmc);
   nll += SEPARABLE(GMRF(Q_space), AR1(rho_tmc_age2))(u_agespace_tmc);
   
   // Sum-to-zero constraints
@@ -197,9 +195,7 @@ Type objective_function<Type>::operator() ()
   nll -= dexp(sigma_agespace_tmc,  Type(1), TRUE) + logsigma_agespace_tmc;
   
   // Prior on the logit autocorrelation parameters
-  nll -= dnorm(logitrho_mmc_time2, Type(3), Type(2), TRUE); 
   nll -= dnorm(logitrho_mmc_age2,  Type(3), Type(2), TRUE);
-  nll -= dnorm(logitrho_mmc_time3, Type(3), Type(2), TRUE); 
   nll -= dnorm(logitrho_mmc_age3,  Type(3), Type(2), TRUE);
   nll -= dnorm(logitrho_tmc_age2,  Type(3), Type(2), TRUE);
   
