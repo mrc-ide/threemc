@@ -44,71 +44,56 @@ Type objective_function<Type>::operator() ()
   DATA_SPARSE_MATRIX(X_time_mmc); // Design matrix for the temporal random effects in the medical circumcision hazard rate
   DATA_SPARSE_MATRIX(X_age_mmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
   DATA_SPARSE_MATRIX(X_space_mmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_agetime_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  // DATA_SPARSE_MATRIX(X_agetime_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
   DATA_SPARSE_MATRIX(X_agespace_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
   DATA_SPARSE_MATRIX(X_spacetime_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_fixed_mmc_paed); // Design matrix for the fixed effects in the medical circumcision hazard rate (under specified age)
-  DATA_SPARSE_MATRIX(X_age_mmc_paed); // Design matrix for the stratification random effects in "" "" ""
-  DATA_SPARSE_MATRIX(X_space_mmc_paed); // Design matrix for the stratification random effects in "" "" ""
-  DATA_SPARSE_MATRIX(X_agespace_mmc_paed); // Design matrix for the interaction random effects in "" "" ""
   DATA_SPARSE_MATRIX(X_fixed_tmc); // Design matrix for the fixed effects in the traditional circumcision hazard rate
   DATA_SPARSE_MATRIX(X_age_tmc); // Design matrix for the stratification random effects in the traditional circumcision hazard rate
   DATA_SPARSE_MATRIX(X_space_tmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
   DATA_SPARSE_MATRIX(X_agespace_tmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
   
   // Precision matrices 
-  DATA_SPARSE_MATRIX(Q_space); // Aggregation matrix for number of circumcisions performed
+  DATA_SPARSE_MATRIX(Q_space); // Precision matrix for spatial random effects
+  DATA_SPARSE_MATRIX(Q_time); // Precision matrix for spatial process
   
   //////////////////
   /// Parameters ///
   //////////////////
   // Fixed Effects
   PARAMETER_VECTOR(u_fixed_mmc);
-  PARAMETER_VECTOR(u_fixed_mmc_paed);
   PARAMETER_VECTOR(u_fixed_tmc);
   
   // Age random effect
   PARAMETER_VECTOR(u_age_mmc); 
-  PARAMETER_VECTOR(u_age_mmc_paed); 
-  PARAMETER_VECTO(u_age_tmc); 
+  PARAMETER_VECTOR(u_age_tmc); 
   
   // Temporal random effects 
   PARAMETER_VECTOR(u_time_mmc);
   
   // Spatial random effects
   PARAMETER_VECTOR(u_space_mmc);
-  PARAMETER_VECTOR(u_space_mmc_paed);
   PARAMETER_VECTOR(u_space_tmc);
   
   // Interactions
-  PARAMETER_ARRAY(u_agetime_mmc);
+  // PARAMETER_ARRAY(u_agetime_mmc);
   PARAMETER_ARRAY(u_agespace_mmc);
   PARAMETER_ARRAY(u_spacetime_mmc);
-  PARAMETER_ARRAY(u_agespace_mmc_paed);
   PARAMETER_ARRAY(u_agespace_tmc);
   
   // Standard deviations 
-  PARAMETER(logsigma_age_mmc);            Type sigma_age_mmc            = exp(logsigma_age_mmc);
-  PARAMETER(logsigma_age_mmc_paed);      Type sigma_age_mmc_paed      = exp(logsigma_age_mmc_paed);
-  PARAMETER(logsigma_time_mmc);           Type sigma_time_mmc           = exp(logsigma_time_mmc);
-  PARAMETER(logsigma_space_mmc);          Type sigma_space_mmc          = exp(logsigma_space_mmc);
-  PARAMETER(logsigma_space_mmc_paed);    Type sigma_space_mmc_paed    = exp(logsigma_space_mmc_paed);
-  PARAMETER(logsigma_agetime_mmc);        Type sigma_agetime_mmc        = exp(logsigma_agetime_mmc);
-  PARAMETER(logsigma_agespace_mmc);       Type sigma_agespace_mmc       = exp(logsigma_agespace_mmc);
-  PARAMETER(logsigma_agespace_mmc_paed); Type sigma_agespace_mmc_paed = exp(logsigma_agespace_mmc_paed);
-  PARAMETER(logsigma_spacetime_mmc);      Type sigma_spacetime_mmc      = exp(logsigma_spacetime_mmc);
-  PARAMETER(logsigma_age_tmc);            Type sigma_age_tmc            = exp(logsigma_age_tmc);
-  PARAMETER(logsigma_space_tmc);          Type sigma_space_tmc          = exp(logsigma_space_tmc);
-  PARAMETER(logsigma_agespace_tmc);       Type sigma_agespace_tmc       = exp(logsigma_agespace_tmc);
+  PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
+  PARAMETER(logsigma_time_mmc);      Type sigma_time_mmc      = exp(logsigma_time_mmc);
+  PARAMETER(logsigma_space_mmc);     Type sigma_space_mmc     = exp(logsigma_space_mmc);
+  // PARAMETER(logsigma_agetime_mmc);   Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
+  PARAMETER(logsigma_agespace_mmc);  Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
+  PARAMETER(logsigma_spacetime_mmc); Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
+  PARAMETER(logsigma_age_tmc);       Type sigma_age_tmc       = exp(logsigma_age_tmc);
+  PARAMETER(logsigma_space_tmc);     Type sigma_space_tmc     = exp(logsigma_space_tmc);
+  PARAMETER(logsigma_agespace_tmc);  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
   
   // Autocorrelation parameters 
-  PARAMETER(logitrho_mmc_time1);  Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_time2);  Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_time3);  Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_age1);   Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_paed_age1);   Type rho_mmc_paed_age1   = geninvlogit(logitrho_mmc_paed_age1,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_age2);   Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_paed_age2);   Type rho_mmc_paed_age2   = geninvlogit(logitrho_mmc_paed_age2,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_age3);   Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_tmc_age1);   Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_tmc_age2);   Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
@@ -121,9 +106,6 @@ Type objective_function<Type>::operator() ()
   
   // Fixed effects for the medical circumcision rate
   nll -= dnorm(u_fixed_mmc,  Type(0), Type(5), TRUE).sum();
-  
-  // Fixed effects for the paed medical circumcision rate
-  nll -= dnorm(u_fixed_mmc_paed, Type(0), Type(5), TRUE).sum();
   
   // Fixed effects for the traditional circumcision rate
   nll -= dnorm(u_fixed_tmc, Type(0), Type(5), TRUE).sum();
@@ -148,22 +130,18 @@ Type objective_function<Type>::operator() ()
   ///////////////////////////////////////
   // AR1 processes
   nll += AR1(rho_mmc_age1)(u_age_mmc);
-  nll += AR1(rho_mmc_paed_age1)(u_age_mmc_paed);
   nll += AR1(rho_tmc_age1)(u_age_tmc);
   
   // Sum to zero constraint 
   nll -= dnorm(u_age_mmc.sum(), Type(0), Type(0.001) * u_age_mmc.size(), TRUE);
-  nll -= dnorm(u_age_mmc_paed.sum(), Type(0), Type(0.001) * u_age_mmc_paed.size(), TRUE);
   nll -= dnorm(u_age_tmc.sum(), Type(0), Type(0.001) * u_age_tmc.size(), TRUE);
   
   // Prior on the standard deviation for the aeg random effects
   nll -= dexp(sigma_age_mmc, Type(1), TRUE) + logsigma_age_mmc;
-  nll -= dexp(sigma_age_mmc_paed, Type(1), TRUE) + logsigma_age_mmc_paed;
   nll -= dexp(sigma_age_tmc, Type(1), TRUE) + logsigma_age_tmc;
   
   // Prior on the logit autocorrelation parameters
   nll -= dnorm(logitrho_mmc_age1, Type(3), Type(2), TRUE);
-  nll -= dnorm(logitrho_mmc_paed_age1, Type(3), Type(2), TRUE);
   nll -= dnorm(logitrho_tmc_age1, Type(3), Type(2), TRUE);
   
   ///////////////////////////////////////////
@@ -171,92 +149,74 @@ Type objective_function<Type>::operator() ()
   ///////////////////////////////////////////
   // Gaussian markov random field with prespecified precision matrix 
   nll += GMRF(Q_space)(u_space_mmc);
-  nll += GMRF(Q_space)(u_space_mmc_paed);
   nll += GMRF(Q_space)(u_space_tmc);
   
   // Sum to zero constraints
   nll -= dnorm(u_space_mmc.sum(), Type(0), Type(0.001) * u_space_mmc.size(), TRUE);
-  nll -= dnorm(u_space_mmc_paed.sum(), Type(0), Type(0.001) * u_space_mmc_paed.size(), TRUE);
   nll -= dnorm(u_space_tmc.sum(), Type(0), Type(0.001) * u_space_tmc.size(), TRUE);
   
   // Prior on the standard deviation for the spatial random effects
   nll -= dexp(sigma_space_mmc, Type(1), TRUE) + logsigma_space_mmc;
-  nll -= dexp(sigma_space_mmc_paed, Type(1), TRUE) + logsigma_space_mmc_paed;
   nll -= dexp(sigma_space_tmc, Type(1), TRUE) + logsigma_space_tmc;
   
   ///////////////////////////////////////////////
   /// Prior on the interaction random effects ///
   ///////////////////////////////////////////////
   // Interactions: space-time (GMRF x AR1), age-time (AR1 x AR1) and age-space (AR1 x GMRF)
-  nll += SEPARABLE(AR1(rho_mmc_time2), AR1(rho_mmc_age2))(u_agetime_mmc);
+  // nll += SEPARABLE(GMRF(Q_time), AR1(rho_mmc_age2))(u_agetime_mmc);
   nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_age3))(u_agespace_mmc);
-  nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_time3))(u_spacetime_mmc);
-  nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_paed_age2))(u_agespace_mmc_paed);
+  nll += SEPARABLE(GMRF(Q_space), GMRF(Q_time))(u_spacetime_mmc);
   nll += SEPARABLE(GMRF(Q_space), AR1(rho_tmc_age2))(u_agespace_tmc);
   
   // Sum-to-zero constraints
   for (int i = 0; i < u_agespace_mmc.cols(); i++) {
     nll -= dnorm(u_agespace_mmc.col(i).sum(), Type(0), Type(0.001) * u_agespace_mmc.col(i).size(), true);
   }  
-  for (int i = 0; i < u_agetime_mmc.cols(); i++) {
-    nll -= dnorm(u_agetime_mmc.col(i).sum(), Type(0), Type(0.001) * u_agetime_mmc.col(i).size(), true);
-  }  
+  // for (int i = 0; i < u_agetime_mmc.cols(); i++) {
+  //   nll -= dnorm(u_agetime_mmc.col(i).sum(), Type(0), Type(0.001) * u_agetime_mmc.col(i).size(), true);
+  // }  
   for (int i = 0; i < u_spacetime_mmc.cols(); i++) {
     nll -= dnorm(u_spacetime_mmc.col(i).sum(), Type(0), Type(0.001) * u_spacetime_mmc.col(i).size(), true);
   }  
-  for (int i = 0; i < u_agespace_mmc_paed.cols(); i++) {
-    nll -= dnorm(u_agespace_mmc_paed.col(i).sum(), Type(0), Type(0.001) * u_agespace_mmc_paed.col(i).size(), true);
-  } 
   for (int i = 0; i < u_agespace_tmc.cols(); i++) {
     nll -= dnorm(u_agespace_tmc.col(i).sum(), Type(0), Type(0.001) * u_agespace_tmc.col(i).size(), true);
   } 
   
   // Vectorising the interaction
   vector<Type> u_agespace_mmc_v(u_agespace_mmc);
-  vector<Type> u_agetime_mmc_v(u_agetime_mmc);
+  // vector<Type> u_agetime_mmc_v(u_agetime_mmc);
   vector<Type> u_spacetime_mmc_v(u_spacetime_mmc);
-  vector<Type> u_agespace_mmc_paed_v(u_agespace_mmc_paed);
   vector<Type> u_agespace_tmc_v(u_agespace_tmc);
   
   // Prior on the standard deviation for the interaction random effects
   nll -= dexp(sigma_agespace_mmc,  Type(1), TRUE) + logsigma_agespace_mmc;
-  nll -= dexp(sigma_agetime_mmc,   Type(1), TRUE) + logsigma_agetime_mmc;
+  // nll -= dexp(sigma_agetime_mmc,   Type(1), TRUE) + logsigma_agetime_mmc;
   nll -= dexp(sigma_spacetime_mmc, Type(1), TRUE) + logsigma_spacetime_mmc;
-  nll -= dexp(sigma_agespace_mmc_paed,  Type(1), TRUE) + logsigma_agespace_mmc_paed;
   nll -= dexp(sigma_agespace_tmc,  Type(1), TRUE) + logsigma_agespace_tmc;
   
   // Prior on the logit autocorrelation parameters
-  nll -= dnorm(logitrho_mmc_time2, Type(3), Type(2), TRUE); 
   nll -= dnorm(logitrho_mmc_age2,  Type(3), Type(2), TRUE);
-  nll -= dnorm(logitrho_mmc_time3, Type(3), Type(2), TRUE); 
   nll -= dnorm(logitrho_mmc_age3,  Type(3), Type(2), TRUE);
-  nll -= dnorm(logitrho_mmc_paed_age2,  Type(3), Type(2), TRUE);
   nll -= dnorm(logitrho_tmc_age2,  Type(3), Type(2), TRUE);
   
   //////////////////////////////
   /// Estimating hazard rate ///
   //////////////////////////////
   // Medical hazard rate
-  vector<Type> haz_mmc = 
-	  // Peadiatric part of the MMC process 
-	  X_fixed_mmc_paed * u_fixed_mmc_paed +
-		  X_space_mmc_paed * u_space_mmc_paed * sigma_space_mmc_paed + 
-			  X_age_mmc_paed * u_age_mmc_paed * sigma_age_mmc_paed + 
-				  X_agespace_mmc_paed * u_agespace_mmc_paed_v * sigma_agespace_mmc_paed + 
-	  // Adult part of the MMC process
-	  X_fixed_mmc * u_fixed_mmc + 
-		  X_time_mmc * u_time_mmc * sigma_time_mmc + 
-			  X_space_mmc * u_space_mmc * sigma_space_mmc + 
-				  X_age_mmc * u_age_mmc * sigma_age_mmc + 
-					  X_agetime_mmc * u_agetime_mmc_v * sigma_agetime_mmc + 
-						  X_agespace_mmc * u_agespace_mmc_v * sigma_agespace_mmc + 
-							  X_spacetime_mmc * u_spacetime_mmc_v * sigma_spacetime_mmc;
-
+  vector<Type> haz_mmc = X_fixed_mmc * u_fixed_mmc + 
+    X_time_mmc * u_time_mmc * sigma_time_mmc + 
+    X_space_mmc * u_space_mmc * sigma_space_mmc + 
+    X_age_mmc * u_age_mmc * sigma_age_mmc + 
+    // X_agetime_mmc * u_agetime_mmc_v * sigma_agetime_mmc + 
+    // u_agetime_mmc_v * sigma_agetime_mmc + 
+    X_agespace_mmc * u_agespace_mmc_v * sigma_agespace_mmc + 
+    X_spacetime_mmc * u_spacetime_mmc_v * sigma_spacetime_mmc;
+  
   // Traditional hazard rate	
   vector<Type> haz_tmc = X_fixed_tmc * u_fixed_tmc +
-	  X_space_tmc * u_space_tmc * sigma_space_tmc + 
-		  X_age_tmc * u_age_tmc * sigma_age_tmc + 
-			  X_agespace_tmc * u_agespace_tmc_v * sigma_agespace_tmc;
+    X_space_tmc * u_space_tmc * sigma_space_tmc + 
+    X_age_tmc * u_age_tmc * sigma_age_tmc + 
+    X_agespace_tmc * u_agespace_tmc_v * sigma_agespace_tmc;
   
   // Rates on [0,1] scale 
   haz_tmc = invlogit_vec(haz_tmc);
