@@ -12,6 +12,7 @@ threemc_prepare_model_data(
   weight = "population",
   k_dt = 5,
   paed_age_cutoff = NULL,
+  rw_order = NULL,
   ...
 )
 }
@@ -37,6 +38,10 @@ lower area hierarchies (only applicable for \code{aggregated = TRUE})}
 \item{paed_age_cutoff}{Age at which to split MMC design matrices between
 paediatric and non-paediatric populations, the former of which are constant
 over time. Set to NULL if not desired, Default: NULL}
+
+\item{rw_order}{Order of the random walk used for temporal precision matrix.
+Setting to NULL assumes you wish to specify an AR 1 temporal prior.
+Default: NULL}
 
 \item{...}{Additional arguments to be passed to functions which create
 matrices.}

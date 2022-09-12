@@ -70,7 +70,7 @@ Type objective_function<Type>::operator() ()
   // Age random effect
   PARAMETER_VECTOR(u_age_mmc); 
   PARAMETER_VECTOR(u_age_mmc_paed); 
-  PARAMETER_VECTO(u_age_tmc); 
+  PARAMETER_VECTOR(u_age_tmc); 
   
   // Temporal random effects 
   PARAMETER_VECTOR(u_time_mmc);
