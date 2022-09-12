@@ -61,6 +61,7 @@
 <span>  weight <span class="op">=</span> <span class="st">"population"</span>,</span>
 <span>  k_dt <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  paed_age_cutoff <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  rw_order <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -101,6 +102,12 @@ lower area hierarchies (only applicable for <code>aggregated = TRUE</code>)</p><
 <dd><p>Age at which to split MMC design matrices between
 paediatric and non-paediatric populations, the former of which are constant
 over time. Set to NULL if not desired, Default: NULL</p></dd>
+
+
+<dt>rw_order</dt>
+<dd><p>Order of the random walk used for temporal precision matrix.
+Setting to NULL assumes you wish to specify an AR 1 temporal prior.
+Default: NULL</p></dd>
 
 
 <dt>...</dt>
