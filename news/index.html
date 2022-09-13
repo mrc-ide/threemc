@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">threemc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.21</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.22</span>
       </span>
     </div>
 
@@ -47,6 +47,9 @@
       <small>Source: <a href="https://github.com/mrc-ide/threemc/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.22" id="threemc-0122">threemc 0.1.22<a class="anchor" aria-label="anchor" href="#threemc-0122"></a></h2>
+<ul><li>Add <code>rw_order</code> argument to <code>threemc_prepare_model_data</code>, which allows one to specify a Random Walk temporal process for our temporal prior. Leaving <code>rw_order = NULL</code> uses the default AR 1 temporal prior.</li></ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.1.21" id="threemc-0121">threemc 0.1.21<a class="anchor" aria-label="anchor" href="#threemc-0121"></a></h2>
 <ul><li>Replace loop in <code>aggregate_sample_age_group</code> with method which uses <code>left_join</code>, ~4x faster for SWZ, likely scales much better for larger countries.</li></ul></div>
