@@ -481,4 +481,3 @@ survey_points_dmppt2_convert_convention <- function(.data) {
   }
   return(.data)
 }
-
