@@ -1,3 +1,10 @@
+# threemc 0.1.2328
+
+* Add function (`survey_points_dmmpt2_convert_convention`) which can be used 
+to change the age group, circumcision type and column naming conventions 
+used in DMMPT2 and empirical survey circumcision estimates to match those 
+used in threemc aggregations. 
+
 # threemc 0.1.22
 
 * Add `rw_order` argument to `threemc_prepare_model_data`, which allows 

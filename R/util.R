@@ -415,3 +415,70 @@ match_age_group_to_ages <- function(age_group, max_age = 60) {
     # return data frame of single ages within provided age_group 
     return(data.frame("age_group" = age_group, "age" = ages))
 }
+
+#' @title Change age group convention to match aggregation results
+#' @description Change age group convention from "Y000_004" to "0-4", for
+#' example.
+#' @param .data `data.frame` with `age_group` column whose convention does not
+#' match aggregations from `threemc`.
+#' @rdname change_agegroup_convention
+#' @keywords internal
+change_agegroup_convention <- function(.data) {
+
+  lower <- as.numeric(substr(.data$age_group, 3, 4))
+  if (all(!is.na(as.numeric(lower)))) {
+    upper <- as.numeric(substr(.data$age_group, 7, 8))
+    .data$age_group <- paste(lower, upper, sep = "-")
+  }
+  return(.data)
+}
+
+#### survey_points_dmppt2_convert_convention ####
+
+#' Create data frame of all ages within provided age group.
+#' Convert survey coverage points & dmppt2 data to match convention of
+#' aggregated results.
+#'
+#' @param .data Data frame with either survey calculated coverage, with
+#' associated error bounds, or DMPPT2 coverage estimates calculated from VMMC
+#' programme data.
+#' @importFrom rlang .data
+#' @importFrom dplyr %>%
+#' @rdname survey_points_dmppt2_convert_convention
+#' @export
+survey_points_dmppt2_convert_convention <- function(.data) {
+
+  # change column naming convention
+  if ("survey_mid_calendar_quarter" %in% names(.data)) {
+    .data <- .data %>%
+      dplyr::rename(
+        year  = .data$survey_mid_calendar_quarter,
+        type  = .data$indicator,
+        mean  = .data$estimate,
+        sd    = .data$std_error,
+        lower = .data$ci_lower,
+        upper = .data$ci_upper
+      )
+  } else if ("dmppt2_circumcision_coverage" %in% names(.data)) {
+    .data <- .data %>%
+      dplyr::rename(mean = .data$dmppt2_circumcision_coverage)
+  }
+  # Change `type` column values to match that of threemc aggregations
+  .data <- .data %>%
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::matches("type"), ~ dplyr::case_when(
+          . == "circumcised"  ~ "MC coverage",
+          . == "circ_medical" ~ "MMC coverage",
+          TRUE                ~ "TMC coverage"
+        )
+      )
+    )
+
+  # convert age group to threemc convention (i.e. Y000_004 -> 0-4)
+  if (grepl("Y", .data$age_group[1])) {
+    .data <- change_agegroup_convention(.data)
+  }
+  return(.data)
+}
+
