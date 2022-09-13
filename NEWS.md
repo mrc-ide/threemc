@@ -1,3 +1,10 @@
+# threemc 0.1.22
+
+* Add `rw_order` argument to `threemc_prepare_model_data`, which allows 
+one to specify a Random Walk temporal process for our temporal prior. 
+Leaving `rw_order = NULL` uses the default AR 1 temporal prior.
+
+
 # threemc 0.1.21
 
 * Replace loop in `aggregate_sample_age_group` with method which uses 
