@@ -28,6 +28,9 @@
     <loc>/reference/append_mc_name.html</loc>
   </url>
   <url>
+    <loc>/reference/change_agegroup_convention.html</loc>
+  </url>
+  <url>
     <loc>/reference/circ_sample_tmb.html</loc>
   </url>
   <url>
@@ -116,6 +119,9 @@
   </url>
   <url>
     <loc>/reference/spread_areas.html</loc>
+  </url>
+  <url>
+    <loc>/reference/survey_points_dmppt2_convert_convention.html</loc>
   </url>
   <url>
     <loc>/reference/threemc_aggregate.html</loc>
