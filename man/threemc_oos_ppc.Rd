@@ -17,7 +17,7 @@ threemc_oos_ppc(
     "15-29", "10-39", "15-39", "10-49", "15-49"),
   CI_range = 0.95,
   N = 1000,
-  compare_stats = FALSE
+  compare_stats = TRUE
 )
 }
 \arguments{
@@ -55,7 +55,7 @@ posterior predictive estimates for left out surveys.}
 
 \item{compare_stats}{Set to TRUE if you wish to compute comparative
 statistics (specifically, ELPD and CRPS) to compare with alternative models,
-Default: FALSE}
+Default: TRUE}
 }
 \value{
 \code{data.frame} with samples aggregated by \code{aggr_cols} and
