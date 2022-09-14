@@ -3,8 +3,11 @@
 #' This tag will populate the namespace with compiled c++ functions upon
 #' package install.
 #' @useDynLib Surv_SpaceAgeTime
+#' @useDynLib Surv_SpaceAgeTime_RW
 #' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType
+#' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType_RW
 #' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC
+#' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW
 #' @noRd
 #' @keywords internal
 NULL
