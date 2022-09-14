@@ -180,12 +180,13 @@ threemc_oos_ppc <- function(
       .groups = "drop"
     )
 
-  # calculate percentage of samples within 95% CI from PPD
+  # calculate percentage of samples within {CI_range}% CI from PPD
   x <- survey_estimate_ppd_dist$quant_pos
   x <- sum(
     x >= 0.5 * (1 - CI_range) * N &
-      x <= 1 - 0.5 * (1 - CI_range) * N
+      x <= N - 0.5 * (1 - CI_range) * N
   ) / length(x)
+  
   print(paste0(
     "Percentage of survey points which fall within posterior predictive",
     " distribution at ",
