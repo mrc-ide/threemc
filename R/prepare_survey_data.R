@@ -225,7 +225,6 @@ prepare_survey_data <- function(areas,
   survey_circumcision <- survey_circumcision %>%
     dplyr::filter(
       !is.na(.data$circ_status),
-      # !is.na(.data$age),
       # need at least one age value for each individual to left censor
       !(is.na(.data$circ_age & is.na(.data$age))),
       !is.na(.data$indweight)

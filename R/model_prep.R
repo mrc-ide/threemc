@@ -876,7 +876,7 @@ create_hazard_matrix_agetime <- function(dat,
 
     # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = "")))) %>%
-      dplyr::mutate(row = 1:dplyr::n())
+      dplyr::mutate(row = seq_len(dplyr::n()))
 
     # Aggregation for each row in the dataframe
     entries <- apply(dat2, 1, function(x) {
