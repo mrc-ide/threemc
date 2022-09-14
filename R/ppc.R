@@ -23,6 +23,9 @@
 #' @param CI_range CI interval about which you want to compare empirical and
 #' posterior predictive estimates for left out surveys.
 #' @param N Number of samples to generate, Default: 1000
+#' @param compare_stats Set to TRUE if you wish to compute comparative 
+#' statistics (specifically, ELPD and CRPS) to compare with alternative models, 
+#' Default: FALSE
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
@@ -48,7 +51,8 @@ threemc_oos_ppc <- function(
       "10-39", "15-39", "10-49", "15-49"
     ),
     CI_range = 0.95,
-    N = 1000
+    N = 1000,
+    compare_stats = FALSE
   ) {
 
   #### Join Samples with Results ####
@@ -200,10 +204,26 @@ threemc_oos_ppc <- function(
   ))
 
   # TODO: Add option to include additional summary statistics
-  summary_stats <- c(
-    "samples within CI" = x
+  summary_stats <- list(
+    "oos_observations_within_PPD_CI" = x
   )
+  
+  
+  #### Calculate ELPD and CRPS ####
+  
+  # compute summary stats for comparison with other models, if specified
+  if (compare_stats == TRUE) {
+    # calculate ELPD
+    elpd <- loo::elpd(t(select(survey_estimate_ppd, contains("samp_"))))
+    # calculate CRPS
+    crps <- scoringutils::crps_sample(
+      true_values = survey_estimate_ppd$mean, 
+      predictions = as.matrix(select(survey_estimate_ppd, contains("samp_")))
+    )
+    summary_stats <- c(summary_stats, list("elpd" = elpd, "crps" = crps))
+  }
 
+  # Return results
   return(list(
     "ppd"           = survey_estimate_ppd,
     "ppd_dist"      = survey_estimate_ppd_dist,

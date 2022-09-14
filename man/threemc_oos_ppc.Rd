@@ -16,7 +16,8 @@ threemc_oos_ppc(
     "40-44", "45-49", "50-54", "54-59", "0+", "10+", "15+", "10-24", "15-24", "10-29",
     "15-29", "10-39", "15-39", "10-49", "15-49"),
   CI_range = 0.95,
-  N = 1000
+  N = 1000,
+  compare_stats = FALSE
 )
 }
 \arguments{
@@ -51,6 +52,10 @@ c("0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
 posterior predictive estimates for left out surveys.}
 
 \item{N}{Number of samples to generate, Default: 1000}
+
+\item{compare_stats}{Set to TRUE if you wish to compute comparative
+statistics (specifically, ELPD and CRPS) to compare with alternative models,
+Default: FALSE}
 }
 \value{
 \code{data.frame} with samples aggregated by \code{aggr_cols} and
