@@ -161,8 +161,8 @@ threemc_oos_ppc <- function(
   # check for NAs in first sample column
   stopifnot(!all(is.na(survey_estimate_ppd$samp_1)))
 
-
-  #### Calculate Posteior Predictive Check for Prevalence Estimations ####
+  
+  #### Calculate Posterior Predictive Check for Prevalence Estimations ####
 
   # func calculating where in model sample distn empirical values are
   quant_pos_sum <- function(y, x) if (y < x) 0 else 1
