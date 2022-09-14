@@ -25,7 +25,7 @@
 #' @param N Number of samples to generate, Default: 1000
 #' @param compare_stats Set to TRUE if you wish to compute comparative 
 #' statistics (specifically, ELPD and CRPS) to compare with alternative models, 
-#' Default: FALSE
+#' Default: TRUE
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
@@ -52,7 +52,7 @@ threemc_oos_ppc <- function(
     ),
     CI_range = 0.95,
     N = 1000,
-    compare_stats = FALSE
+    compare_stats = TRUE
   ) {
 
   #### Join Samples with Results ####
@@ -188,9 +188,9 @@ threemc_oos_ppc <- function(
   oos_pos_ppd <- survey_estimate_ppd_dist$quant_pos
   # calculate percentage of oos obs within {CI_range}% CI of PPD
   oos_within_ppd_percent <- sum(
-    oos_within_ppd >= 0.5 * (1 - CI_range) * N &
-      oos_within_ppd <= N - 0.5 * (1 - CI_range) * N
-  ) / length(oos_within_ppd)
+    oos_pos_ppd >= 0.5 * (1 - CI_range) * N &
+      oos_pos_ppd <= N - 0.5 * (1 - CI_range) * N
+  ) / length(oos_pos_ppd)
   
   print(paste0(
     "Percentage of survey points which fall within posterior predictive",
@@ -199,13 +199,13 @@ threemc_oos_ppc <- function(
     CI_range * 100,
     "%",
     " CI: ",
-    round(x * 100, 2),
+    round(oos_within_ppd_percent * 100, 2),
     "%"
   ))
 
   # TODO: Add option to include additional summary statistics
   summary_stats <- list(
-    "oos_observations_within_PPD_CI" = x
+    "oos_observations_within_PPD_CI" = oos_within_ppd_percent
   )
   
   
@@ -214,11 +214,15 @@ threemc_oos_ppc <- function(
   # compute summary stats for comparison with other models, if specified
   if (compare_stats == TRUE) {
     # calculate ELPD
-    elpd <- loo::elpd(t(select(survey_estimate_ppd, contains("samp_"))))
+    elpd <- loo::elpd(
+      t(dplyr::select(survey_estimate_ppd, dplyr::contains("samp_")))
+    )
     # calculate CRPS
     crps <- scoringutils::crps_sample(
       true_values = survey_estimate_ppd$mean, 
-      predictions = as.matrix(select(survey_estimate_ppd, contains("samp_")))
+      predictions = as.matrix(
+        dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
+      )
     )
     summary_stats <- c(summary_stats, list("elpd" = elpd, "crps" = crps))
   }
