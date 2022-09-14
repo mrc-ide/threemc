@@ -53,14 +53,6 @@ threemc_oos_ppc <- function(
 
   #### Join Samples with Results ####
 
-
-  if (any(removed_years %in% out$year)) {
-      stop(
-          "removed_years in out$year, please re-evaluate left-out",
-          " surveys and/or OOS results specification"
-      )
-  }
-
   # filter results to specified or modelled area level
   max_area_lev <- max(out$area_level)
   if (area_lev > max_area_lev) {
