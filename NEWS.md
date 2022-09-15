@@ -1,3 +1,10 @@
+# threemc 0.1.25
+
+* Add models which include a random effect for time for traditional 
+male circumcision. 
+* Add `inc_time_tmc` argument to `threemc_prepare_model_data` to 
+produce `X_time_tmc` so we can use these non-constant TMC models. 
+
 # threemc 0.1.24
 
 * Add function (`threemc_oos_pcc`) to perform posterior predictive checks 
