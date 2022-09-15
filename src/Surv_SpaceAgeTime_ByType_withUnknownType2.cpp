@@ -89,8 +89,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logsigma_agespace_mmc);  Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
   PARAMETER(logsigma_spacetime_mmc); Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
   PARAMETER(logsigma_age_tmc);       Type sigma_age_tmc       = exp(logsigma_age_tmc);
-  PARAMETER(logsigma_space_tmc);     Type sigma_space_tmc     = exp(logsigma_space_tmc);
   PARAMETER(logsigma_time_tmc);      Type sigma_time_tmc      = exp(logsigma_time_tmc);
+  PARAMETER(logsigma_space_tmc);     Type sigma_space_tmc     = exp(logsigma_space_tmc);
   PARAMETER(logsigma_agespace_tmc);  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
   
   // Autocorrelation parameters 
@@ -100,9 +100,9 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logitrho_mmc_age1);   Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_age2);   Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_age3);   Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_tmc_time1);  Type rho_tmc_time1  = geninvlogit(logitrho_tmc_time1, Type(-1.0), Type(1.0));
   PARAMETER(logitrho_tmc_age1);   Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
   PARAMETER(logitrho_tmc_age2);   Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_tmc_time1);  Type rho_tmc_time1  = geninvlogit(logitrho_tmc_time1, Type(-1.0), Type(1.0));
   
   //////////////////////////////////
   /// Prior on the fixed effects ///
