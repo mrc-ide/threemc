@@ -13,6 +13,7 @@ threemc_prepare_model_data(
   k_dt = 5,
   paed_age_cutoff = NULL,
   rw_order = NULL,
+  inc_time_tmc = FALSE,
   ...
 )
 }
@@ -42,6 +43,9 @@ over time. Set to NULL if not desired, Default: NULL}
 \item{rw_order}{Order of the random walk used for temporal precision matrix.
 Setting to NULL assumes you wish to specify an AR 1 temporal prior.
 Default: NULL}
+
+\item{inc_time_tmc}{Indicator variable which decides whether to include
+temporal random effects for TMC as well as MMC, Default: FALSE}
 
 \item{...}{Additional arguments to be passed to functions which create
 matrices.}
