@@ -86,6 +86,8 @@ prepare_survey_data <- function(areas,
       # pull country
       cntry <- unique(survey_circumcision[[i]]$iso3)
 
+      message("Preparing surveys for ", cntry, "\n")
+
       if (cntry == "LBR" && cens_age > 29) {
         cens_age <- 29
         message("for LBR, age must be censored to those under 29 (at least)")
@@ -223,7 +225,6 @@ prepare_survey_data <- function(areas,
   survey_circumcision <- survey_circumcision %>%
     dplyr::filter(
       !is.na(.data$circ_status),
-      # !is.na(.data$age),
       # need at least one age value for each individual to left censor
       !(is.na(.data$circ_age & is.na(.data$age))),
       !is.na(.data$indweight)
@@ -341,7 +342,7 @@ prepare_survey_data <- function(areas,
     "Uncircumised/right censored (event 0)", 
     "Uncensored (event 1)",
     "Left censored (event 2)"
-    )
+    )[as.numeric(names(event_tbl)) + 1]
   message(
     paste0(utils::capture.output(event_tbl), collapse = "\n")
   )

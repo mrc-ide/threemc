@@ -387,75 +387,45 @@ aggregate_sample_age_group <- function(
       # five-year age groups
       "0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
       "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
-      # age groups with only minimum cutoff
+      # age groups with only minimum cut-off
       "0+", "10+", "15+",
       # other, wider age groups of interest
       "10-24", "15-24", "10-29", "15-29",
       "10-39", "15-39", "10-49", "15-49"
     )
 ) {
-
-  # global bindings for data.table non-standard evaluation
+  
+  # global bindings for `data.table` non-standard evaluation
   .SD <- NULL
-
-  if (inherits(results_list, "data.frame")) {
-    message(
-      paste0(
-        "requires list from combine_areas (set argument join = FALSE), ",
-        "coercing to list"
-      )
-    )
-    results_list <- list(results_list)
-  }
-
-  # Multiplying by population to population weight
-  results_list <- lapply(results_list, function(x) {
-    x %>%
-      dplyr::mutate(
-        dplyr::across(dplyr::any_of(num_cols), ~ . * .data$population)
-      ) %>%
-      dplyr::relocate(dplyr::any_of(num_cols), .after = dplyr::everything())
-  })
-
-  # aggregate sample for each age group
-  results <- lapply(seq_along(age_groups), function(i) {
-    # If upper limit use this split
-    if (grepl("-", age_groups[i])) {
-      age1 <- as.numeric(strsplit(age_groups[i], "-")[[1]][1])
-      age2 <- as.numeric(strsplit(age_groups[i], "-")[[1]][2])
-    }
-    # If no upper limit use this split
-    if (grepl("\\+", age_groups[i])) {
-      age1 <- as.numeric(strsplit(age_groups[i], "\\+")[[1]][1])
-      age2 <- Inf
-    }
-    results_list_loop <- lapply(results_list, function(x) {
-      x <- x %>%
-        dplyr::distinct() %>%
-        # take results for age group i
-        dplyr::filter(.data$age >= age1, .data$age <= age2) %>%
-        dplyr::select(-.data$age)
-      # Getting summarising samples
-      x <- data.table::setDT(x)[,
-                                lapply(.SD, sum, na.rm = TRUE),
-                                by = c(aggr_cols),
-                                .SDcols = c("population", num_cols)
-      ]
-      # Adding age group
-      dplyr::mutate(x, age_group = age_groups[i])
-    })
-    # Printing index
-    print(age_groups[i])
-    # return ages
-    return(results_list_loop)
-  })
-
-  # join together
-  results <- as.data.frame(data.table::rbindlist(
-    rlang::squash(results)
-  ))
-
-  # Multiplying by population to population weight
+  
+  results <- dplyr::bind_rows(results_list) %>% 
+    # avoid duplication
+    dplyr::distinct() %>% 
+    # Multiply by population to population weight
+    dplyr::mutate(
+      dplyr::across(dplyr::any_of(num_cols), ~ . * .data$population)
+    ) %>%
+    dplyr::relocate(dplyr::any_of(num_cols), .after = dplyr::everything())
+  
+  # create data frame matching age groups to ages within 
+  age_group_df <- dplyr::bind_rows(
+    lapply(age_groups, match_age_group_to_ages, max_age = max(results$age))
+  )
+  
+  # left join in  `age_group` col to results, remove `age` col
+  results <- dplyr::left_join(results, age_group_df, by = "age") %>% 
+    dplyr::select(-.data$age)
+  
+  if (!"age_group" %in% aggr_cols) aggr_cols <- c(aggr_cols, "age_group")
+  
+  # aggregate sample for unique combination of `aggr_cols`
+  results <- data.table::setDT(results)[,
+                                        lapply(.SD, sum, na.rm = TRUE),
+                                        by = c(aggr_cols),
+                                        .SDcols = c("population", num_cols)
+  ]
+  
+  # Multiply by population to population weight
   # (don"t do this for "N performed", if present)
   results <- results %>%
     dplyr::mutate(
@@ -465,9 +435,10 @@ aggregate_sample_age_group <- function(
         )
       )
     )
-
+  
   return(results)
 }
+
 
 #### prevalence_change ####
 
