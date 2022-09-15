@@ -18,7 +18,7 @@ spatial and random effects, for both medical and traditional circumcision."><!--
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">threemc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.24</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.25</span>
       </span>
     </div>
 
@@ -55,7 +55,7 @@ spatial and random effects, for both medical and traditional circumcision.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_design_matrices</span><span class="op">(</span><span class="va">dat</span>, area_lev <span class="op">=</span> <span class="cn">NULL</span>, k_dt <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_design_matrices</span><span class="op">(</span><span class="va">dat</span>, area_lev <span class="op">=</span> <span class="cn">NULL</span>, k_dt <span class="op">=</span> <span class="fl">5</span>, inc_time_tmc <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -73,6 +73,11 @@ unique record.</p></dd>
 
 <dt>k_dt</dt>
 <dd><p>Age knot spacing in spline definitions, Default: 5</p></dd>
+
+
+<dt>inc_time_tmc</dt>
+<dd><p>Indicator variable which decides whether to include
+temporal random effects for TMC as well as MMC, Default: FALSE</p></dd>
 
 </dl></div>
     <div id="value">

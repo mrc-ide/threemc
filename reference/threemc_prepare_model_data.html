@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">threemc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.24</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.25</span>
       </span>
     </div>
 
@@ -62,6 +62,7 @@
 <span>  k_dt <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  paed_age_cutoff <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rw_order <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  inc_time_tmc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -108,6 +109,11 @@ over time. Set to NULL if not desired, Default: NULL</p></dd>
 <dd><p>Order of the random walk used for temporal precision matrix.
 Setting to NULL assumes you wish to specify an AR 1 temporal prior.
 Default: NULL</p></dd>
+
+
+<dt>inc_time_tmc</dt>
+<dd><p>Indicator variable which decides whether to include
+temporal random effects for TMC as well as MMC, Default: FALSE</p></dd>
 
 
 <dt>...</dt>
