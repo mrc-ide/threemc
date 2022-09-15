@@ -230,6 +230,7 @@ create_design_matrices <- function(dat, area_lev = NULL, k_dt = 5) {
 #' @param paed_age_cutoff Age at which to no longer consider an individual as
 #' part of the "paediatric" population of a country, Default: 10
 #' @importFrom rlang .data
+#' @rdname split_mmc_design_matrices_paed
 #' @keywords internal
 split_mmc_design_matrices_paed <- function(
     out, area_lev, design_matrices, paed_age_cutoff = 10
@@ -1006,6 +1007,7 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
 #'  \code{\link[methods]{as}}
 #
 #' @return RW precision matrix
+#' @rdname create_rw_prec_matrix
 #' @keywords internal
 create_rw_prec_matrix <- function(dim,
                                   order = 1,

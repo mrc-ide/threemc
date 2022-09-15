@@ -129,6 +129,7 @@ threemc_aggregate <- function(
 #' to sample for. Can be one of "probability", "incidence" or "prevalence".
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
+#' @rdname prepare_sample_data
 #' @keywords internal
 prepare_sample_data <- function(N = 100,
                                 populations,
