@@ -263,7 +263,7 @@ Type objective_function<Type>::operator() ()
   // Traditional hazard rate	
   vector<Type> haz_tmc = X_fixed_tmc * u_fixed_tmc +
 	  X_space_tmc * u_space_tmc * sigma_space_tmc + 
-		  X_time_mmc * u_time_mmc * sigma_time_mmc + 
+		  X_time_tmc * u_time_tmc * sigma_time_tmc + 
 			  X_age_tmc * u_age_tmc * sigma_age_tmc + 
 				  X_agespace_tmc * u_agespace_tmc_v * sigma_agespace_tmc;
   
