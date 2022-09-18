@@ -306,7 +306,7 @@ create_aggregate_structure <- function(areas,
 
   n_sub_region_df <- areas %>%
     dplyr::distinct(.data$area_id) %>%
-    dplyr::mutate(sp_dep = sapply(sub_region_list, length))
+    dplyr::mutate(sp_dep = vapply(sub_region_list, length, numeric(1)))
 
   # Returning list
   list(sub_region_list = sub_region_list, n_sub_region_df = n_sub_region_df)

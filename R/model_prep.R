@@ -734,7 +734,7 @@ create_survival_matrices <- function(out,
   }
   # remove any NULL dummy hazard matrices
   dummy_hazard_matrices <- dummy_hazard_matrices[-which(
-    sapply(dummy_hazard_matrices, is.null)
+    vapply(dummy_hazard_matrices, is.null, logical(1))
   )]
 
   # Matrices for selecting instantaneous hazard rate for:

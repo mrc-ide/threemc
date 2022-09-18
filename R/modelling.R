@@ -95,7 +95,7 @@ threemc_fit_model <- function(
      names(parameters)[mapped_pars] <- names(maps)
    }
 
-   is_matrix <- sapply(init_params, is.matrix)
+   is_matrix <- vapply(init_params, is.matrix, logical(1))
    parameters[is_matrix] <- Map(matrix,
                              parameters[is_matrix],
                              nrow = lapply(init_params[is_matrix], nrow),
