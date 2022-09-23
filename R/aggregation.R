@@ -295,7 +295,7 @@ prepare_sample_data <- function(N = 100,
   }
 
   # Append together
-  return(data.table::rbindlist(list(tmp1, tmp2))
+  return(data.table::rbindlist(list(tmp1, tmp2)))
 }
 
 #### aggregate sample ####
