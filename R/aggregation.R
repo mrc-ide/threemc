@@ -155,7 +155,7 @@ prepare_sample_data <- function(N = 100,
 
   # append samples from different circumcision models together (and pops)
   append_fun <- function(tmp, fit, populations, type) {
-
+    
     # different objects to pull samples from fit, based on desired aggregation
     if (type == "probability") {
       mmc <- "haz_mmc" # medical circumcision
@@ -172,14 +172,14 @@ prepare_sample_data <- function(N = 100,
       mmct <- "cum_inc_mmct"
       mc <- ifelse("cum_inc" %in% names(fit$sample), "cum_inc", "cum_inc_mc")
     }
-
+    
     # word to be pasted onto the end of circ type below
     if (type == "prevalence") {
       category <- "coverage"
     } else {
       category <- type
     }
-
+    
     # initialise dataframes to store samples for different circ types
     tmpx_1 <- tmpx_2 <- tmpx_3 <- tmpx_4 <- tmpx_5 <- tmpx_6 <- tmp
     # type == "incidence" has 12 different "types"
@@ -188,7 +188,7 @@ prepare_sample_data <- function(N = 100,
     } else {
       tmpx_7 <- tmpx_8 <- tmpx_9 <- tmpx_10 <- tmpx_11 <- tmpx_12 <- NULL
     }
-
+    
     # Pull samples from data
     # Models with no VMMC data cannot distinguish between MMC-nT and MMC-T
     tmpx_1[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N]
@@ -225,7 +225,7 @@ prepare_sample_data <- function(N = 100,
     tmpx_4$type <- paste("MMC", category)
     tmpx_5$type <- paste("TMIC", category)
     tmpx_6$type <- paste("MC", category)
-
+    
     # Samples for the number of MCs performed (for incidence)
     if (type == "incidence") {
       tmpx_7 <- tmpx_1
@@ -241,10 +241,10 @@ prepare_sample_data <- function(N = 100,
       tmpx_12 <- tmpx_6
       tmpx_12$type <- "MCs performed"
     }
-
+    
     # Append together
     tmp <- as.list(mget(paste0("tmpx_", 1:12))) %>%
-      dplyr::bind_rows() %>%
+      data.table::rbindlist() %>%
       # only keep relevant columns
       dplyr::select(
         .data$area_id, .data$area_name,
@@ -252,7 +252,7 @@ prepare_sample_data <- function(N = 100,
         .data$type, .data$model,
         dplyr::contains("samp_")
       )
-
+    
     # only keep relevant columns in populations for left_join
     populations_append <- populations %>%
       dplyr::select(
@@ -261,28 +261,26 @@ prepare_sample_data <- function(N = 100,
         # don't join by area_name, in case character encoding etc causes errors
         -dplyr::matches("area_name")
       )
-      tmp <- tmp %>%
-      # join in region populations
-      dplyr::left_join(populations_append) %>%
+    
+    # join with populations
+    tmp <- data.table::merge.data.table(tmp, populations_append) %>% 
       dplyr::relocate(.data$population, .before = .data$samp_1)
-
+    
     # filter out na populations, with an appropriate message
     if (any(is.na(tmp$population)) == TRUE) {
       n1 <- nrow(tmp)
-      tmp <- tmp %>% dplyr::filter(!is.na(.data$population))
+      tmp <- dplyr::filter(tmp, !is.na(.data$population))
       n2 <- nrow(tmp)
       if (n2 == 0) stop("No populations present in data")
       message(paste0("Missing population for ", n1 - n2, " records"))
     }
-
-
+    
     return(tmp)
   }
-
+  
   # Model with Probability of MC with no program data (only surveys)
   if (!is.null(no_prog_results)) {
-    tmp1 <- no_prog_results %>%
-      dplyr::mutate(model = "No program data")
+    tmp1 <- dplyr::mutate(no_prog_results, model = "No program data")
     tmp1 <- append_fun(tmp1, no_prog_tmb_fit, populations, type = type)
   } else {
     tmp1 <- NULL
@@ -290,15 +288,14 @@ prepare_sample_data <- function(N = 100,
 
   # Model with Probability of MC with both programme and survey data
   if (!is.null(prog_results)) {
-    tmp2 <- prog_results %>%
-      dplyr::mutate(model = "With program data")
+    tmp2 <- dplyr::mutate(prog_results, model = "With program data")
     tmp2 <- append_fun(tmp2, prog_tmb_fit, populations, type = type)
   } else {
     tmp2 <- NULL
   }
 
   # Append together
-  return(rbind(tmp1, tmp2))
+  return(data.table::rbindlist(list(tmp1, tmp2))
 }
 
 #### aggregate sample ####
@@ -399,7 +396,7 @@ aggregate_sample_age_group <- function(
   # global bindings for `data.table` non-standard evaluation
   .SD <- NULL
   
-  results <- dplyr::bind_rows(results_list) %>% 
+  results <- data.table::rbindlist(results_list) %>% 
     # avoid duplication
     dplyr::distinct() %>% 
     # Multiply by population to population weight
@@ -409,7 +406,7 @@ aggregate_sample_age_group <- function(
     dplyr::relocate(dplyr::any_of(num_cols), .after = dplyr::everything())
   
   # create data frame matching age groups to ages within 
-  age_group_df <- dplyr::bind_rows(
+  age_group_df <- data.table::rbindlist(
     lapply(age_groups, match_age_group_to_ages, max_age = max(results$age))
   )
   
