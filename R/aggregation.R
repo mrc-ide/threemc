@@ -22,6 +22,7 @@
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
+#' @importFrom data.table %chin%
 #' @importFrom rlang .data
 #' @rdname threemc_aggregate
 #' @export
