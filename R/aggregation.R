@@ -86,7 +86,7 @@ threemc_aggregate <- function(
   }
 
   # additional aggregations to perform for prevalence
-  if (type == "prevalence" && prev_year %in% .data$year) {
+  if (type == "prevalence" && prev_year %chin% .data$year) {
     # calculate change in prevalence since prev_year
     data_change_prev_year <- prevalence_change(
       .data,
@@ -141,7 +141,7 @@ prepare_sample_data <- function(N = 100,
   if (is.null(no_prog_results) && is.null(prog_results)) {
     stop("cannot have prog_results == no_prog_results == NULL")
   }
-  if (!type %in% c("probability", "incidence", "prevalence") ||
+  if (!type %chin% c("probability", "incidence", "prevalence") ||
     length(type) > 1) {
     stop("Please choose a valid type
          (one of 'probability', 'incidence', 'prevalence'")
@@ -160,17 +160,17 @@ prepare_sample_data <- function(N = 100,
     if (type == "probability") {
       mmc <- "haz_mmc" # medical circumcision
       tmc <- "haz_tmc" # traditional circumcision
-      mc <- ifelse("haz" %in% names(fit$sample), "haz", "haz_mc") # all circ
+      mc <- ifelse("haz" %chin% names(fit$sample), "haz", "haz_mc") # all circ
     } else if (type == "incidence") {
       mmc <- "inc_mmc"
       tmc <- "inc_tmc"
       mmct <- "inc_mmct"
-      mc <- ifelse("inc" %in% names(fit$sample), "inc", "inc_mc")
+      mc <- ifelse("inc" %chin% names(fit$sample), "inc", "inc_mc")
     } else if (type == "prevalence") {
       mmc <- "cum_inc_mmc"
       tmc <- "cum_inc_tmc"
       mmct <- "cum_inc_mmct"
-      mc <- ifelse("cum_inc" %in% names(fit$sample), "cum_inc", "cum_inc_mc")
+      mc <- ifelse("cum_inc" %chin% names(fit$sample), "cum_inc", "cum_inc_mc")
     }
     
     # word to be pasted onto the end of circ type below
@@ -256,7 +256,7 @@ prepare_sample_data <- function(N = 100,
     # only keep relevant columns in populations for left_join
     populations_append <- populations %>%
       dplyr::select(
-        dplyr::all_of(names(tmp)[names(tmp) %in% names(populations)]),
+        dplyr::all_of(names(tmp)[names(tmp) %chin% names(populations)]),
         .data$population,
         # don't join by area_name, in case character encoding etc causes errors
         -dplyr::matches("area_name")
@@ -334,7 +334,7 @@ aggregate_sample <- function(.data,
   }
 
   # ensure aggregation columns are in the data
-  aggr_cols <- aggr_cols[aggr_cols %in% names(.data)]
+  aggr_cols <- aggr_cols[aggr_cols %chin% names(.data)]
 
   # Multiplying by population to population weight
   .data <- .data %>%
@@ -414,7 +414,7 @@ aggregate_sample_age_group <- function(
   results <- dplyr::left_join(results, age_group_df, by = "age") %>% 
     dplyr::select(-.data$age)
   
-  if (!"age_group" %in% aggr_cols) aggr_cols <- c(aggr_cols, "age_group")
+  if (!"age_group" %chin% aggr_cols) aggr_cols <- c(aggr_cols, "age_group")
   
   # aggregate sample for unique combination of `aggr_cols`
   results <- data.table::setDT(results)[,
