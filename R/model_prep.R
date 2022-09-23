@@ -713,7 +713,7 @@ create_survival_matrices <- function(out,
   is_missing <- is_dummy <- c()
   dummy_hazard_matrices <- vector(mode = "list", length = length(circs))
   for (i in seq_along(circs)) {
-    if (!circs[i] %in% names(out)) {
+    if (!circs[i] %chin% names(out)) {
       message(paste0("Not creating survival matrix for type == ", circs[i]))
       is_missing <- c(is_missing, i)
     } else if (all(out[[circs[[i]]]] == 0)) {

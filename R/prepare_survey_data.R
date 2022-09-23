@@ -59,7 +59,7 @@ prepare_survey_data <- function(areas,
 
     # arrange and filter for country to ensure splitting is the same
     equal_splits <- function(x, survey_circumcision) {
-      x <- x[names(x) %in% names(survey_circumcision)] # same names
+      x <- x[names(x) %chin% names(survey_circumcision)] # same names
       return(x[order(names(survey_circumcision))]) # order names
     }
 
@@ -189,7 +189,7 @@ prepare_survey_data <- function(areas,
   if (is_add_data_present) {
 
     # change colnames to those in line with areas
-    if ("geoloc_area_id" %in% names(survey_clusters)) {
+    if ("geoloc_area_id" %chin% names(survey_clusters)) {
       survey_clusters <- survey_clusters %>%
         dplyr::rename(area_id = .data$geoloc_area_id)
     }
@@ -216,8 +216,8 @@ prepare_survey_data <- function(areas,
 
   # Add column of NAs for missing age columns
   age_cols <- c("circ_age", "age")
-  if (sum(age_cols %in% names(survey_circumcision)) < 2) {
-    missing_age_cols <- age_cols[!age_cols %in% names(survey_circumcision)]
+  if (sum(age_cols %chin% names(survey_circumcision)) < 2) {
+    missing_age_cols <- age_cols[!age_cols %chin% names(survey_circumcision)]
     survey_circumcision[, missing_age_cols] <- NA
   }
 
@@ -399,7 +399,7 @@ prepare_survey_data <- function(areas,
     # Removing surveys and individuals without any type information
     survey_circumcision <- survey_circumcision %>%
       dplyr::filter(
-        !(.data$survey_id %in% !!tmp$survey_id),
+        !(.data$survey_id %chin% !!tmp$survey_id),
         !(.data$circ_status == 1 & .data$type == "Missing")
       )
   }
@@ -416,7 +416,7 @@ prepare_survey_data <- function(areas,
   # return message for which surveys are discarded & kept (if any)
   remaining_surveys <- unique(survey_circumcision$survey_id)
   if (length(remaining_surveys) != length(orig_surveys)) {
-    removed_surveys <- orig_surveys[!orig_surveys %in% remaining_surveys]
+    removed_surveys <- orig_surveys[!orig_surveys %chin% remaining_surveys]
     surveys <- list(removed_surveys, remaining_surveys)
     lengths <- c(length(removed_surveys), length(remaining_surveys))
     initial <- c("Surveys removed: ", "Surveys remaining: ")

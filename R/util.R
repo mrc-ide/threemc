@@ -1,9 +1,9 @@
 # Various utility functions for functionality used on multiple occasions
-# throughout package. Generally unexported.
+# throughout package. Generally un-exported.
 
 #### %||% ####
 
-`%||%` <- function(x, y) { # nolint
+`%||%` <- function(x, y) { # no lint
   if (is.null(x)) y else x
 }
 
@@ -34,7 +34,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   ## in NAs in this situation (look at KEN for this)
 
   ## read in data, depending on file type
-  cond <- tools::file_ext(path) %in% c("geojson", "shp", "shx")
+  cond <- tools::file_ext(path) %chin% c("geojson", "shp", "shx")
   if (cond) {
     .data <- sf::read_sf(path, ...)
   } else {
@@ -47,7 +47,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
     cols <- names(filters)
     vals <- as.vector(filters[seq_along(filters)])
     for (i in seq_along(filters)) {
-      if (!cols[i] %in% names(.data)) next
+      if (!cols[i] %chin% names(.data)) next
       ## change col i to symbol (if present), evaluate corresponding filter
       .data <- dplyr::filter(.data, !!rlang::sym(cols[i]) == vals[i])
     }
@@ -56,7 +56,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   # Select specific columns, if desired (and present) (no need to do for fread)
   if (!is.null(selected) && cond) {
     .data <- .data %>%
-      dplyr::select(dplyr::all_of(selected[selected %in% names(.data)]))
+      dplyr::select(dplyr::all_of(selected[selected %chin% names(.data)]))
   }
 
   ## for areas, add unique identifier within Admin code and merge to boundaries
@@ -146,8 +146,8 @@ add_area_id <- function(df,
     select_cols <- unique(c(select_cols, add_keep_cols))
   }
   # remove columns which interfere with select below
-  select_cols <- select_cols[!select_cols %in% c("area_id", "area_name")]
-  select_cols <- select_cols[select_cols %in% names(df)]
+  select_cols <- select_cols[!select_cols %chin% c("area_id", "area_name")]
+  select_cols <- select_cols[select_cols %chin% names(df)]
 
   df_area_id <- df %>%
     # join in area names for chosen area_id
@@ -449,7 +449,7 @@ change_agegroup_convention <- function(.data) {
 survey_points_dmppt2_convert_convention <- function(.data) {
 
   # change column naming convention
-  if ("survey_mid_calendar_quarter" %in% names(.data)) {
+  if ("survey_mid_calendar_quarter" %chin% names(.data)) {
     .data <- .data %>%
       dplyr::rename(
         year  = .data$survey_mid_calendar_quarter,
@@ -459,7 +459,7 @@ survey_points_dmppt2_convert_convention <- function(.data) {
         lower = .data$ci_lower,
         upper = .data$ci_upper
       )
-  } else if ("dmppt2_circumcision_coverage" %in% names(.data)) {
+  } else if ("dmppt2_circumcision_coverage" %chin% names(.data)) {
     .data <- .data %>%
       dplyr::rename(mean = .data$dmppt2_circumcision_coverage)
   }

@@ -111,7 +111,7 @@ threemc_oos_ppc <- function(
   }) %>%
     dplyr::bind_rows() %>%
     # only take years where surveys were removed, and modelled area level
-    dplyr::filter(.data$year %in% removed_years, .data$area_level == area_lev)
+    dplyr::filter(.data$year %chin% removed_years, .data$area_level == area_lev)
 
 
   #### Aggregate to Age Groups ####
@@ -143,9 +143,9 @@ threemc_oos_ppc <- function(
   survey_estimate_prep <- survey_estimate %>%
     # filter for OOS year(s) and modelled area_level
     dplyr::filter(
-      .data$year %in% removed_years,
+      .data$year %chin% removed_years,
       .data$area_level == min(area_lev, 1),
-      .data$age_group %in% out_types_agegroup$age_group,
+      .data$age_group %chin% out_types_agegroup$age_group,
       .data$mean != 0
     ) %>%
     # ignore survey_id, merging for the same year

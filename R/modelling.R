@@ -90,7 +90,7 @@ threemc_fit_model <- function(
 
      # replace NAs in parameters with mapped parameters in par_init
      parameters[mapped_pars] <- init_params[
-       names(init_params) %in% names(maps)
+       names(init_params) %chin% names(maps)
      ]
      names(parameters)[mapped_pars] <- names(maps)
    }
@@ -117,7 +117,7 @@ threemc_fit_model <- function(
     }
 
     dat_tmb <- remove_type_distinction(
-      dat_tmb[!names(dat_tmb) %in% c("A_mmc", "A_tmc")]
+      dat_tmb[!names(dat_tmb) %chin% c("A_mmc", "A_tmc")]
     )
     names(dat_tmb)[names(dat_tmb) == "A_mc"] <- "A"
 
@@ -126,7 +126,7 @@ threemc_fit_model <- function(
   }
 
   # Only have named random parameters
-  randoms <- randoms[randoms %in% names(parameters)]
+  randoms <- randoms[randoms %chin% names(parameters)]
   if (length(randoms) == 0) randoms <- NULL
 
   # Create TMB object
