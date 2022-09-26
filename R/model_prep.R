@@ -703,10 +703,12 @@ create_survival_matrices <- function(out,
     "obs_tmc", # traditional circumcision rate,
     "obs_mc", # all circumcision (to model unknown type)
     "cens", # censored
-    "icens" # left censored
+    "icens_mmc" # left censored
+    "icens_tmc" # left censored
+    "icens_mc" # left censored
   )
   # survival matrix names in TMB model
-  list_names <- c("A_mmc", "A_tmc", "A_mc", "B", "C")
+  list_names <- c("A_mmc", "A_tmc", "A_mc", "B", "C_mmc", "C_tmc", "C_mc")
 
   # don't model for specific type if missing from out
   # if all out[[circs[i]]] are 0, create dummy survival matrix of all 0s

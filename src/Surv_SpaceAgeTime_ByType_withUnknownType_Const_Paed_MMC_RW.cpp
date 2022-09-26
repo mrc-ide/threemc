@@ -35,7 +35,9 @@ Type objective_function<Type>::operator() ()
   DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
   DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
   DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
-  DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
+  DATA_SPARSE_MATRIX(C_mmc); // Matrix selecting relevant cumulative hazard entry for interval censored (medically circumcised) pop 
+  DATA_SPARSE_MATRIX(C_tmc); // Matrix selecting relevant cumulative hazard entry for interval censored (traditionally circumcised) pop
+  DATA_SPARSE_MATRIX(C_mc); // Matrix selecting relevant cumulative hazard entry for interval censored (unknown circumcised) pop
   DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard 
   DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard 
   
@@ -267,7 +269,6 @@ Type objective_function<Type>::operator() ()
   vector<Type> logprob  = log(Type(1.0) - haz);
   vector<Type> surv     = exp(IntMat1 * logprob);
   vector<Type> surv_lag = exp(IntMat2 * logprob);
-  vector<Type> leftcens = Type(1.0) - surv;
   
   // Incidence 
   vector<Type> inc_tmc = haz_tmc * surv_lag;
@@ -294,8 +295,14 @@ Type objective_function<Type>::operator() ()
   // Getting likelihood for those right censored
   nll -= (B * log(surv)).sum();
   
-  // Getting likelihood for those left censored
-  nll -= (C * log(leftcens)).sum();
+  // Getting likelihood for those left censored (medical circumcision)
+  nll -= (C_mmc * log(cum_inc_mmc)).sum();
+  
+  // Getting likelihood for those left censored (traditional circumcision)
+  nll -= (C_tmc * log(cum_inc_tmc)).sum();
+  
+  // Getting likelihood for those left censored (unknown type circumcision)
+  nll -= (C_mc * log(cum_inc)).sum();
   
   ///////////////////////////
   /// Reporting variables ///

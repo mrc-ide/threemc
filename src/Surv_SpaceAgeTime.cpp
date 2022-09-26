@@ -52,10 +52,6 @@ Type objective_function<Type>::operator() ()
     //////////////////
     /// Parameters ///
     //////////////////
-
-    //////////////////
-    /// Parameters ///
-    //////////////////
 	// Fixed effects
     PARAMETER_VECTOR(u_fixed);
 
@@ -92,7 +88,7 @@ Type objective_function<Type>::operator() ()
 	//////////////////////////////////
 	/// Prior on the fixed effects ///
 	//////////////////////////////////
-	// Negaive log likelihood definition
+	// Negative log likelihood definition
     Type nll = Type(0);
 
 	// Fixed effects for the circumcision rate
@@ -194,7 +190,6 @@ Type objective_function<Type>::operator() ()
 	vector<Type> logprob  = log(Type(1.0) - haz);
 	vector<Type> surv     = exp(IntMat1 * logprob);
 	vector<Type> surv_lag = exp(IntMat2 * logprob);
-	vector<Type> leftcens = Type(1.0) - surv;
 
 	// Incidence
 	vector<Type> inc = haz * surv_lag;
@@ -212,7 +207,7 @@ Type objective_function<Type>::operator() ()
 	nll -= (B * log(surv)).sum();
 
 	// Getting likelihood for those left censored
-	nll -= (C * log(leftcens)).sum();
+	nll -= (C * log(cum_inc)).sum();
 
     ///////////////////////////
     /// Reporting variables ///
