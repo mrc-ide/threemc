@@ -892,7 +892,11 @@ create_hazard_matrix_agetime <- function(dat,
     # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = "")))) %>%
       dplyr::mutate(row = seq_len(dplyr::n()))
-
+	  
+    # Only keeping data at the reference level
+    dat3 <- dat %>%
+      dplyr::filter(.data$area_level == area_lev)
+		
     # Aggregation for each row in the dataframe
     entries <- apply(dat2, 1, function(x) {
       # Getting areas in reference administrative
@@ -907,7 +911,7 @@ create_hazard_matrix_agetime <- function(dat,
       # Getting weights
       vals <-
         as.numeric(x[circ]) *
-          dat[cols, weight, drop = TRUE] / sum(dat[cols, weight, drop = TRUE])
+          dat3[cols, weight, drop = TRUE] / sum(dat3[cols, weight, drop = TRUE])
       # Output dataset
       tmp <- data.frame(cols, rows, vals)
       # Return dataframe
