@@ -33,7 +33,8 @@ Type objective_function<Type>::operator() ()
 	// Survival analysis matrices
     DATA_SPARSE_MATRIX(A); // Matrix selecting instantaneous hazard for circumcised pop
     DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
-    DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
+    DATA_SPARSE_MATRIX(C1); // Matrix selecting relevant cumulative hazard entry for interval censored pop
+ 	DATA_VECTOR(C2); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (unknown circumcised) pop
     DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard
     DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard
 
@@ -200,7 +201,7 @@ Type objective_function<Type>::operator() ()
 	nll -= (B * log(surv)).sum();
 
 	// Getting likelihood for those left censored
-	nll -= (C * log(cum_inc)).sum();
+  	nll -= (C2 * log(C1 * cum_inc)).sum();
 
     ///////////////////////////
     /// Reporting variables ///

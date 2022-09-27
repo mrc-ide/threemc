@@ -35,9 +35,12 @@ Type objective_function<Type>::operator() ()
   DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
   DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
   DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
-  DATA_SPARSE_MATRIX(C_mmc); // Matrix selecting relevant cumulative hazard entry for interval censored (medically circumcised) pop 
-  DATA_SPARSE_MATRIX(C_tmc); // Matrix selecting relevant cumulative hazard entry for interval censored (traditionally circumcised) pop
-  DATA_SPARSE_MATRIX(C_mc); // Matrix selecting relevant cumulative hazard entry for interval censored (unknown circumcised) pop
+  DATA_SPARSE_MATRIX(C1_mmc); // Matrix selecting relevant cumulative hazard entry for interval censored (medically circumcised) pop 
+  DATA_SPARSE_MATRIX(C1_tmc); // Matrix selecting relevant cumulative hazard entry for interval censored (traditionally circumcised) pop
+  DATA_SPARSE_MATRIX(C1_mc); // Matrix selecting relevant cumulative hazard entry for interval censored (unknown circumcised) pop
+  DATA_VECTOR(C2_mmc); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (medically circumcised) pop 
+  DATA_VECTOR(C2_tmc); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (traditionally circumcised) pop
+  DATA_VECTOR(C2_mc); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (unknown circumcised) pop
   DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard 
   DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard 
   
@@ -275,13 +278,13 @@ Type objective_function<Type>::operator() ()
   nll -= (B * log(surv)).sum();
   
   // Getting likelihood for those left censored (medical circumcision)
-  nll -= (C_mmc * log(cum_inc_mmc)).sum();
+  nll -= (C2_mmc * log(C1_mmc * cum_inc_mmc)).sum();
   
   // Getting likelihood for those left censored (traditional circumcision)
-  nll -= (C_tmc * log(cum_inc_tmc)).sum();
+  nll -= (C2_tmc * log(C1_tmc * cum_inc_tmc)).sum();
   
   // Getting likelihood for those left censored (unknown type circumcision)
-  nll -= (C_mc * log(cum_inc)).sum();
+  nll -= (C2_mc * log(C1_mc * cum_inc)).sum();
   
   ///////////////////////////
   /// Reporting variables ///
