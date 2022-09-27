@@ -702,13 +702,10 @@ create_survival_matrices <- function(out,
     "obs_mmc", # medical circumcision rate
     "obs_tmc", # traditional circumcision rate,
     "obs_mc", # all circumcision (to model unknown type)
-    "cens", # censored
-    "icens_mmc", # left censored
-    "icens_tmc", # left censored
-    "icens_mc" # left censored
+    "cens" # censored
   )
   # survival matrix names in TMB model
-  list_names <- c("A_mmc", "A_tmc", "A_mc", "B", "C_mmc", "C_tmc", "C_mc")
+  list_names <- c("A_mmc", "A_tmc", "A_mc", "B")
 
   # don't model for specific type if missing from out
   # if all out[[circs[i]]] are 0, create dummy survival matrix of all 0s
@@ -1007,6 +1004,225 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
 
   # Change to same class as outputted by INLA::inla.scale.model
   Q_space <- methods::as(Q_space, "dgTMatrix")
+}
+
+#### create_hazard_matrix_agetime_ic ####
+
+#' @title Create Matrix Selecting Cumulative Hazard for Interval Censored Individuals
+#'
+#' @description Create a matrix selecting the cumulative hazard rate needed to estimate
+#' the correct interval probability for survival analysis by age and time. The option 
+#' to include an additional stratification variable is also available, creating a 
+#' 3D hazard function.
+#'
+#' @param dat Shell dataset for the interval censored individuals 
+#' @param out Shell dataset (outputted by \link[threemc]{create_shell_dataset}
+#' with a row for every unique record in circumcision survey data for a given
+#' area. Also includes empirical estimates for circumcision estimates for each
+#' unique record.
+#' @param areas `sf` shapefiles for specific country/region.
+#' @param area_lev  PSNU area level for specific country.
+#' @param subset Subset for dataset, Default: NULL
+#' @param time1 Variable name for time of birth, Default: "time1"
+#' @param time2 Variable name for time circumcised or censored,
+#' Default: "time2"
+#' @param timecaps Window to fix temporal dimension before and after,
+#' Default: c(1, Inf)
+#' @param Ntime Number of time points (if NULL, function will calculate),
+#' Default: NULL
+#' @param age - Variable with age circumcised or censored. Default: "age"
+#' @param Nage Number of age groups (if NULL, function will calculate),
+#' Default: NULL
+#' @param strat Variable to stratify by in using a 3D hazard function,
+#' Default: NULL
+#' @param Nstrat Number of stratification groups (if NULL, function will
+#' calculate), Default: NULL
+#' @param circ Variables with circumcision matrix, Default: "circ"
+#' @param aggregated `agggregated = FALSE` treats every area_id as its own
+#' object, allowing for the use of surveys for lower area hierarchies.
+#' `aggregated = TRUE` means we only look at area level of interest.
+#' @param weight variable to weigh circumcisions by when aggregating for
+#' lower area hierarchies (only applicable for `aggregated = TRUE`)
+#' @return Matrix for selecting instantaneous hazard rate.
+#'
+#' @seealso
+#'  \code{\link[threemc]{create_shell_dataset}}
+#' @rdname create_hazard_matrix_agetime_ic
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+#' @keywords internal
+create_hazard_matrix_agetime_ic <- function(dat,
+                                            out, 
+                                            areas,
+                                            area_lev,
+                                            subset = NULL,
+                                            time1 = "time1",
+                                            time2 = "time2",
+                                            timecaps = c(1, Inf),
+                                            Ntime = NULL,
+                                            age_min = "age_min",
+                                            age_max = "age_max",
+                                            Nage = NULL,
+                                            strat = NULL,
+                                            Nstrat = NULL,
+                                            circ = "circ",
+                                            aggregated = FALSE,
+                                            weight = NULL) {
+  
+  # Integration matrix for cumulative hazard
+  dat$time1_cap <- pmin(
+    timecaps[2] - timecaps[1] + 1,
+    pmax(1, as.numeric(dat[[time1]]) - timecaps[1] + 1)
+  )
+  
+  # Integration matrix for cumulative hazard
+  dat$time2_cap <- pmin(
+    timecaps[2] - timecaps[1] + 1,
+    pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1)
+  )
+  
+  # If no stratification variable create a dummy variable
+  if (is.null(strat)) {
+    strat <- "strat"
+    dat$strat <- 1
+  }
+  
+  # Number of dimensions in the hazard function
+  if (is.null(Ntime)) Ntime <- max(dat[, "time1_cap", drop = TRUE])
+  if (is.null(Nage)) Nage <- max(dat[age])
+  if (is.null(Nstrat)) Nstrat <- max(dat[strat])
+  
+  # Subsetting data if necessary
+  if (!is.null(subset)) {
+    dat <- subset(dat, eval(parse(text = subset)))
+  }
+  
+  # If the selection matrices need to be taken from one reference aggregation
+  # then we get a list of the hierarchical structure to that level
+  if (aggregated == TRUE) {
+    # If no weighting variable create a dummy variable
+    if (is.null(weight)) {
+      weight <- "weight"
+      dat$weight <- 1
+      out$weight <- 1
+    }
+    
+    # Getting aggregation structure
+    areas_agg <- create_aggregate_structure(
+      areas = areas,
+      area_lev = area_lev
+    )
+    
+    # Merging on number of times to
+    # replicate to the main dataset
+    dat <- dat %>%
+      dplyr::left_join(
+        areas_agg$n_sub_region_df,
+        by = "area_id"
+      )
+    
+    # Minimum space ID within the reference level
+    min_ref_space <- min(dat %>%
+                           dplyr::filter(.data$area_level == area_lev) %>%
+                           dplyr::pull(.data$space))
+    
+    # Minimum space ID within the reference level
+    Nstrat <- out %>%
+      dplyr::filter(.data$area_level == area_lev) %>%
+      dplyr::distinct(.data$space) %>%
+      dplyr::pull() %>%
+      length()
+    
+    # Only keeping strata where we have data
+    dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = "")))) 
+    dat2$row <- seq_len(nrow(dat2))
+    
+    # Minimum space ID within the reference level
+    dat3 <- out %>%
+      dplyr::filter(.data$area_level == area_lev) 
+    
+    # Aggregation for each row in the dataframe
+    entries <- apply(dat2, 1, function(x) {
+      # Getting areas in reference administrative
+      # boundaries to aggregate over
+      tmp_space <- areas_agg$sub_region_list[[as.numeric(x[strat])]]
+      # Empty vectors 
+      cols1 <- c(); rows1 <- c(); vals1 <- c();
+      cols2 <- c(); rows2 <- c(); vals2 <- c();
+      # Estimate a lower bound if not being censored at birth
+      if (as.numeric(x[age_min]) > 1){
+        # Getting columns with non-zero entries for sparse matrix
+        cols1 <- c(cols1, 
+                   Ntime * Nage * (tmp_space - min_ref_space) +
+                     Ntime * (as.numeric(x[age_min]) - 2) +
+                     as.numeric(x["time1_cap"]))
+        # Getting rows for sparse matrix
+        rows1 <- c(rows1, rep(as.numeric(x["row"]), length(cols1)))
+        # Getting weights
+        vals1 <- c(vals1, -dat3[cols1, weight, drop = TRUE] / sum(dat3[cols1, weight, drop = TRUE]))
+      }
+      # Getting columns with non-zero entries for sparse matrix
+      cols2 <- c(cols2, 
+                 Ntime * Nage * (tmp_space - min_ref_space) +
+                   Ntime * (as.numeric(x[age_max]) - 1) +
+                   as.numeric(x["time2_cap"]))
+      # Getting rows for sparse matrix
+      rows2 <- c(rows2, rep(as.numeric(x["row"]), length(cols2)))
+      # Getting weights
+      vals2 <- c(vals2, dat3[cols2, weight, drop = TRUE] / sum(dat3[cols2, weight, drop = TRUE]))
+      # Output dataset
+      tmp <- data.frame(cols = c(cols1, cols2), 
+                        rows = c(rows1, rows2), 
+                        vals = c(vals1, vals2))
+      # Return dataframe
+      return(tmp)
+    })
+    
+    # Extracting entries for sparse matrix
+    cols <- as.numeric(unlist(lapply(entries, "[", "cols")));
+    rows <- as.numeric(unlist(lapply(entries, "[", "rows")))
+    vals <- as.numeric(unlist(lapply(entries, "[", "vals")))
+  }
+  # Else the selection matrices will be taken from the aggregation they are on
+  else {
+    # Only keeping strata where we have data
+    dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))
+    # Getting columns with non-zero entries for sparse matrix
+    cols1 <- unlist(apply(dat2, 1, function(x) {
+                 Ntime * Nage * (as.numeric(x[strat]) - 1) + Ntime *
+                   (as.numeric(x[age_min]) - 2) + as.numeric(x["time1_cap"])
+               }, simplify = FALSE))
+    # Getting rows for sparse matrix
+    rows1 <- seq_len(nrow(dat2))
+    # Getting weights
+    vals1 <- rep(-1, nrow(dat2))
+    
+    # Getting columns with non-zero entries for sparse matrix
+    cols2 <- unlist(apply(dat2, 1, function(x) {
+      Ntime * Nage * (as.numeric(x[strat]) - 1) + Ntime *
+        (as.numeric(x[age_max]) - 1) + as.numeric(x["time2_cap"])
+    }, simplify = FALSE))
+    # Getting rows for sparse matrix
+    rows2 <- seq_len(nrow(dat2))
+    # Getting weights
+    vals2 <- rep(1, nrow(dat2))
+    # Output dataset
+    cols = c(cols1[dat2[age_min] > 1], cols2) 
+    rows = c(rows1[dat2[age_min] > 1], rows2) 
+    vals = c(vals1[dat2[age_min] > 1], vals2)
+  }
+  # Outputting sparse hazard matrix which selects the
+  # corresponding incidence rates for the likelihood.
+  A1 <- Matrix::sparseMatrix(
+    i = rows,
+    j = cols,
+    x = vals,
+    dims = c(nrow(dat2), Ntime * Nage * Nstrat)
+  )
+  # Outputting the weights for the likelihood
+  A2 <- dat2[[circ]]
+  # Returning matrix
+  return(list(A1 = A1, A2 = A2))
 }
 
 #### create_rw_prec_matrix ####
