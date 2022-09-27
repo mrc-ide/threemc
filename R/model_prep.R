@@ -703,8 +703,8 @@ create_survival_matrices <- function(out,
     "obs_tmc", # traditional circumcision rate,
     "obs_mc", # all circumcision (to model unknown type)
     "cens", # censored
-    "icens_mmc" # left censored
-    "icens_tmc" # left censored
+    "icens_mmc", # left censored
+    "icens_tmc", # left censored
     "icens_mc" # left censored
   )
   # survival matrix names in TMB model
