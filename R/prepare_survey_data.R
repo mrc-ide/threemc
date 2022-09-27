@@ -236,7 +236,9 @@ prepare_survey_data <- function(areas,
       # Year of Birth (estimated as no DOB filly yet)
       yob = .data$year - .data$age,
       # If circumcision age > age of the individual set, reset circumcision age
-      circ_age = ifelse(.data$circ_age > .data$age, NA_real_, .data$circ_age)
+      circ_age = ifelse(.data$circ_age > .data$age, NA_real_, .data$circ_age),
+      circ_age_min = ifelse(.data$circ_age_min > .data$age, NA_real_, .data$circ_age_min),
+      circ_age_max = ifelse(.data$circ_age_max > .data$age, NA_real_, .data$circ_age_max)
     )
 
   # Censoring if necessary ---------------------------------------------------
@@ -244,8 +246,29 @@ prepare_survey_data <- function(areas,
   # Censoring at cens_year if assumed no circumcisions after a certain year
   if (!is.null(cens_age)) {
     survey_circumcision <- survey_circumcision %>%
+      # Censoring interval censored individuals from analysis at cens_age
+      dplyr::mutate(
+		#######################################################################
+		### Age censoring for the circumcised (unknown age at circumcision) ###
+		#######################################################################
+        # No circumcision if circ_age_min > cens_age
+        circ_status = ifelse(.data$circ_status == 1 &
+          !is.na(.data$circ_age_min) &
+          .data$circ_age_min > cens_age, 0, .data$circ_status
+		  ),
+        # Resetting age at circumcision
+        circ_age_min = ifelse(!is.na(.data$circ_age_min) & .data$circ_age_min > cens_age, NA,
+          .data$circ_age_min
+		  ),
+        # Resetting age at circumcision
+        circ_age_max = ifelse(!is.na(.data$circ_age_max) & .data$circ_age_max > cens_age, NA,
+          .data$circ_age_max
+		  ))%>%
       # Censoring individuals from analysis at cens_age
       dplyr::mutate(
+		#####################################################################
+		### Age censoring for the circumcised (known age at circumcision) ###
+		#####################################################################
         # No circumcision after cens_age
         circ_status = ifelse(.data$circ_status == 1 &
           !is.na(.data$circ_age) &
@@ -254,15 +277,35 @@ prepare_survey_data <- function(areas,
         circ_age = ifelse(.data$circ_age > cens_age, NA,
           .data$circ_age
         ),
+  		#########################################
+  		### Age censoring for all individuals ###
+  		#########################################
         # Resetting age for everyone else
         age = ifelse(.data$age > cens_age, cens_age,
           .data$age
         ),
-        # Year of circ/censoring (estimated using the age as no date of circ)
-        yoc = ifelse(!is.na(.data$circ_age), .data$yob + .data$circ_age,
-          .data$yob + .data$age
-        )
-      )
+		#################################################################
+		### Year of circumcision (known age at circumcision) or right ###
+		### censoring (estimated using the age as no date of circ)    ###
+		#################################################################
+		yoc = ifelse(.data$circ_status == 0, .data$yob + .data$age,
+			         ifelse(.data$circ_status == 1 & !is.na(.data$circ_age), .data$yob + .data$circ_age, 
+				     NA)),,
+		#################################################################
+		### Years of interval censoring (unknown age at circumcision) ###
+		#################################################################
+		# Lower bound year
+		yoc_min = ifelse(.data$circ_status == 1 & is.na(.data$circ_age),
+			          ifelse(!is.na(.data$circ_age_min),
+					  		 .data$yob + .data$circ_age_min,
+							 .data$yob),
+					  NA),
+		# Upper bound year
+		yoc_max = ifelse(.data$circ_status == 1 & is.na(.data$circ_age),
+			          ifelse(!is.na(.data$circ_age_max),
+					  		 .data$yob + .data$circ_age_max,
+							 .data$yob + .data$age),
+					  NA)) 
   }
 
   # Censoring at cens_year if assumed no circumcisions after a certain year
@@ -279,7 +322,8 @@ prepare_survey_data <- function(areas,
         0.0, .data$circ_status
         ),
         # circ censoring year / censor year in cens_year - 1 at cens_year - 1
-        yoc = ifelse(.data$yoc == cens_year, cens_year - 1, .data$yoc)
+        yoc = ifelse(.data$yoc == cens_year, cens_year - 1, .data$yoc),
+        yoc_max = ifelse(.data$yoc_max == cens_year, cens_year - 1, .data$yoc_max)
       )
   }
 
@@ -322,18 +366,21 @@ prepare_survey_data <- function(areas,
     ) %>%
     dplyr::mutate(
       # Time interval for the individual
-      time1 = .data$yob - start_year + 1,
-      time2 = .data$yoc - start_year + 1,
-      # Event type 
+      time1 = ifelse(!(is.na(circ_age) & circ_status == 1), .data$yob - start_year + 1, .data$yoc_min - start_year + 1),
+      time2 = ifelse(!(is.na(circ_age) & circ_status == 1), .data$yoc - start_year + 1, .data$yoc_max - start_year + 1),
+      # Event type
       event = ifelse(
-        # event 1 == circumcised and circumcision age known, 0 uncircumcised
         .data$circ_status == 1 & !is.na(.data$circ_age), 1,
-        # event 2 == left censored, event 0 == uncircumcised/censored
         ifelse((.data$circ_status == 1 & is.na(.data$circ_age)), 2, 0)
       ),
       # Circumcision age
       circ_age = .data$yoc - .data$yob,
-      age = .data$circ_age + 1
+      circ_age_min = .data$yoc_min - .data$yob,
+      circ_age_max = .data$yoc_max - .data$yob,
+	  # Age
+      age = .data$circ_age + 1,
+      age_min = .data$circ_age_min + 1,
+      age_max = .data$circ_age_max + 1
     )
   
   # give message on censored individuals
