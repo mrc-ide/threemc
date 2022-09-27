@@ -126,15 +126,12 @@ create_shell_dataset <- function(survey_circumcision,
 
   ## calculate empirical agetime hazard matrices for different circumcision
   ## types, and take column sums (i.e. N empirical circs for each "type):
-  empirical_circ_cols <- c("obs_mmc", "obs_tmc", "obs_mc", "cens", "icens_mmc", "icens_tmc", "icens_mc")
+  empirical_circ_cols <- c("obs_mmc", "obs_tmc", "obs_mc", "cens")
   subsets <- c(
     "event == 1 & type == 'MMC'", # N MMC
     "event == 1 & type == 'TMC'", # N TMC
     "event == 1 & type == 'Missing'",
-    "event == 0", # N censored (i.e. not circumcised)
-    "event == 2 & type == 'MMC'", # N left-censored (circ at unknown age)
-    "event == 2 & type == 'TMC'", # N left-censored (circ at unknown age)
-    "event == 2 & type == 'Missing'" # N left-censored (circ at unknown age)
+    "event == 0" # N censored (i.e. not circumcised)
   )
 
   # if there is no missing type, there is no need for MC:
