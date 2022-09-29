@@ -142,7 +142,7 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   agetime_hazard_matrices <- lapply(subsets, function(x) {
-    create_hazard_matrix_agetime(
+    mat <- create_hazard_matrix_agetime(
       dat = survey_circumcision,
       areas = areas,
       area_lev = area_lev,
@@ -156,7 +156,9 @@ create_shell_dataset <- function(survey_circumcision,
       Nstrat = nrow(areas_model),
       ...
     )
+	return(mat$A2 * mat$A1)
   })
+
   agetime_hazard_matrices <- lapply(agetime_hazard_matrices, Matrix::colSums)
 
   ## add to out:
