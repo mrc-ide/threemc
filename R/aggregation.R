@@ -30,7 +30,9 @@ threemc_aggregate <- function( # datasets
                               .data, fit, areas, populations, # datasets
                               # options
                               age_var = c("age", "age_group"),
-                              type = c("probability", "incidence", "prevalence"),
+                              type = c(
+                                "probability", "incidence", "prevalence"
+                              ),
                               area_lev,
                               N = 100,
                               prev_year = 2008,
@@ -42,7 +44,7 @@ threemc_aggregate <- function( # datasets
   }
 
   # Add a unique identifier within Admin code and merging to boundaries
-  data.table::setDT(areas)[, space := 1:.N, by = "area_level"]
+  data.table::setDT(areas)[, space := seq_len(.N), by = "area_level"]
 
   # wide formatted areas, for changing area levels later
   areas_wide <- areas[
@@ -395,12 +397,16 @@ aggregate_sample <- function(.data,
 #' @rdname aggregate_sample_age_group
 #' @keywords internal
 aggregate_sample_age_group <- function(results_list,
-                                       aggr_cols = c("area_id", "area_name", "year", "model", "type"),
+                                       aggr_cols = c(
+                                         "area_id", "area_name", 
+                                         "year", "model", "type"
+                                       ),
                                        num_cols,
                                        age_groups = c(
                                          # five-year age groups
-                                         "0-4", "5-9", "10-14", "15-19", "20-24", "25-29",
-                                         "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
+                                         "0-4", "5-9", "10-14", "15-19", 
+                                         "20-24", "25-29", "30-34", "35-39", 
+                                         "40-44", "45-49", "50-54", "54-59",
                                          # age groups with only minimum cut-off
                                          "0+", "10+", "15+",
                                          # other, wider age groups of interest
@@ -463,7 +469,6 @@ aggregate_sample_age_group <- function(results_list,
       data.table::fifelse(
         grepl("performed", type), x, x / population
       )
-      # ifelse(grepl("performed", type), x, x / population)
     }),
     .SDcols = num_cols
   ]

@@ -76,7 +76,9 @@ create_shell_dataset <- function(survey_circumcision,
     dplyr::filter(
       .data$area_level <= area_lev,
       # be sure not to include other countries (loop if > 1 country required)
-      substr(.data$area_id, 0, 3) %chin% substr(survey_circumcision$area_id, 0, 3)
+      substr(.data$area_id, 0, 3) %chin% substr(
+        survey_circumcision$area_id, 0, 3
+      )
     ) %>%
     dplyr::select(.data$area_id, .data$area_name, .data$area_level, .data$space)
 

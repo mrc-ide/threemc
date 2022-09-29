@@ -241,7 +241,10 @@ create_design_matrices <- function(dat,
 #' @importFrom rlang .data
 #' @rdname split_mmc_design_matrices_paed
 #' @keywords internal
-split_mmc_design_matrices_paed <- function(out, area_lev, design_matrices, paed_age_cutoff = 10) {
+split_mmc_design_matrices_paed <- function(out, 
+                                           area_lev, 
+                                           design_matrices, 
+                                           paed_age_cutoff = 10) {
 
   # TODO: What order should these design matrices be in?
   if (!is.null(paed_age_cutoff)) {

@@ -41,8 +41,9 @@ threemc_oos_ppc <- function(fit,
                             area_lev = 1,
                             age_groups = c(
                               # five-year age groups
-                              "0-4", "5-9", "10-14", "15-19", "20-24", "25-29",
-                              "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
+                              "0-4",   "5-9",   "10-14", "15-19", 
+                              "20-24", "25-29", "30-34", "35-39", 
+                              "40-44", "45-49", "50-54", "54-59",
                               # age groups with only minimum cut-off
                               "0+", "10+", "15+",
                               # other, wider age groups of interest
