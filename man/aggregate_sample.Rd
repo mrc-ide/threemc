@@ -7,6 +7,7 @@
 aggregate_sample(
   .data,
   aggr_cols = c("area_id", "area_name", "year", "age", "age_group", "model", "type"),
+  num_cols,
   ...
 )
 }
@@ -16,6 +17,8 @@ un-aggregated samples.}
 
 \item{aggr_cols}{Columns to aggregate samples by, Default:
 c("area_id", "area_name", "year", "age", "age_group", "model", "type")}
+
+\item{num_cols}{\code{numeric} columns to aggregate.}
 
 \item{...}{Further arguments passed to \code{data.table::rbindlist}.}
 }

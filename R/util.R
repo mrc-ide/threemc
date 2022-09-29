@@ -1,9 +1,9 @@
 # Various utility functions for functionality used on multiple occasions
-# throughout package. Generally unexported.
+# throughout package. Generally un-exported.
 
 #### %||% ####
 
-`%||%` <- function(x, y) { # nolint
+`%||%` <- function(x, y) { # no lint
   if (is.null(x)) y else x
 }
 
@@ -34,7 +34,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   ## in NAs in this situation (look at KEN for this)
 
   ## read in data, depending on file type
-  cond <- tools::file_ext(path) %in% c("geojson", "shp", "shx")
+  cond <- tools::file_ext(path) %chin% c("geojson", "shp", "shx")
   if (cond) {
     .data <- sf::read_sf(path, ...)
   } else {
@@ -47,7 +47,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
     cols <- names(filters)
     vals <- as.vector(filters[seq_along(filters)])
     for (i in seq_along(filters)) {
-      if (!cols[i] %in% names(.data)) next
+      if (!cols[i] %chin% names(.data)) next
       ## change col i to symbol (if present), evaluate corresponding filter
       .data <- dplyr::filter(.data, !!rlang::sym(cols[i]) == vals[i])
     }
@@ -56,7 +56,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   # Select specific columns, if desired (and present) (no need to do for fread)
   if (!is.null(selected) && cond) {
     .data <- .data %>%
-      dplyr::select(dplyr::all_of(selected[selected %in% names(.data)]))
+      dplyr::select(dplyr::all_of(selected[selected %chin% names(.data)]))
   }
 
   ## for areas, add unique identifier within Admin code and merge to boundaries
@@ -146,8 +146,8 @@ add_area_id <- function(df,
     select_cols <- unique(c(select_cols, add_keep_cols))
   }
   # remove columns which interfere with select below
-  select_cols <- select_cols[!select_cols %in% c("area_id", "area_name")]
-  select_cols <- select_cols[select_cols %in% names(df)]
+  select_cols <- select_cols[!select_cols %chin% c("area_id", "area_name")]
+  select_cols <- select_cols[select_cols %chin% names(df)]
 
   df_area_id <- df %>%
     # join in area names for chosen area_id
@@ -237,11 +237,8 @@ combine_areas <- function(.data,
   }
 
   # return list or dataframe?
-  if (join) {
-    return(as.data.frame(data.table::rbindlist(
-      results_list,
-      use.names = TRUE, ...
-    )))
+  if (join == TRUE) {
+    return(data.table::rbindlist(results_list, use.names = TRUE, ...))
   } else {
     return(results_list)
   }
@@ -394,26 +391,26 @@ spread_areas <- function(areas,
 
 #### match_age_group_to_ages ####
 
-#' Create data frame of all ages within provided age group. 
+#' Create data frame of all ages within provided age group.
 #'
-#' @param age_group Age group, either "x-x" for a fixed upper age, or "x+", for 
+#' @param age_group Age group, either "x-x" for a fixed upper age, or "x+", for
 #' an age group with an upper age of `max_age`.
 #' @param max_age Maximum age for age groups with no upper limit, Default: 60
-#' 
+#'
 #' @rdname match_age_group_to_ages
 #' @keywords internal
 match_age_group_to_ages <- function(age_group, max_age = 60) {
-    # if age_group ~ "x-x", expand age group from lower to upper age
-    if (grepl("-", age_group)) {
-      age_bounds <- as.integer(strsplit(age_group, "-")[[1]])
-      ages <- age_bounds[1]:dplyr::last(age_bounds)
-    } else {
-      # if age group ~ "x+", take ages from x to max_age
-      lower_age <- as.integer(gsub("+", "", age_group, fixed = TRUE))
-      ages <- lower_age:max_age
-    }
-    # return data frame of single ages within provided age_group 
-    return(data.frame("age_group" = age_group, "age" = ages))
+  # if age_group ~ "x-x", expand age group from lower to upper age
+  if (grepl("-", age_group)) {
+    age_bounds <- as.integer(strsplit(age_group, "-")[[1]])
+    ages <- age_bounds[1]:dplyr::last(age_bounds)
+  } else {
+    # if age group ~ "x+", take ages from x to max_age
+    lower_age <- as.integer(gsub("+", "", age_group, fixed = TRUE))
+    ages <- lower_age:max_age
+  }
+  # return data frame of single ages within provided age_group
+  return(data.frame("age_group" = age_group, "age" = ages))
 }
 
 #' @title Change age group convention to match aggregation results
@@ -424,7 +421,6 @@ match_age_group_to_ages <- function(age_group, max_age = 60) {
 #' @rdname change_agegroup_convention
 #' @keywords internal
 change_agegroup_convention <- function(.data) {
-
   lower <- as.numeric(substr(.data$age_group, 3, 4))
   if (all(!is.na(as.numeric(lower)))) {
     upper <- as.numeric(substr(.data$age_group, 7, 8))
@@ -449,7 +445,7 @@ change_agegroup_convention <- function(.data) {
 survey_points_dmppt2_convert_convention <- function(.data) {
 
   # change column naming convention
-  if ("survey_mid_calendar_quarter" %in% names(.data)) {
+  if ("survey_mid_calendar_quarter" %chin% names(.data)) {
     .data <- .data %>%
       dplyr::rename(
         year  = .data$survey_mid_calendar_quarter,
@@ -459,7 +455,7 @@ survey_points_dmppt2_convert_convention <- function(.data) {
         lower = .data$ci_lower,
         upper = .data$ci_upper
       )
-  } else if ("dmppt2_circumcision_coverage" %in% names(.data)) {
+  } else if ("dmppt2_circumcision_coverage" %chin% names(.data)) {
     .data <- .data %>%
       dplyr::rename(mean = .data$dmppt2_circumcision_coverage)
   }
@@ -468,9 +464,9 @@ survey_points_dmppt2_convert_convention <- function(.data) {
     dplyr::mutate(
       dplyr::across(
         dplyr::matches("type"), ~ dplyr::case_when(
-          . == "circumcised"  ~ "MC coverage",
+          . == "circumcised" ~ "MC coverage",
           . == "circ_medical" ~ "MMC coverage",
-          TRUE                ~ "TMC coverage"
+          TRUE ~ "TMC coverage"
         )
       )
     )

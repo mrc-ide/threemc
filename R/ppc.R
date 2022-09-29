@@ -23,8 +23,8 @@
 #' @param CI_range CI interval about which you want to compare empirical and
 #' posterior predictive estimates for left out surveys.
 #' @param N Number of samples to generate, Default: 1000
-#' @param compare_stats Set to TRUE if you wish to compute comparative 
-#' statistics (specifically, ELPD and CRPS) to compare with alternative models, 
+#' @param compare_stats Set to TRUE if you wish to compute comparative
+#' statistics (specifically, ELPD and CRPS) to compare with alternative models,
 #' Default: TRUE
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
@@ -32,28 +32,27 @@
 #' @importFrom rlang .data
 #' @rdname threemc_oos_ppc
 #' @export
-threemc_oos_ppc <- function(
-    fit,
-    out,
-    populations,
-    survey_estimate,
-    removed_years,
-    type = "coverage",
-    area_lev = 1,
-    age_groups = c(
-      # five-year age groups
-      "0-4", "5-9", "10-14", "15-19", "20-24", "25-29",
-      "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
-      # age groups with only minimum cut-off
-      "0+", "10+", "15+",
-      # other, wider age groups of interest
-      "10-24", "15-24", "10-29", "15-29",
-      "10-39", "15-39", "10-49", "15-49"
-    ),
-    CI_range = 0.95,
-    N = 1000,
-    compare_stats = TRUE
-  ) {
+threemc_oos_ppc <- function(fit,
+                            out,
+                            populations,
+                            survey_estimate,
+                            removed_years,
+                            type = "coverage",
+                            area_lev = 1,
+                            age_groups = c(
+                              # five-year age groups
+                              "0-4",   "5-9",   "10-14", "15-19", 
+                              "20-24", "25-29", "30-34", "35-39", 
+                              "40-44", "45-49", "50-54", "54-59",
+                              # age groups with only minimum cut-off
+                              "0+", "10+", "15+",
+                              # other, wider age groups of interest
+                              "10-24", "15-24", "10-29", "15-29",
+                              "10-39", "15-39", "10-49", "15-49"
+                            ),
+                            CI_range = 0.95,
+                            N = 1000,
+                            compare_stats = TRUE) {
 
   #### Join Samples with Results ####
 
@@ -111,7 +110,7 @@ threemc_oos_ppc <- function(
   }) %>%
     dplyr::bind_rows() %>%
     # only take years where surveys were removed, and modelled area level
-    dplyr::filter(.data$year %in% removed_years, .data$area_level == area_lev)
+    dplyr::filter(.data$year %chin% removed_years, .data$area_level == area_lev)
 
 
   #### Aggregate to Age Groups ####
@@ -143,9 +142,9 @@ threemc_oos_ppc <- function(
   survey_estimate_prep <- survey_estimate %>%
     # filter for OOS year(s) and modelled area_level
     dplyr::filter(
-      .data$year %in% removed_years,
+      .data$year %chin% removed_years,
       .data$area_level == min(area_lev, 1),
-      .data$age_group %in% out_types_agegroup$age_group,
+      .data$age_group %chin% out_types_agegroup$age_group,
       .data$mean != 0
     ) %>%
     # ignore survey_id, merging for the same year
@@ -165,7 +164,7 @@ threemc_oos_ppc <- function(
   # check for NAs in first sample column
   stopifnot(!all(is.na(survey_estimate_ppd$samp_1)))
 
-  
+
   #### Calculate Posterior Predictive Check for Prevalence Estimations ####
 
   # func calculating where in model sample distn empirical values are
@@ -191,7 +190,7 @@ threemc_oos_ppc <- function(
     oos_pos_ppd >= 0.5 * (1 - CI_range) * N &
       oos_pos_ppd <= N - 0.5 * (1 - CI_range) * N
   ) / length(oos_pos_ppd)
-  
+
   print(paste0(
     "Percentage of survey points which fall within posterior predictive",
     " distribution at ",
@@ -207,10 +206,10 @@ threemc_oos_ppc <- function(
   summary_stats <- list(
     "oos_observations_within_PPD_CI" = oos_within_ppd_percent
   )
-  
-  
+
+
   #### Calculate ELPD and CRPS ####
-  
+
   # compute summary stats for comparison with other models, if specified
   if (compare_stats == TRUE) {
     # calculate ELPD
@@ -219,7 +218,7 @@ threemc_oos_ppc <- function(
     )
     # calculate CRPS
     crps <- scoringutils::crps_sample(
-      true_values = survey_estimate_ppd$mean, 
+      true_values = survey_estimate_ppd$mean,
       predictions = as.matrix(
         dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
       )

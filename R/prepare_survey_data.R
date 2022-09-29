@@ -50,16 +50,15 @@ prepare_survey_data <- function(areas,
   # Check if cluster & individuals data is provided; if not, assume sufficient
   # data is included in survey_circumcision alone
   is_add_data_present <- !is.null(survey_clusters) &
-                         !is.null(survey_individuals)
+    !is.null(survey_individuals)
 
   # split based on iso3 if not already a list and containing > 1 country
   if (!is_list && length(unique(survey_circumcision$iso3)) != 1) {
-
     survey_circumcision <- split(survey_circumcision, survey_circumcision$iso3)
 
     # arrange and filter for country to ensure splitting is the same
     equal_splits <- function(x, survey_circumcision) {
-      x <- x[names(x) %in% names(survey_circumcision)] # same names
+      x <- x[names(x) %chin% names(survey_circumcision)] # same names
       return(x[order(names(survey_circumcision))]) # order names
     }
 
@@ -92,13 +91,13 @@ prepare_survey_data <- function(areas,
         cens_age <- 29
         message("for LBR, age must be censored to those under 29 (at least)")
       }
-      
+
       # pull latest and first censoring year from survey_id
       survey_years <- as.numeric(substr(unique(
-        survey_circumcision[[i]]$survey_id), 4, 7)
-      )
+        survey_circumcision[[i]]$survey_id
+      ), 4, 7))
       cens_year <- max(survey_years)
-      start_year <- max(min(survey_years), start_year) 
+      start_year <- max(min(survey_years), start_year)
 
       # parse country specific psnu area levels if desired
       if (inherits(area_lev, "data.frame")) {
@@ -140,20 +139,20 @@ prepare_survey_data <- function(areas,
 
       # apply function recursively for each country
       prepare_survey_data(
-        areas               = dplyr::filter(areas, .data$iso3 == cntry),
+        areas = dplyr::filter(areas, .data$iso3 == cntry),
         survey_circumcision = dplyr::filter(
           survey_circumcision[[i]], .data$iso3 == cntry
         ),
-        survey_individuals  = survey_individuals_spec,
-        survey_clusters     = survey_clusters_spec,
-        area_lev            = area_lev,
-        start_year          = start_year,
-        cens_year           = cens_year,
-        cens_age            = cens_age,
-        rm_missing_type     = rm_missing_type,
-        norm_kisk_weights   = norm_kisk_weights,
-        strata.norm         = strata.norm,
-        strata.kish         = strata.kish
+        survey_individuals = survey_individuals_spec,
+        survey_clusters = survey_clusters_spec,
+        area_lev = area_lev,
+        start_year = start_year,
+        cens_year = cens_year,
+        cens_age = cens_age,
+        rm_missing_type = rm_missing_type,
+        norm_kisk_weights = norm_kisk_weights,
+        strata.norm = strata.norm,
+        strata.kish = strata.kish
       )
     })
     names(surveys) <- names(survey_circumcision)
@@ -175,8 +174,8 @@ prepare_survey_data <- function(areas,
 
   # remove area_level column if present, to avoid row duplication
   survey_circumcision <- dplyr::select(
-      survey_circumcision,
-      -dplyr::matches("area_level")
+    survey_circumcision,
+    -dplyr::matches("area_level")
   )
 
 
@@ -189,7 +188,7 @@ prepare_survey_data <- function(areas,
   if (is_add_data_present) {
 
     # change colnames to those in line with areas
-    if ("geoloc_area_id" %in% names(survey_clusters)) {
+    if ("geoloc_area_id" %chin% names(survey_clusters)) {
       survey_clusters <- survey_clusters %>%
         dplyr::rename(area_id = .data$geoloc_area_id)
     }
@@ -216,8 +215,8 @@ prepare_survey_data <- function(areas,
 
   # Add column of NAs for missing age columns
   age_cols <- c("circ_age", "age")
-  if (sum(age_cols %in% names(survey_circumcision)) < 2) {
-    missing_age_cols <- age_cols[!age_cols %in% names(survey_circumcision)]
+  if (sum(age_cols %chin% names(survey_circumcision)) < 2) {
+    missing_age_cols <- age_cols[!age_cols %chin% names(survey_circumcision)]
     survey_circumcision[, missing_age_cols] <- NA
   }
 
@@ -324,7 +323,7 @@ prepare_survey_data <- function(areas,
       # Time interval for the individual
       time1 = .data$yob - start_year + 1,
       time2 = .data$yoc - start_year + 1,
-      # Event type 
+      # Event type
       event = ifelse(
         # event 1 == circumcised and circumcision age known, 0 uncircumcised
         .data$circ_status == 1 & !is.na(.data$circ_age), 1,
@@ -335,18 +334,18 @@ prepare_survey_data <- function(areas,
       circ_age = .data$yoc - .data$yob,
       age = .data$circ_age + 1
     )
-  
+
   # give message on censored individuals
   event_tbl <- table(survey_circumcision$event)
   names(event_tbl) <- c(
-    "Uncircumised/right censored (event 0)", 
+    "Uncircumised/right censored (event 0)",
     "Uncensored (event 1)",
     "Left censored (event 2)"
-    )[as.numeric(names(event_tbl)) + 1]
+  )[as.numeric(names(event_tbl)) + 1]
   message(
     paste0(utils::capture.output(event_tbl), collapse = "\n")
   )
-  
+
   # Adding circumcision type to dataset
   survey_circumcision <- survey_circumcision %>%
     # Type of circumcision
@@ -399,7 +398,7 @@ prepare_survey_data <- function(areas,
     # Removing surveys and individuals without any type information
     survey_circumcision <- survey_circumcision %>%
       dplyr::filter(
-        !(.data$survey_id %in% !!tmp$survey_id),
+        !(.data$survey_id %chin% !!tmp$survey_id),
         !(.data$circ_status == 1 & .data$type == "Missing")
       )
   }
@@ -416,7 +415,7 @@ prepare_survey_data <- function(areas,
   # return message for which surveys are discarded & kept (if any)
   remaining_surveys <- unique(survey_circumcision$survey_id)
   if (length(remaining_surveys) != length(orig_surveys)) {
-    removed_surveys <- orig_surveys[!orig_surveys %in% remaining_surveys]
+    removed_surveys <- orig_surveys[!orig_surveys %chin% remaining_surveys]
     surveys <- list(removed_surveys, remaining_surveys)
     lengths <- c(length(removed_surveys), length(remaining_surveys))
     initial <- c("Surveys removed: ", "Surveys remaining: ")
