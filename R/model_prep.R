@@ -754,6 +754,9 @@ create_survival_matrices <- function(out,
       ...
     )
   })
+  
+  # Squashing list of lists into a list 
+  hazard_matrices <- rlang::squash(hazard_matrices)
 
   if (length(dummy_hazard_matrices) != 0) {
     for (i in seq_along(dummy_hazard_matrices)) {
@@ -762,7 +765,7 @@ create_survival_matrices <- function(out,
       )
     }
   }
-  names(hazard_matrices) <- list_names
+  names(hazard_matrices) <- paste(rep(list_names, each = 2), c('1', '2'), sep = '')
 
   return(hazard_matrices)
 }
@@ -909,9 +912,7 @@ create_hazard_matrix_agetime <- function(dat,
       # Getting rows for sparse matrix
       rows <- rep(as.numeric(x["row"]), length(cols))
       # Getting weights
-      vals <-
-        as.numeric(x[circ]) *
-          dat3[cols, weight, drop = TRUE] / sum(dat3[cols, weight, drop = TRUE])
+      vals <- dat3[cols, weight, drop = TRUE] / sum(dat3[cols, weight, drop = TRUE])
       # Output dataset
       tmp <- data.frame(cols, rows, vals)
       # Return dataframe
@@ -934,20 +935,22 @@ create_hazard_matrix_agetime <- function(dat,
         (as.numeric(x[age]) - 1) + as.numeric(x["time2_cap"])
     }, simplify = FALSE))
     rows <- seq_len(nrow(dat2))
-    vals <- dat2[[circ]]
+    vals <- rep(1, nrow(dat2))
   }
 
   # Outputting sparse hazard matrix which selects the
   # corresponding incidence rates for the likelihood.
-  A <- Matrix::sparseMatrix(
+  A1 <- Matrix::sparseMatrix(
     i = rows,
     j = cols,
     x = vals,
     dims = c(nrow(dat2), Ntime * Nage * Nstrat)
   )
-
+  # Outputting the weights for the selected incidence 
+  # rates needed for the likelihood
+  A2 <- dat2[[circ]]
   # Returning matrix
-  return(A)
+  return(list(A1 = A1, A2 = A2))
 }
 
 #### create_icar_prec_matrix ####
