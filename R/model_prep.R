@@ -19,9 +19,9 @@
 #' paediatric and non-paediatric populations, the former of which are constant
 #' over time. Set to NULL if not desired, Default: NULL
 #' @param rw_order Order of the random walk used for temporal precision matrix.
-#' Setting to NULL assumes you wish to specify an AR 1 temporal prior. 
+#' Setting to NULL assumes you wish to specify an AR 1 temporal prior.
 #' Default: NULL
-#' @param inc_time_tmc Indicator variable which decides whether to include 
+#' @param inc_time_tmc Indicator variable which decides whether to include
 #' temporal random effects for TMC as well as MMC, Default: FALSE
 #' @param ... Additional arguments to be passed to functions which create
 #' matrices.
@@ -42,21 +42,18 @@
 #' @rdname threemc_prepare_model_data
 #' @importFrom R.utils Arguments
 #' @export
-threemc_prepare_model_data <- function(
-  # data
-  out,
-  areas,
-  # options
-  area_lev        = NULL,
-  aggregated      = TRUE,
-  weight          = "population",
-  k_dt            = 5,
-  paed_age_cutoff = NULL,
-  rw_order        = NULL,
-  inc_time_tmc    = FALSE,
-  ...
-) {
-
+threemc_prepare_model_data <- function( # data
+                                       out,
+                                       areas,
+                                       # options
+                                       area_lev = NULL,
+                                       aggregated = TRUE,
+                                       weight = "population",
+                                       k_dt = 5,
+                                       paed_age_cutoff = NULL,
+                                       rw_order = NULL,
+                                       inc_time_tmc = FALSE,
+                                       ...) {
   if (is.null(area_lev)) {
     message(
       "area_lev arg missing, taken as maximum area level in shell dataset"
@@ -105,17 +102,17 @@ threemc_prepare_model_data <- function(
   # Precision/Adjacency matrix for the spatial random effects
   Q_space <- list(
     "Q_space" = create_icar_prec_matrix(
-      sf_obj = areas, area_lev  = area_lev, row.names = "space"
+      sf_obj = areas, area_lev = area_lev, row.names = "space"
     )
   )
-  
+
   # returned list
   dat_tmb <- c(
     design_matrices, integration_matrices, survival_matrices, Q_space
   )
 
   # Precision matrix for temporal random effects
-  if (!is.null(rw_order)) { 
+  if (!is.null(rw_order)) {
     stopifnot(rw_order %in% c(1, 2))
     message("Random Walk ", rw_order, " temporal prior specified")
     Q_time <- list(
@@ -125,7 +122,7 @@ threemc_prepare_model_data <- function(
         ...
       )
     )
-    dat_tmb <- c(dat_tmb, Q_time) 
+    dat_tmb <- c(dat_tmb, Q_time)
   } else {
     message("rw_order = NULL, AR 1 temporal prior specified")
   }
@@ -146,7 +143,7 @@ threemc_prepare_model_data <- function(
 #' unique record.
 #' @param area_lev Desired admin boundary level to perform the analysis on.
 #' @param k_dt Age knot spacing in spline definitions, Default: 5
-#' @param inc_time_tmc Indicator variable which decides whether to include 
+#' @param inc_time_tmc Indicator variable which decides whether to include
 #' temporal random effects for TMC as well as MMC, Default: FALSE
 #' @return List of design matrices for fixed and random effects for medical
 #' and traditional circumcision.
@@ -160,12 +157,10 @@ threemc_prepare_model_data <- function(
 #' @rdname create_design_matrices
 #' @importFrom dplyr %>%
 #' @keywords internal
-create_design_matrices <- function(
-    dat, 
-    area_lev = NULL, 
-    k_dt = 5,
-    inc_time_tmc = FALSE
-  ) {
+create_design_matrices <- function(dat,
+                                   area_lev = NULL,
+                                   k_dt = 5,
+                                   inc_time_tmc = FALSE) {
   if (is.null(area_lev)) {
     message(
       "area_lev arg missing, taken as maximum area level in shell dataset"
@@ -222,9 +217,9 @@ create_design_matrices <- function(
     "X_agespace_tmc"  = X_agespace,
     "X_spacetime_mmc" = X_spacetime
   )
-  
+
   if (inc_time_tmc == FALSE) output <- output[names(output) != "X_time_tmc"]
-  
+
   return(output)
 }
 
@@ -246,9 +241,7 @@ create_design_matrices <- function(
 #' @importFrom rlang .data
 #' @rdname split_mmc_design_matrices_paed
 #' @keywords internal
-split_mmc_design_matrices_paed <- function(
-    out, area_lev, design_matrices, paed_age_cutoff = 10
-  ) {
+split_mmc_design_matrices_paed <- function(out, area_lev, design_matrices, paed_age_cutoff = 10) {
 
   # TODO: What order should these design matrices be in?
   if (!is.null(paed_age_cutoff)) {
@@ -718,7 +711,7 @@ create_survival_matrices <- function(out,
       is_missing <- c(is_missing, i)
     } else if (all(out[[circs[[i]]]] == 0)) {
       message(paste0("Producing dummy survival matrix for type == ", circs[i]))
-      dummy_hazard_matrices[[i]] <-  Matrix::sparseMatrix(
+      dummy_hazard_matrices[[i]] <- Matrix::sparseMatrix(
         i = 1,
         j = nrow(out),
         x = 0,
@@ -919,7 +912,7 @@ create_hazard_matrix_agetime <- function(dat,
     rows <- as.numeric(unlist(lapply(entries, "[", "rows")))
     vals <- as.numeric(unlist(lapply(entries, "[", "vals")))
 
-  # Else the selection matrices will be taken from the aggregation they are on
+    # Else the selection matrices will be taken from the aggregation they are on
   } else {
     # Only keeping strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))

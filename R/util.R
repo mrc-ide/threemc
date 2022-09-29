@@ -391,26 +391,26 @@ spread_areas <- function(areas,
 
 #### match_age_group_to_ages ####
 
-#' Create data frame of all ages within provided age group. 
+#' Create data frame of all ages within provided age group.
 #'
-#' @param age_group Age group, either "x-x" for a fixed upper age, or "x+", for 
+#' @param age_group Age group, either "x-x" for a fixed upper age, or "x+", for
 #' an age group with an upper age of `max_age`.
 #' @param max_age Maximum age for age groups with no upper limit, Default: 60
-#' 
+#'
 #' @rdname match_age_group_to_ages
 #' @keywords internal
 match_age_group_to_ages <- function(age_group, max_age = 60) {
-    # if age_group ~ "x-x", expand age group from lower to upper age
-    if (grepl("-", age_group)) {
-      age_bounds <- as.integer(strsplit(age_group, "-")[[1]])
-      ages <- age_bounds[1]:dplyr::last(age_bounds)
-    } else {
-      # if age group ~ "x+", take ages from x to max_age
-      lower_age <- as.integer(gsub("+", "", age_group, fixed = TRUE))
-      ages <- lower_age:max_age
-    }
-    # return data frame of single ages within provided age_group 
-    return(data.frame("age_group" = age_group, "age" = ages))
+  # if age_group ~ "x-x", expand age group from lower to upper age
+  if (grepl("-", age_group)) {
+    age_bounds <- as.integer(strsplit(age_group, "-")[[1]])
+    ages <- age_bounds[1]:dplyr::last(age_bounds)
+  } else {
+    # if age group ~ "x+", take ages from x to max_age
+    lower_age <- as.integer(gsub("+", "", age_group, fixed = TRUE))
+    ages <- lower_age:max_age
+  }
+  # return data frame of single ages within provided age_group
+  return(data.frame("age_group" = age_group, "age" = ages))
 }
 
 #' @title Change age group convention to match aggregation results
@@ -421,7 +421,6 @@ match_age_group_to_ages <- function(age_group, max_age = 60) {
 #' @rdname change_agegroup_convention
 #' @keywords internal
 change_agegroup_convention <- function(.data) {
-
   lower <- as.numeric(substr(.data$age_group, 3, 4))
   if (all(!is.na(as.numeric(lower)))) {
     upper <- as.numeric(substr(.data$age_group, 7, 8))
@@ -465,9 +464,9 @@ survey_points_dmppt2_convert_convention <- function(.data) {
     dplyr::mutate(
       dplyr::across(
         dplyr::matches("type"), ~ dplyr::case_when(
-          . == "circumcised"  ~ "MC coverage",
+          . == "circumcised" ~ "MC coverage",
           . == "circ_medical" ~ "MMC coverage",
-          TRUE                ~ "TMC coverage"
+          TRUE ~ "TMC coverage"
         )
       )
     )
