@@ -39,12 +39,12 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(A_mc2); // Weighting for relevant instantaneous hazard for unknown circumcised pop in the likelihood
   DATA_SPARSE_MATRIX(B1); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
   DATA_VECTOR(B2); // Weighting for relevant cumulative hazard entry for observed and right censored pop in the likelihood
-  DATA_SPARSE_MATRIX(C1_mmc); // Matrix selecting relevant cumulative hazard entry for interval censored (medically circumcised) pop 
-  DATA_VECTOR(C2_mmc); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (medical) pop 
-  DATA_SPARSE_MATRIX(C1_tmc); // Matrix selecting relevant cumulative hazard entry for interval censored (traditional) pop
-  DATA_VECTOR(C2_tmc); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (traditional) pop
-  DATA_SPARSE_MATRIX(C1_mc); // Matrix selecting relevant cumulative hazard entry for interval censored (unknown) pop
-  DATA_VECTOR(C2_mc); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (unknown) pop
+  DATA_SPARSE_MATRIX(C_mmc1); // Matrix selecting relevant cumulative hazard entry for interval censored (medically circumcised) pop 
+  DATA_VECTOR(C_mmc2); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (medical) pop 
+  DATA_SPARSE_MATRIX(C_tmc1); // Matrix selecting relevant cumulative hazard entry for interval censored (traditional) pop
+  DATA_VECTOR(C_tmc2); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (traditional) pop
+  DATA_SPARSE_MATRIX(C_mc1); // Matrix selecting relevant cumulative hazard entry for interval censored (unknown) pop
+  DATA_VECTOR(C_mc2); // Weighting for relevant cumulative hazard entry for interval censored in likelihood (unknown) pop
   DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard 
   DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard 
   
@@ -282,13 +282,13 @@ Type objective_function<Type>::operator() ()
   nll -= (B2 * log(B1 * surv)).sum();
   
   // Getting likelihood for those left censored (medical circumcision)
-  nll -= (C2_mmc * log(C1_mmc * cum_inc_mmc)).sum();
+  nll -= (C_mmc2 * log(C_mmc1 * cum_inc_mmc)).sum();
   
   // Getting likelihood for those left censored (traditional circumcision)
-  nll -= (C2_tmc * log(C1_tmc * cum_inc_tmc)).sum();
+  nll -= (C_tmc2 * log(C_tmc1 * cum_inc_tmc)).sum();
   
   // Getting likelihood for those left censored (unknown type circumcision)
-  nll -= (C2_mc * log(C1_mc * cum_inc)).sum();
+  nll -= (C_mc2 * log(C_mc1 * cum_inc)).sum();
   
   ///////////////////////////
   /// Reporting variables ///
