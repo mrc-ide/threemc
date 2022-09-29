@@ -31,9 +31,12 @@ Type objective_function<Type>::operator() ()
     /// Data definitions ///
     ////////////////////////
 	// Survival analysis matrices
-    DATA_SPARSE_MATRIX(A); // Matrix selecting instantaneous hazard for circumcised pop
-    DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
-    DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
+    DATA_SPARSE_MATRIX(A1); // Matrix selecting instantaneous hazard for circumcised pop
+    DATA_VECTOR(A2); // Weighting for relevant instantaneous hazard for circumcised pop in the likelihood
+    DATA_SPARSE_MATRIX(B1); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
+    DATA_VECTOR(B2); // Weighting for relevant cumulative hazard entry for observed and right censored pop in the likelihood
+    DATA_SPARSE_MATRIX(C1); // Matrix selecting relevant cumulative hazard entry for interval censored pop
+    DATA_VECTOR(C2); // // Weighting for relevant cumulative hazard entry for interval censored pop in the likelihood
     DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard
     DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard
 
@@ -183,7 +186,6 @@ Type objective_function<Type>::operator() ()
 	vector<Type> logprob  = log(Type(1.0) - haz);
 	vector<Type> surv     = exp(IntMat1 * logprob);
 	vector<Type> surv_lag = exp(IntMat2 * logprob);
-	vector<Type> leftcens = Type(1.0) - surv;
 
 	// Incidence
 	vector<Type> inc = haz * surv_lag;
@@ -195,13 +197,13 @@ Type objective_function<Type>::operator() ()
     /// Likelihood ///
     //////////////////
 	// Getting likelihood for those circumcised
-	nll -= (A * log(inc)).sum();
+	nll -= (A2 * log(A1 * inc)).sum();
 
 	// Getting likelihood for those right censored
-	nll -= (B * log(surv)).sum();
+	nll -= (B2 * log(B1 * surv)).sum();
 
 	// Getting likelihood for those left censored
-	nll -= (C * log(leftcens)).sum();
+	nll -= (C2 * log(C1 * cum_inc)).sum();
 
     ///////////////////////////
     /// Reporting variables ///
