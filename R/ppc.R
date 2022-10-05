@@ -110,7 +110,7 @@ threemc_oos_ppc <- function(fit,
   }) %>%
     dplyr::bind_rows() %>%
     # only take years where surveys were removed, and modelled area level
-    dplyr::filter(.data$year %chin% removed_years, .data$area_level == area_lev)
+    dplyr::filter(.data$year %in% removed_years, .data$area_level == area_lev)
 
 
   #### Aggregate to Age Groups ####
@@ -142,7 +142,7 @@ threemc_oos_ppc <- function(fit,
   survey_estimate_prep <- survey_estimate %>%
     # filter for OOS year(s) and modelled area_level
     dplyr::filter(
-      .data$year %chin% removed_years,
+      .data$year %in% removed_years,
       .data$area_level == min(area_lev, 1),
       .data$age_group %chin% out_types_agegroup$age_group,
       .data$mean != 0
@@ -154,7 +154,12 @@ threemc_oos_ppc <- function(fit,
       .data$age_group,
       .data$indicator
     ) %>%
-    dplyr::summarise(mean = sum(.data$mean), .groups = "drop")
+    dplyr::summarise(dplyr::across(
+      # dplyr::matches("mean") | dplyr::matches("lower") | dplyr::matches("upper"),
+      tidyselect::all_of(c("mean", "upper", "lower")),
+      sum, 
+      na.rm = TRUE
+    ), .groups = "drop")
 
   # join with samples
   survey_estimate_ppd <- dplyr::left_join(
@@ -167,30 +172,71 @@ threemc_oos_ppc <- function(fit,
 
   #### Calculate Posterior Predictive Check for Prevalence Estimations ####
 
-  # func calculating where in model sample distn empirical values are
+  # func calculating where in model sample distribution empirical values are
   quant_pos_sum <- function(y, x) if (y < x) 0 else 1
+  # quant_pos_sum <- function(upper, lower, x) {
+  #   if (x <= lower && x >= upper) return(0) else return(1)
+  # }
 
+  # calculate PPD quantiles 
+  # qtls <- apply(
+  #   dplyr::select(survey_estimate_ppd, dplyr::starts_with("samp_")), 
+  #   1, 
+  #   quantile, 
+  #   # quantiles based on specified CI_range argument
+  #   c((1 - CI_range) / 2, 0.5, 0 + CI_range + (1 - CI_range) / 2)
+  # )
+  
   survey_estimate_ppd_dist <- survey_estimate_ppd %>%
-    dplyr::relocate(.data$mean, .before = .data$samp_1) %>%
+    dplyr::relocate(
+      dplyr::all_of(c("mean", "upper", "lower")), .before = .data$samp_1
+    ) %>%
     dplyr::group_by(dplyr::across(.data$area_id:.data$area_level)) %>%
     dplyr::rowwise() %>%
     dplyr::summarise(
+      # find position of mean estimate from surveys amongst PPD
       quant_pos = sum(
         dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
           mean, .x
         ))
       ),
+      # find corresponding uncertainty bounds 
+      quant_pos_lower = sum(
+        dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
+          lower, .x
+        ))
+      ),
+      quant_pos_upper = sum(
+        dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
+          upper, .x
+        ))
+      ),
       .groups = "drop"
-    )
-
+    ) # %>% 
+    # mutate(
+    #   lower = qtls[1,],
+    #   median = qtls[2,],
+    #   upper = qtls[3,]
+    # )
+  
+  
   # calculate position of oos obs within ordered PPD (i.e. estimate of hist)
-  oos_pos_ppd <- survey_estimate_ppd_dist$quant_pos
-  # calculate percentage of oos obs within {CI_range}% CI of PPD
-  oos_within_ppd_percent <- sum(
-    oos_pos_ppd >= 0.5 * (1 - CI_range) * N &
-      oos_pos_ppd <= N - 0.5 * (1 - CI_range) * N
-  ) / length(oos_pos_ppd)
-
+  oos_within_ppd <- function(x, CI_range) {
+    sum(
+      x >= 0.5 * (1 - CI_range) * N &
+        x <= N - 0.5 * (1 - CI_range) * N
+    ) / length(x)
+  }
+  
+  # oos_within_ppd(survey_estimate_ppd_dist$quant_pos, CI_range)
+  # oos_within_ppd(survey_estimate_ppd_dist$quant_pos_lower, CI_range)
+  # oos_within_ppd(survey_estimate_ppd_dist$quant_pos_upper, CI_range)
+  # 
+  # survey_estimate_ppd_dist %>% 
+  #   summarise(across(contains("quant_pos"), oos_within_ppd, CI_range))
+  oos_within_ppd_percent <- oos_within_ppd(
+    survey_estimate_ppd_dist$quant_pos, CI_range
+  )
   print(paste0(
     "Percentage of survey points which fall within posterior predictive",
     " distribution at ",
