@@ -83,7 +83,10 @@ threemc_aggregate <- function(
   }
 
   # additional aggregations to perform for prevalence
-  if (type == "prevalence" && prev_year %in% .data$year) {
+  if (type == "prevalence" && 
+      !is.null(prev_year) && 
+      prev_year %in% .data$year) {
+    
     # calculate change in prevalence since prev_year
     data_change_prev_year <- prevalence_change(
       .data,
@@ -527,8 +530,8 @@ prevalence_change <- function(results, spec_year) {
   ][,
     !c("prev_value")
   ]
-  
-  # pivot back to wide format 
+
+  # pivot back to wide format
   results <-  data.table::dcast(results, ... ~ variable, value.var = "value")[,
                 type := paste0("Change in ", type, " from ", spec_year)
               ]
