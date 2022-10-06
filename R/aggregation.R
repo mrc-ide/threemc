@@ -247,7 +247,7 @@ prepare_sample_data <- function(N = 100,
     
     # Append together
     tmp <- as.list(mget(paste0("tmpx_", 1:12))) %>%
-      data.table::rbindlist() %>%
+      data.table::rbindlist(use.names = TRUE) %>%
       # only keep relevant columns
       dplyr::select(
         .data$area_id, .data$area_name,
@@ -419,8 +419,8 @@ aggregate_sample_age_group <- function(
   .SD <- population <- type <- NULL
   
   # bind list objects if required
-  if (inherits(results_list, "list")) {
-    results <- data.table::rbindlist(list(results_list))
+  if (!inherits(results_list, "data.frame")) {
+    results <- data.table::rbindlist(results_list, use.names = TRUE)
   } else {
     results <- results_list
   }

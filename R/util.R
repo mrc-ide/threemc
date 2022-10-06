@@ -176,7 +176,10 @@ add_area_id <- function(df,
     )
 
   # add missing area_level col, if required
-  df_area_id$area_level <- par$area_lev_select
+  if (!"area_level" %in% names(df_area_id)) {
+    df_area_id$area_level <- par$area_lev_select
+  }
+  
   return(df_area_id)
 }
 
@@ -208,6 +211,9 @@ combine_areas <- function(.data,
                           add_keep_cols = NULL,
                           ...) {
 
+  # add area_level to original df, if required
+  if (!"area_level" %in% names(.data)) .data$area_level <- area_lev
+  
   # all area levels in the data (0 indexed)
   area_levs <- seq_len(area_lev) - 1
   if (length(area_levs) == 0) area_levs <- -1
