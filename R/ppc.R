@@ -172,20 +172,16 @@ threemc_oos_ppc <- function(fit,
 
   #### Calculate Posterior Predictive Check for Prevalence Estimations ####
 
+  # find middle samp column 
+  samp_cols <- as.numeric(gsub(
+    ".*?([0-9]+).*", "\\1", 
+    names(survey_estimate_ppd)[grepl("samp", names(survey_estimate_ppd))]
+  ))
+  mid_samp <- samp_cols[length(samp_cols) / 2] 
+  
+  
   # func calculating where in model sample distribution empirical values are
   quant_pos_sum <- function(y, x) if (y < x) 0 else 1
-  # quant_pos_sum <- function(upper, lower, x) {
-  #   if (x <= lower && x >= upper) return(0) else return(1)
-  # }
-
-  # calculate PPD quantiles 
-  # qtls <- apply(
-  #   dplyr::select(survey_estimate_ppd, dplyr::starts_with("samp_")), 
-  #   1, 
-  #   quantile, 
-  #   # quantiles based on specified CI_range argument
-  #   c((1 - CI_range) / 2, 0.5, 0 + CI_range + (1 - CI_range) / 2)
-  # )
   
   survey_estimate_ppd_dist <- survey_estimate_ppd %>%
     dplyr::relocate(
@@ -200,7 +196,7 @@ threemc_oos_ppc <- function(fit,
           mean, .x
         ))
       ),
-      # find corresponding uncertainty bounds 
+      # find corresponding uncertainty bounds (based on survey uncertainty)
       quant_pos_lower = sum(
         dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
           lower, .x
@@ -212,13 +208,15 @@ threemc_oos_ppc <- function(fit,
         ))
       ),
       .groups = "drop"
-    ) # %>% 
-    # mutate(
-    #   lower = qtls[1,],
-    #   median = qtls[2,],
-    #   upper = qtls[3,]
-    # )
-  
+    ) %>% 
+    # find optimum quant position (i.e. closest to middle of sample)
+    tidyr::pivot_longer(dplyr::contains("quant_pos")) %>% 
+    dplyr::mutate(diff_mid_samp = abs(.data$value - mid_samp)) %>% 
+    dplyr::group_by(dplyr::across(.data$area_id:.data$area_level)) %>% 
+    dplyr::mutate(quant_pos_final = value[which.min(.data$diff_mid_samp)]) %>% 
+    dplyr::select(-.data$diff_mid_samp) %>% 
+    dplyr::ungroup() %>% 
+    tidyr::pivot_wider(names_from = "name", values_from = "value")
   
   # calculate position of oos obs within ordered PPD (i.e. estimate of hist)
   oos_within_ppd <- function(x, CI_range) {
@@ -228,14 +226,8 @@ threemc_oos_ppc <- function(fit,
     ) / length(x)
   }
   
-  # oos_within_ppd(survey_estimate_ppd_dist$quant_pos, CI_range)
-  # oos_within_ppd(survey_estimate_ppd_dist$quant_pos_lower, CI_range)
-  # oos_within_ppd(survey_estimate_ppd_dist$quant_pos_upper, CI_range)
-  # 
-  # survey_estimate_ppd_dist %>% 
-  #   summarise(across(contains("quant_pos"), oos_within_ppd, CI_range))
   oos_within_ppd_percent <- oos_within_ppd(
-    survey_estimate_ppd_dist$quant_pos, CI_range
+    survey_estimate_ppd_dist$quant_pos_final, CI_range
   )
   print(paste0(
     "Percentage of survey points which fall within posterior predictive",
