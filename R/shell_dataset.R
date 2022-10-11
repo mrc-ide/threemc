@@ -302,6 +302,13 @@ threemc_empirical_rates <- function(out,
 
   # join in region populations
   results <- dplyr::left_join(results, populations_append)
+  
+  if (any(is.na(results$population))) {
+    message(paste0(
+      "NA populations found, check that population start year is >= ",
+      "minimum year in out"
+    ))
+  }
 
   # Add parent areas
   results <- combine_areas(
