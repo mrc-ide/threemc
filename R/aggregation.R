@@ -676,7 +676,8 @@ merge_area_info <- function(results, areas) {
   # global bindings for `data.table` non-standard evaluation
   . <- area_id <- area_name <- NULL
   
-  results <- data.table::setDT(results)
+  if (!inherits(results, "data.table")) results <- data.table::setDT(results)
+  if (!inherits(areas, "data.table")) areas <- data.table::setDT(areas)
   
   # remove area_name & area_level to avoid mishaps when joining
   results <- results[, !c("area_name", "area_level")]
