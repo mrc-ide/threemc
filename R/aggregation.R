@@ -413,8 +413,8 @@ aggregate_sample_age_group <- function(
       # age groups with only minimum cut-off
       "0+", "10+", "15+",
       # other, wider age groups of interest
-      "10-24", "15-24", "10-29", "15-29",
-      "10-39", "15-39", "10-49", "15-49"
+      "0-14",  "10-24", "15-24", "10-29", "15-29",
+      "10-39", "15-39", "10-49", "15-49", "30-49"
     )
 ) {
   
