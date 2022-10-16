@@ -256,28 +256,67 @@ threemc_oos_ppc <- function(fit,
   )
 
 
-  #### Calculate ELPD and CRPS ####
+  #### Calculate ELPD, CRPS & Error Stats ####
 
   # compute summary stats for comparison with other models, if specified
   if (compare_stats == TRUE) {
+    
+    # Actual OOS survey obs vs posterior predictive distribution for each
+    actual <- survey_estimate_ppd$mean
+    predictions <- dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
+    
     # calculate ELPD
-    elpd <- loo::elpd(
-      t(dplyr::select(survey_estimate_ppd, dplyr::contains("samp_")))
-    )
+    elpd <- loo::elpd(t(predictions))
+    
     # calculate CRPS
     crps <- scoringutils::crps_sample(
-      true_values = survey_estimate_ppd$mean,
-      predictions = as.matrix(
-        dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
+      true_values = actual,
+      predictions = as.matrix(predictions)
+    )
+    
+    # calculate error stats (MAE, MSE & RMSE)
+    
+    # errors for each sample from PPD for each observation
+    errors <- actual - as.matrix(predictions) # errors
+    ae <- abs(errors) # absolute errors
+    se <- errors ^ 2 # squared error
+    
+    # mean errors for each observations
+    mae_vec <- apply(ae, 1, mean)
+    mse_vec <- apply(se, 1, mean)
+    rmse_vec <- sqrt(mse_vec)
+    
+    # mean errors overall
+    mae <- mean(mae_vec)
+    mse <- mean(mse_vec)
+    rmse <- sqrt(mse)
+    
+    # Add error stats to return df
+    survey_estimate_ppd <- survey_estimate_ppd %>% 
+      dplyr::mutate(
+        mae = mae_vec, 
+        mse = mse_vec, 
+        rmse = rmse_vec
+      )
+    
+    summary_stats <- c(
+      summary_stats, 
+      list(
+        "elpd" = elpd, 
+        "crps" = crps, 
+        "mae"  = mae,
+        "mse"  = mse,
+        "rmse" = rmse
       )
     )
-    summary_stats <- c(summary_stats, list("elpd" = elpd, "crps" = crps))
-  }
+  } 
+  
+  survey_estimate_ppd <- survey_estimate_ppd %>% 
+    dplyr::relocate(dplyr::contains("samp"), .after = dplyr::everything()) 
 
   # Return results
   return(list(
-    "ppd"           = survey_estimate_ppd,
-    "ppd_dist"      = survey_estimate_ppd_dist,
+    "ppc_df"        = survey_estimate_ppd,
     "summary_stats" = summary_stats
   ))
 }
