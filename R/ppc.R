@@ -135,6 +135,11 @@ threemc_oos_ppc <- function(fit,
     ) %>%
     # filter for at least area_level 1
     dplyr::filter(.data$area_level == min(area_lev, 1))
+  
+  # check for NAs in posterior predictive distributions
+  stopifnot(!all(is.na(
+    as.matrix(dplyr::select(out_types_agegroup, dplyr::contains("samp")))
+  )))
 
 
   #### Prepare Survey Points & Join with Samples ####
@@ -165,10 +170,7 @@ threemc_oos_ppc <- function(fit,
   survey_estimate_ppd <- dplyr::left_join(
     survey_estimate_prep, out_types_agegroup
   )
-
-  # check for NAs in first sample column
-  stopifnot(!all(is.na(survey_estimate_ppd$samp_1)))
-
+  
 
   #### Calculate Posterior Predictive Check for Prevalence Estimations ####
 
@@ -188,7 +190,6 @@ threemc_oos_ppc <- function(fit,
       dplyr::all_of(c("mean", "upper", "lower")), .before = .data$samp_1
     ) %>%
     dplyr::group_by(dplyr::across(.data$area_id:.data$area_level)) %>%
-    dplyr::rowwise() %>%
     dplyr::summarise(
       # find position of mean estimate from surveys amongst PPD
       quant_pos = sum(
@@ -207,17 +208,26 @@ threemc_oos_ppc <- function(fit,
           upper, .x
         ))
       ),
-      .groups = "drop"
-    ) %>% 
+      .groups = "rowwise"
+    ) %>%
     # find optimum quant position (i.e. closest to middle of sample)
     tidyr::pivot_longer(dplyr::contains("quant_pos")) %>% 
     dplyr::mutate(diff_mid_samp = abs(.data$value - mid_samp)) %>% 
     dplyr::group_by(dplyr::across(.data$area_id:.data$area_level)) %>% 
-    dplyr::mutate(quant_pos_final = value[which.min(.data$diff_mid_samp)]) %>% 
+    dplyr::mutate(
+      quant_pos_final = .data$value[which.min(.data$diff_mid_samp)]
+    ) %>%
     dplyr::select(-.data$diff_mid_samp) %>% 
     dplyr::ungroup() %>% 
-    tidyr::pivot_wider(names_from = "name", values_from = "value")
-  
+    tidyr::pivot_wider(names_from = "name", values_from = "value") %>% 
+    dplyr::select(dplyr::contains("quant_pos"))
+
+  # add quant pos columns to dataframe with survey obs and PPD samples
+  survey_estimate_ppd <- dplyr::bind_cols(
+    survey_estimate_ppd, 
+    survey_estimate_ppd_dist
+  )
+
   # calculate position of oos obs within ordered PPD (i.e. estimate of hist)
   oos_within_ppd <- function(x, CI_range) {
     sum(
@@ -227,7 +237,7 @@ threemc_oos_ppc <- function(fit,
   }
   
   oos_within_ppd_percent <- oos_within_ppd(
-    survey_estimate_ppd_dist$quant_pos_final, CI_range
+    survey_estimate_ppd$quant_pos_final, CI_range
   )
   print(paste0(
     "Percentage of survey points which fall within posterior predictive",
@@ -246,28 +256,67 @@ threemc_oos_ppc <- function(fit,
   )
 
 
-  #### Calculate ELPD and CRPS ####
+  #### Calculate ELPD, CRPS & Error Stats ####
 
   # compute summary stats for comparison with other models, if specified
   if (compare_stats == TRUE) {
+    
+    # Actual OOS survey obs vs posterior predictive distribution for each
+    actual <- survey_estimate_ppd$mean
+    predictions <- dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
+    
     # calculate ELPD
-    elpd <- loo::elpd(
-      t(dplyr::select(survey_estimate_ppd, dplyr::contains("samp_")))
-    )
+    elpd <- loo::elpd(t(predictions))
+    
     # calculate CRPS
     crps <- scoringutils::crps_sample(
-      true_values = survey_estimate_ppd$mean,
-      predictions = as.matrix(
-        dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
+      true_values = actual,
+      predictions = as.matrix(predictions)
+    )
+    
+    # calculate error stats (MAE, MSE & RMSE)
+    
+    # errors for each sample from PPD for each observation
+    errors <- actual - as.matrix(predictions) # errors
+    ae <- abs(errors) # absolute errors
+    se <- errors ^ 2 # squared error
+    
+    # mean errors for each observations
+    mae_vec <- apply(ae, 1, mean)
+    mse_vec <- apply(se, 1, mean)
+    rmse_vec <- sqrt(mse_vec)
+    
+    # mean errors overall
+    mae <- mean(mae_vec)
+    mse <- mean(mse_vec)
+    rmse <- sqrt(mse)
+    
+    # Add error stats to return df
+    survey_estimate_ppd <- survey_estimate_ppd %>% 
+      dplyr::mutate(
+        mae = mae_vec, 
+        mse = mse_vec, 
+        rmse = rmse_vec
+      )
+    
+    summary_stats <- c(
+      summary_stats, 
+      list(
+        "elpd" = elpd, 
+        "crps" = crps, 
+        "mae"  = mae,
+        "mse"  = mse,
+        "rmse" = rmse
       )
     )
-    summary_stats <- c(summary_stats, list("elpd" = elpd, "crps" = crps))
-  }
+  } 
+  
+  survey_estimate_ppd <- survey_estimate_ppd %>% 
+    dplyr::relocate(dplyr::contains("samp"), .after = dplyr::everything()) 
 
   # Return results
   return(list(
-    "ppd"           = survey_estimate_ppd,
-    "ppd_dist"      = survey_estimate_ppd_dist,
+    "ppc_df"        = survey_estimate_ppd,
     "summary_stats" = summary_stats
   ))
 }

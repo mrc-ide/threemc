@@ -346,7 +346,6 @@ spread_areas <- function(areas,
   areas_wide <- areas %>%
     dplyr::filter(.data$area_level == min_level) %>%
     dplyr::select(
-      # What's happening here?
       `:=`(!!paste0("area_id", min_level), .data$area_id),
       `:=`(!!paste0("area_name", min_level), .data$area_name),
       `:=`(!!paste0("space", min_level), .data$space)
