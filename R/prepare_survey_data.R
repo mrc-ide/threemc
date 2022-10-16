@@ -379,11 +379,14 @@ prepare_survey_data <- function(areas,
       )
     )
 
-  # Getting surveys without any type information
+  # Get surveys without any type information
   if (rm_missing_type == TRUE) {
-    tmp <- with(survey_circumcision, as.data.frame(table(survey_id, type))) %>%
-      dplyr::group_by(.data$survey_id) %>%
+    tmp <- with(
+      survey_circumcision, 
+      as.data.frame(table(survey_id, type)) # tabulate type
+    ) %>%
       # calculate percentage and find surveys with all missing data
+      dplyr::group_by(.data$survey_id) %>%
       dplyr::mutate(Freq = .data$Freq / sum(.data$Freq)) %>%
       dplyr::filter(.data$type == "Missing", .data$Freq == 1)
 
@@ -411,7 +414,7 @@ prepare_survey_data <- function(areas,
     # Removing surveys and individuals without any type information
     survey_circumcision <- survey_circumcision %>%
       dplyr::filter(
-        !(.data$survey_id %chin% !!tmp$survey_id),
+        !(.data$survey_id %chin% !!as.character(tmp$survey_id)),
         !(.data$circ_status == 1 & .data$type == "Missing")
       )
   }
