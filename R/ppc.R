@@ -135,6 +135,11 @@ threemc_oos_ppc <- function(fit,
     ) %>%
     # filter for at least area_level 1
     dplyr::filter(.data$area_level == min(area_lev, 1))
+  
+  # check for NAs in posterior predictive distributions
+  stopifnot(!all(is.na(
+    as.matrix(dplyr::select(out_types_agegroup, dplyr::contains("samp")))
+  )))
 
 
   #### Prepare Survey Points & Join with Samples ####
@@ -165,10 +170,7 @@ threemc_oos_ppc <- function(fit,
   survey_estimate_ppd <- dplyr::left_join(
     survey_estimate_prep, out_types_agegroup
   )
-
-  # check for NAs in first sample column
-  stopifnot(!all(is.na(survey_estimate_ppd$samp_1)))
-
+  
 
   #### Calculate Posterior Predictive Check for Prevalence Estimations ####
 
