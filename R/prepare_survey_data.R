@@ -73,8 +73,8 @@ prepare_survey_data <- function(areas,
     # pull area_level from area_id col (area_level column not guaranteed)
     area_levs <- area_lev_df %>% 
       dplyr::filter(.data$iso3 == cntry) %>% 
-      dplyr::select(contains("area_id")) %>% 
-      pull() %>% 
+      dplyr::select(dplyr::contains("area_id")) %>% 
+      dplyr::pull() %>% 
       substr(5, 5) # i.e. LSO_1_01 gives area_level 1
     
     # tabulate and return most common level (i.e. with max count in table)
@@ -340,9 +340,9 @@ prepare_survey_data <- function(areas,
   
   # check for introduction of NAs in area_id
   na_area_survey_ids <- survey_circumcision %>% 
-    filter(is.na(.data$area_id)) %>%
-    distinct(survey_id) %>%
-    pull()  
+    dplyr::filter(is.na(.data$area_id)) %>%
+    dplyr::distinct(.data$survey_id) %>%
+    dplyr::pull()
   
   if (length(na_area_survey_ids) != 0) {
     message(paste0(
