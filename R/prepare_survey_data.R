@@ -294,49 +294,62 @@ prepare_survey_data <- function(areas,
         # Censoring circumcision status for those circumcised in cens_year,
         # Assuming interval censored people were circumcised before cens_year
         circ_status = ifelse(.data$yoc >= cens_year &
-          .data$circ_status == 1 & !is.na(.data$circ_age),
-        0.0, .data$circ_status
+                               .data$circ_status == 1 & !is.na(.data$circ_age),
+                             0.0, .data$circ_status
         ),
         # circ censoring year / censor year in cens_year - 1 at cens_year - 1
         yoc = ifelse(.data$yoc == cens_year, cens_year - 1, .data$yoc)
       )
   }
-
+  
   # Setting desired level aggregation ----------------------------------------
-
+  
   if (inherits(areas, "sf")) areas <- sf::st_drop_geometry(areas)
   areas <- dplyr::select(
     areas, .data$area_id, .data$area_name,
     .data$parent_area_id, .data$area_level
   )
-
+  
   # Getting the area level id to province
   area_lev <- select_area_lev(
     area_lev, 
     cntry = survey_circumcision$iso3[1], 
     is_add_data_present      
   )
-
+  
+  # Join surveys with areas for each level leading up to the desired area level
+  # This distributes granular surveys to desired area_level using parent_ids
   for (i in seq_len(max(areas$area_level))) {
     survey_circumcision <- survey_circumcision %>%
-      ## Merging on boundary information
+      # merge on boundary information
       dplyr::select(-dplyr::matches("area_name")) %>%
       dplyr::left_join(areas, by = "area_id") %>%
-      ## Altering area
+      # take area_id to be parent_area_id, unless (at least) at area_lev
       dplyr::mutate(
-        area_id = dplyr::if_else(
-          .data$area_level == area_lev,
+        area_id = ifelse(
+          .data$area_level <= area_lev, # cannot reassign less granular surveys
           as.character(.data$area_id),
           as.character(.data$parent_area_id)
         )
       ) %>%
+      # remove parent_area_id etc, to join in next least granular equivalents 
       dplyr::select(
         -c(.data$parent_area_id, .data$area_name, .data$area_level)
       )
   }
-
+  
+  # check for introduction of NAs in area_id
+  survey_circumcision_na_area <- survey_circumcision %>% 
+    filter(is.na(.data$area_id))
+  
+  if (nrow(survey_circumcision_na_area) != 0) {
+    
+  }
+    
+  
+  
   # Final preparation of circumcision variables ------------------------------
-
+  
   # Preparing circumcision variables for the model
   survey_circumcision <- survey_circumcision %>%
     # Merging on the region index
