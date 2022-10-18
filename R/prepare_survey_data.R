@@ -339,13 +339,17 @@ prepare_survey_data <- function(areas,
   }
   
   # check for introduction of NAs in area_id
-  survey_circumcision_na_area <- survey_circumcision %>% 
-    filter(is.na(.data$area_id))
+  na_area_survey_ids <- survey_circumcision %>% 
+    filter(is.na(.data$area_id)) %>%
+    distinct(survey_id) %>%
+    pull()  
   
-  if (nrow(survey_circumcision_na_area) != 0) {
-    
+  if (length(na_area_survey_ids) != 0) {
+    message(paste0(
+      "The following surveys have NAs for area_id: \n",
+      paste(na_area_survey_ids, sep = ", ")
+    ))
   }
-    
   
   
   # Final preparation of circumcision variables ------------------------------
