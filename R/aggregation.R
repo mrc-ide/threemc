@@ -468,17 +468,25 @@ aggregate_sample_age_group <- function(
                      .SDcols = sd_cols
              ]
   
+  # create dummy type column, if required
+  if (!"type" %in% names(results)) results$type <- "dummy"
+  
   # Multiply by population to population weight
-  # (don"t do this for "N performed", if present)
+  # (don't do this for type ~ "N performed", if present)
   results[,
           (num_cols) := lapply(.SD, function(x) {
             data.table::fifelse(
               grepl("performed", type), x, x / population
             )
-            # ifelse(grepl("performed", type), x, x / population)
           }),
           .SDcols = num_cols
   ]
+  
+  # remove dummy column
+  if (all(results$type == "dummy")) results <- results[, -c("type")]
+  
+  # return results
+  return(results)
 }
 
 
