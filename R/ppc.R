@@ -54,6 +54,17 @@ threemc_oos_ppc <- function(fit,
                             N = 1000,
                             compare_stats = TRUE) {
 
+  
+  # check that all age groups are in survey estimates
+  missing_age_groups <- age_groups[!age_groups %chin% survey_estimate$age_group]
+  if (length(missing_age_groups) > 0) {
+    message(paste0(
+      "The following `age_groups` are missing in `survey_estimate`:\n",
+      paste(missing_age_groups, collapse = ", ")
+    ))
+  }
+  
+  
   #### Join Samples with Results ####
 
   # filter results to specified or modelled area level
@@ -73,7 +84,7 @@ threemc_oos_ppc <- function(fit,
         -c(dplyr::matches("area_name"), dplyr::matches("area_level"))
       )
     )
-
+  
   # pull sample name corresponding with type column values in results
   sample_colnames <- switch(type,
     "coverage"    = "cum_inc",
@@ -160,7 +171,6 @@ threemc_oos_ppc <- function(fit,
       .data$indicator
     ) %>%
     dplyr::summarise(dplyr::across(
-      # dplyr::matches("mean") | dplyr::matches("lower") | dplyr::matches("upper"),
       tidyselect::all_of(c("mean", "upper", "lower")),
       sum, 
       na.rm = TRUE
