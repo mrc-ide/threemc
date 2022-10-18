@@ -422,14 +422,16 @@ aggregate_sample_age_group <- function(
   .SD <- population <- type <- NULL
   
   # bind list objects if required
-  if (!inherits(results_list, "data.frame")) {
-    results <- data.table::rbindlist(results_list, use.names = TRUE)
-  } else {
-    results <- results_list
+  results <- results_list
+  if (!inherits(results, "data.frame")) {
+    results <- data.table::rbindlist(results, use.names = TRUE)
   }
   
+  # populations, aggr_cols and num_cols should all be present in results
+  stopifnot(all(c("population", aggr_cols, num_cols) %chin% names(results)))
+  
+  # convert to data.table
   data.table::setDT(results)
-  num_cols <- num_cols[num_cols %chin% names(results)]
   # avoid duplication
   results <- unique(results)
   # Multiply num_cols by population to population weight
