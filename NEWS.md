@@ -1,3 +1,10 @@
+# threemc 0.1.26
+
+* Fixed bug in `prepare_survey_data` whereby surveys not at maximum area 
+level have their `area_id` columns coerced to NA, when reassiging 
+survey `area_level` to the specified argument `area_level`.
+
+
 # threemc 0.1.25
 
 * Add models which include a random effect for time for traditional 
