@@ -366,7 +366,7 @@ aggregate_sample <- function(.data,
     paste(c("population", num_cols), collapse = "|"), names(.data)
   )
   .data <- .data[,
-    (sd_cols) := lapply(.SD, sum, na.rm = TRUE),
+    lapply(.SD, sum, na.rm = TRUE),
     by = c(aggr_cols),
     .SDcols = sd_cols
   ]
@@ -435,7 +435,7 @@ aggregate_sample_age_group <- function(
   # avoid duplication
   results <- unique(results)
   # Multiply num_cols by population to population weight
-  results[, 
+  results[,
           (num_cols) := lapply(.SD, function(x) x * population), 
           .SDcols = num_cols
         ]
@@ -585,15 +585,25 @@ n_circumcised <- function(results) {
   })
   
   # also calculate unmet need for total circumcisions
-  n_circ_type[[length(n_circ_type) + 1]] <- data.table::copy(results)[
+  unmet_need <- data.table::copy(results)[
     type == "Number circumcised (MC)"
   ][,
     (sd_cols) := lapply(.SD, function(x) population * (1 - x)),
     .SDcols = sd_cols
   ][,
     type := "Unmet need"
+    ]
+
+  # ensure unmet need does not go below 0
+  samp_cols <- names(unmet_need)
+  samp_cols <- samp_cols[grepl("samp_", samp_cols)]
+  unmet_need[, 
+    (samp_cols) := lapply(.SD, function(x) data.table::fifelse(x < 0, 0, x)),
+    .SDcols = samp_cols
   ]
   
+  n_circ_type[[length(n_circ_type) + 1]] <- unmet_need
+
   # Append together
   (data.table::rbindlist(n_circ_type, use.names = TRUE))
 }
@@ -684,7 +694,7 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 merge_area_info <- function(results, areas) {
 
   # global bindings for `data.table` non-standard evaluation
-  . <- area_id <- area_name <- NULL
+  . <- area_id <- area_name <- ..rm_cols <- NULL
   
   if (!inherits(results, "data.table")) results <- data.table::setDT(results)
   if (!inherits(areas, "data.table")) areas <- data.table::setDT(areas)
