@@ -486,10 +486,10 @@ survey_points_dmppt2_convert_convention <- function(.data) {
 
 #### data.table internal functions ####
 
+#' @title Convert vector to string
 #' @description convert a vector like c(1, 4, 3, 2) into a string like 
-#' [1, 4, 3, 2] (common aggregation method for error messages)
-#' @seealso
-#'  \code{\link[data.table]{brackify}}
+#' `[1, 4, 3, 2]` (common aggregation method for error messages). See also 
+#' `data.table:::brackify()`.
 #' @rdname brackify
 #' @keywords internal
 brackify <- function(x, quote = FALSE) {
@@ -501,11 +501,10 @@ brackify <- function(x, quote = FALSE) {
     sprintf("[%s]", toString(x))
 }
 
+#' @title Pattern matching for `data.table`
 #' @description patterns returns the matching indices in the argument `cols`
 #' corresponding to the regular expression patterns provided. The patterns must
-#' be supported by `grep.`
-#' @seealso
-#'  \code{\link[data.table]{brackify}}
+#' be supported by `grep.` See also `data.table:::patterns()`.
 #' @rdname patterns
 #' @keywords internal
 patterns <- function(..., cols = character(0L)) {
@@ -513,8 +512,7 @@ patterns <- function(..., cols = character(0L)) {
     p <- unlist(l, use.names = any(nzchar(names(l))))
     if (!is.character(p)) stop("Input patterns must be of type character.")
     matched <- lapply(p, grep, cols)
-    if (length(idx <- which(sapply(matched, length) == 0L))) {
-        stop("Pattern(s) not found: [%s]", brackify(p[idx]))
-    }
+    idx <- which(sapply(matched, length) == 0L)
+    if (length(idx)) stop("Pattern(s) not found: [%s]", brackify(p[idx]))
     matched
 }
