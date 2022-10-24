@@ -28,6 +28,9 @@
     <loc>/reference/append_mc_name.html</loc>
   </url>
   <url>
+    <loc>/reference/brackify.html</loc>
+  </url>
+  <url>
     <loc>/reference/change_agegroup_convention.html</loc>
   </url>
   <url>
@@ -95,6 +98,9 @@
   </url>
   <url>
     <loc>/reference/normalise_weights_kish.html</loc>
+  </url>
+  <url>
+    <loc>/reference/patterns.html</loc>
   </url>
   <url>
     <loc>/reference/posterior_summary_fun.html</loc>
