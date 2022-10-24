@@ -171,7 +171,7 @@ threemc_oos_ppc <- function(fit,
       .data$indicator
     ) %>%
     dplyr::summarise(dplyr::across(
-      tidyselect::all_of(c("mean", "upper", "lower")),
+      dplyr::all_of(c("mean", "upper", "lower")),
       sum, 
       na.rm = TRUE
     ), .groups = "drop")

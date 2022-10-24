@@ -47,7 +47,7 @@ threemc_aggregate <- function(
   }
   
   # Add a unique identifier within Admin code and merging to boundaries
-  data.table::setDT(areas)[,  space := 1:.N, by = "area_level"]
+  data.table::setDT(areas)[,  space := seq_len(.N), by = "area_level"]
   
   # wide formatted areas, for changing area levels later
   areas_wide <- areas[, 
@@ -83,10 +83,10 @@ threemc_aggregate <- function(
   }
 
   # additional aggregations to perform for prevalence
-  if (type == "prevalence" && 
-      !is.null(prev_year) && 
+  if (type == "prevalence" &&
+      !is.null(prev_year) &&
       prev_year %in% .data$year) {
-    
+ 
     # calculate change in prevalence since prev_year
     data_change_prev_year <- prevalence_change(
       .data,
@@ -98,7 +98,7 @@ threemc_aggregate <- function(
 
     # add "change from prev_year" and "n_circumcised" .data to .data
     .data <- data.table::rbindlist(
-      l = list(.data, data_change_prev_year, data_n), 
+      list(.data, data_change_prev_year, data_n),
       use.names = TRUE
     )
   }
@@ -366,7 +366,7 @@ aggregate_sample <- function(.data,
     paste(c("population", num_cols), collapse = "|"), names(.data)
   )
   .data <- .data[,
-    (sd_cols) := lapply(.SD, sum, na.rm = TRUE),
+    lapply(.SD, sum, na.rm = TRUE),
     by = c(aggr_cols),
     .SDcols = sd_cols
   ]
@@ -435,7 +435,7 @@ aggregate_sample_age_group <- function(
   # avoid duplication
   results <- unique(results)
   # Multiply num_cols by population to population weight
-  results[, 
+  results[,
           (num_cols) := lapply(.SD, function(x) x * population), 
           .SDcols = num_cols
         ]
@@ -469,7 +469,7 @@ aggregate_sample_age_group <- function(
              ]
   
   # create dummy type column, if required
-  if (!"type" %in% names(results)) results$type <- "dummy"
+  if (!"type" %chin% names(results)) results$type <- "dummy"
   
   # Multiply by population to population weight
   # (don't do this for type ~ "N performed", if present)
@@ -517,7 +517,7 @@ prevalence_change <- function(results, spec_year) {
   ]
   spec_year_results <- data.table::melt(
     spec_year_results, 
-    measure = data.table:::patterns("^samp"),
+    measure = patterns("^samp"),
     value.name = "prev_value"
   )
   
@@ -527,7 +527,7 @@ prevalence_change <- function(results, spec_year) {
 
   # filter for years above comparison year and pivot longer
   results <- data.table::melt(
-    results[year > spec_year], measure = data.table:::patterns("^samp")
+    results[year > spec_year], measure = patterns("^samp")
   )
   
   # join into spec_year_results for corresponding categorical vars 
@@ -571,8 +571,8 @@ n_circumcised <- function(results) {
                                )
                               ]
   
-  # split by type
-  n_circ <- data.table:::split.data.table(results, by = "type")
+  # split by type (uses split.data.table method)
+  n_circ <- split(results, by = "type")
 
   # get circumcised population by type
   sd_cols <- grep("samp_", names(results))
@@ -585,15 +585,25 @@ n_circumcised <- function(results) {
   })
   
   # also calculate unmet need for total circumcisions
-  n_circ_type[[length(n_circ_type) + 1]] <- data.table::copy(results)[
+  unmet_need <- data.table::copy(results)[
     type == "Number circumcised (MC)"
   ][,
     (sd_cols) := lapply(.SD, function(x) population * (1 - x)),
     .SDcols = sd_cols
   ][,
     type := "Unmet need"
+    ]
+
+  # ensure unmet need does not go below 0
+  samp_cols <- names(unmet_need)
+  samp_cols <- samp_cols[grepl("samp_", samp_cols)]
+  unmet_need[, 
+    (samp_cols) := lapply(.SD, function(x) data.table::fifelse(x < 0, 0, x)),
+    .SDcols = samp_cols
   ]
   
+  n_circ_type[[length(n_circ_type) + 1]] <- unmet_need
+
   # Append together
   (data.table::rbindlist(n_circ_type, use.names = TRUE))
 }
@@ -684,13 +694,15 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 merge_area_info <- function(results, areas) {
 
   # global bindings for `data.table` non-standard evaluation
-  . <- area_id <- area_name <- NULL
+  . <- area_id <- area_name <- ..rm_cols <- NULL
   
   if (!inherits(results, "data.table")) results <- data.table::setDT(results)
   if (!inherits(areas, "data.table")) areas <- data.table::setDT(areas)
   
   # remove area_name & area_level to avoid mishaps when joining
-  results <- results[, !c("area_name", "area_level")]
+  rm_cols <- c("area_name", "area_level")
+  rm_cols <- rm_cols[rm_cols %chin% names(results)] # avoids warning
+  results <- results[, !..rm_cols]
   
   # Add region information
   results <- data.table::merge.data.table(
