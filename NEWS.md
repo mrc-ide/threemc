@@ -1,6 +1,11 @@
+# threemc 0.1.27 
+
+* In `prepare_survey_data`, fill `NA` populations for earlier years than we 
+have data for with the earliest known value for each `age` and `area_id`. 
+
 # threemc 0.1.26
 
-* Fixed bug in `prepare_survey_data` whereby surveys not at maximum area 
+* Fix bug in `prepare_survey_data` whereby surveys not at maximum area 
 level have their `area_id` columns coerced to NA, when reassiging 
 survey `area_level` to the specified argument `area_level`.
 
