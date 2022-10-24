@@ -12,7 +12,7 @@
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. Defaults to the
 #' maximum area level found in `areas` if not supplied.
-#' @param start_year First year in shell dataset, Default: 2006
+#' @param start_year First year in shell dataset. 
 #' @param end_year Last year in shell dataset, which is also the year to
 #' forecast/model until, Default: 2021
 #' @param time1 Variable name for time of birth, Default: "time1"
@@ -39,7 +39,7 @@ create_shell_dataset <- function(survey_circumcision,
                                  populations,
                                  areas,
                                  area_lev = NULL,
-                                 start_year = 2006,
+                                 start_year,
                                  end_year = 2021,
                                  time1 = "time1",
                                  time2 = "time2",
@@ -48,24 +48,45 @@ create_shell_dataset <- function(survey_circumcision,
                                  circ = "indweight_st",
                                  ...) {
 
-  ## !! JE: the area_id field here used the area_id that appeared in the
-  ##        circumcision dataset. If there were some area_id with no
-  ##        observations, then they were dropped, which created a
-  ##        misalignment of the indexing.  Instead, use the areas dataset
-  ##        to construct this output frame to ensure all districts are
-  ##        represented.
-  ##
-  ##        I suspect that we also want the circ_age field to be constructed
-  ##        based on the theoretical maximum circumcision age that we want
-  ##        outputs for, rather than the maximum observed age; but not 100%
-  ##        sure.
+  # !! JE: the area_id field here used the area_id that appeared in the
+  #        circumcision dataset. If there were some area_id with no
+  #        observations, then they were dropped, which created a
+  #        misalignment of the indexing.  Instead, use the areas dataset
+  #        to construct this output frame to ensure all districts are
+  #        represented.
+  #
+  #        I suspect that we also want the circ_age field to be constructed
+  #        based on the theoretical maximum circumcision age that we want
+  #        outputs for, rather than the maximum observed age; but not 100%
+  #        sure.
 
   if (is.null(area_lev)) {
     message("area_lev arg missing, taken as maximum area level in areas")
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }
 
-  ## remove spatial elements from areas, take only specified/highest area level
+  # check that there is a population for every year
+  min_pop_year <- min(populations$year)
+  if (start_year < min_pop_year) {
+    message(paste0(
+      "`min(populations$year) > start_year`;\n",
+      "Filling missing populations with earliest known population", 
+      " for each area_id and age"
+    ))
+    missing_years <- seq(start_year, min_pop_year - 1)
+    missing_rows <- tidyr::crossing(
+      dplyr::select(populations, -c(.data$year, .data$population)),
+      "year"       = missing_years,
+      "population" = NA
+    )
+    populations <- dplyr::bind_rows(populations, missing_rows) %>%
+      dplyr::arrange(.data$area_id, .data$age, .data$year) %>%
+      dplyr::group_by(.data$area_id, .data$age) %>%
+      tidyr::fill(.data$population, .direction = "downup") %>%
+      dplyr::ungroup()
+  }
+
+  # remove spatial elements from areas, take only specified/highest area level
   if (inherits(areas, "sf")) {
     areas_model <- sf::st_drop_geometry(areas)
   } else {
@@ -82,20 +103,20 @@ create_shell_dataset <- function(survey_circumcision,
     ) %>%
     dplyr::select(.data$area_id, .data$area_name, .data$area_level, .data$space)
 
-  ## create skeleton dataset with row for every unique area_id, area_name,
-  ## space, year and circ_age
+  # create skeleton dataset with row for every unique area_id, area_name,
+  # space, year and circ_age
   out <- tidyr::crossing(areas_model,
     "year"     = seq(start_year, end_year, by = 1),
     "circ_age" = c(0, seq_len(max(survey_circumcision$circ_age, na.rm = TRUE)))
   ) %>%
-    ## Getting time and age variable
+    # Get time and age variable
     dplyr::mutate(
       time = .data$year - start_year + 1,
       age = .data$circ_age + 1
     ) %>%
-    ## Sorting dataset
+    # Sort dataset
     dplyr::arrange(.data$space, .data$age, .data$time) %>%
-    ## Adding population data on to merge
+    # Add population data on to merge
     dplyr::left_join(
       populations %>%
         dplyr::select(
@@ -104,8 +125,11 @@ create_shell_dataset <- function(survey_circumcision,
         ),
       by = c("area_id", "year", "circ_age")
     )
+  
+  # Fail if still missing pops, as will lead to more obscure matrix errors
+  stopifnot(!all(is.na(out$population)))
 
-  ## Add `space` to survey_circumcision observations
+  # Add `space` to survey_circumcision observations
   survey_circumcision <- survey_circumcision %>%
     dplyr::left_join(
       dplyr::select(areas_model, .data$area_id, .data$space),
@@ -113,7 +137,7 @@ create_shell_dataset <- function(survey_circumcision,
     )
   stopifnot(!is.na(survey_circumcision$space))
 
-  ## Obtain N person years
+  # Obtain N person years
   out_int_mat <- create_integration_matrix_agetime(
     dat = survey_circumcision,
     time1 = time1,
@@ -126,8 +150,8 @@ create_shell_dataset <- function(survey_circumcision,
   )
   out$N <- as.vector(survey_circumcision$indweight_st %*% out_int_mat)
 
-  ## calculate empirical agetime hazard matrices for different circumcision
-  ## types, and take column sums (i.e. N empirical circs for each "type):
+  # calculate empirical agetime hazard matrices for different circumcision
+  # types, and take column sums (i.e. N empirical circs for each "type):
   empirical_circ_cols <- c("obs_mmc", "obs_tmc", "obs_mc", "cens", "icens")
   subsets <- c(
     "event == 1 & type == 'MMC'", # N MMC
@@ -161,7 +185,7 @@ create_shell_dataset <- function(survey_circumcision,
   })
   agetime_hazard_matrices <- lapply(agetime_hazard_matrices, Matrix::colSums)
 
-  ## add to out:
+  # add to out:
   out[, empirical_circ_cols] <- agetime_hazard_matrices
   return(out)
 }
