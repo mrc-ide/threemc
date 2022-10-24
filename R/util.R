@@ -245,9 +245,9 @@ combine_areas <- function(.data,
   # return list or dataframe?
   if (join == TRUE) {
     return(data.table::rbindlist(results_list, use.names = TRUE, ...))
-  } else {
-    return(results_list)
-  }
+  } 
+  
+  return(results_list)
 }
 
 #### append_mc_name ####
@@ -445,6 +445,7 @@ change_agegroup_convention <- function(.data) {
 #' programme data.
 #' @importFrom rlang .data
 #' @importFrom dplyr %>%
+#' @importFrom data.table %chin%
 #' @rdname survey_points_dmppt2_convert_convention
 #' @export
 survey_points_dmppt2_convert_convention <- function(.data) {
@@ -481,4 +482,39 @@ survey_points_dmppt2_convert_convention <- function(.data) {
     .data <- change_agegroup_convention(.data)
   }
   return(.data)
+}
+
+#### data.table internal functions ####
+
+#' @description convert a vector like c(1, 4, 3, 2) into a string like 
+#' [1, 4, 3, 2] (common aggregation method for error messages)
+#' @seealso
+#'  \code{\link[data.table]{brackify}}
+#' @rdname brackify
+#' @keywords internal
+brackify <- function(x, quote = FALSE) {
+    cutoff <- 10L
+    if (quote && is.character(x)) {
+      x <- paste0("'", utils::head(x, cutoff + 1L), "'")
+    }
+    if (length(x) > cutoff) x <- c(x[seq_len(cutoff)], "...")
+    sprintf("[%s]", toString(x))
+}
+
+#' @description patterns returns the matching indices in the argument `cols`
+#' corresponding to the regular expression patterns provided. The patterns must
+#' be supported by `grep.`
+#' @seealso
+#'  \code{\link[data.table]{brackify}}
+#' @rdname patterns
+#' @keywords internal
+patterns <- function(..., cols = character(0L)) {
+    l <- list(...)
+    p <- unlist(l, use.names = any(nzchar(names(l))))
+    if (!is.character(p)) stop("Input patterns must be of type character.")
+    matched <- lapply(p, grep, cols)
+    if (length(idx <- which(sapply(matched, length) == 0L))) {
+        stop("Pattern(s) not found: [%s]", brackify(p[idx]))
+    }
+    matched
 }
