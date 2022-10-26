@@ -10,7 +10,8 @@
 #' @param survey_estimate Circumcision estimates based on empirical observations
 #' from surveys.
 #' @param removed_years Years removed from dataset used to fit model
-#' (i.e. "withheld" surveys from OOS model fitting).
+#' (i.e. "withheld" surveys from OOS model fitting). Optionally, can specify as 
+#' NULL to perform non-OOS PPC using all surveys, Default: NULL
 #' @param type The desired circumcision estimate. Can be one of
 #' "probability", "incidence" or "coverage".
 #' @param area_lev Area level you wish to aggregate to when performing posterior
@@ -36,7 +37,7 @@ threemc_oos_ppc <- function(fit,
                             out,
                             populations,
                             survey_estimate,
-                            removed_years,
+                            removed_years = NULL,
                             type = "coverage",
                             area_lev = 1,
                             age_groups = c(
@@ -111,6 +112,13 @@ threemc_oos_ppc <- function(fit,
 
 
   #### Split out between types ####
+  
+  if (is.null(removed_years)) {
+    message(
+      "No `removed_years` specified, performing non-OOS PPC using all surveys"
+    )
+    removed_years <- unique(out$year)
+  }
 
   # join coverage col of interest with samples
   out_types <- lapply(names(samples), function(x) {
