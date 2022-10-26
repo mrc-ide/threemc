@@ -45,21 +45,21 @@
 #' samples and standard deviation report (if desired).
 #' @rdname threemc_fit_model
 #' @export
-threemc_fit_model <- function(fit = NULL, 
-                              dat_tmb = NULL, 
-                              mod, 
-                              parameters = NULL, 
+threemc_fit_model <- function(fit = NULL,
+                              dat_tmb = NULL,
+                              mod,
+                              parameters = NULL,
                               maps = NULL,
                               randoms = c(
                                 "u_time_mmc", "u_age_mmc", "u_space_mmc",
-                                "u_agetime_mmc", "u_agespace_mmc", 
-                                "u_spacetime_mmc", "u_age_tmc", 
+                                "u_agetime_mmc", "u_agespace_mmc",
+                                "u_spacetime_mmc", "u_age_tmc",
                                 "u_space_tmc", "u_agespace_tmc"
                               ),
-                              sample = TRUE, 
-                              smaller_fit_obj = FALSE, 
-                              sdreport = FALSE, 
-                              N = 1000, 
+                              sample = TRUE,
+                              smaller_fit_obj = FALSE,
+                              sdreport = FALSE,
+                              N = 1000,
                               ...) {
 
   # for specified "smaller fit" object (i.e. fit which requires resampling)
@@ -207,11 +207,11 @@ threemc_fit_model <- function(fit = NULL,
 #'  \code{\link[naomi]{sample_tmb}}
 #' @rdname circ_sample_tmb
 #' @keywords internal
-circ_sample_tmb <- function(fit = NULL, 
-                            obj = NULL, 
-                            opt, 
-                            sdreport = FALSE, 
-                            nsample = 1000, 
+circ_sample_tmb <- function(fit = NULL,
+                            obj = NULL,
+                            opt,
+                            sdreport = FALSE,
+                            nsample = 1000,
                             ...) {
 
   # Getting the TMB into "Naomi" format to sample from using the NAOMI package

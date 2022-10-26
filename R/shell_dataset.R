@@ -12,7 +12,7 @@
 #' @param areas `sf` shapefiles for specific country/region.
 #' @param area_lev  PSNU area level for specific country. Defaults to the
 #' maximum area level found in `areas` if not supplied.
-#' @param start_year First year in shell dataset. 
+#' @param start_year First year in shell dataset.
 #' @param end_year Last year in shell dataset, which is also the year to
 #' forecast/model until, Default: 2021
 #' @param time1 Variable name for time of birth, Default: "time1"
@@ -70,7 +70,7 @@ create_shell_dataset <- function(survey_circumcision,
   if (start_year < min_pop_year) {
     message(paste0(
       "`min(populations$year) > start_year`;\n",
-      "Filling missing populations with earliest known population", 
+      "Filling missing populations with earliest known population",
       " for each area_id and age"
     ))
     missing_years <- seq(start_year, min_pop_year - 1)
@@ -125,7 +125,7 @@ create_shell_dataset <- function(survey_circumcision,
         ),
       by = c("area_id", "year", "circ_age")
     )
-  
+
   # Fail if still missing pops, as will lead to more obscure matrix errors
   stopifnot(!all(is.na(out$population)))
 
@@ -326,7 +326,7 @@ threemc_empirical_rates <- function(out,
 
   # join in region populations
   results <- dplyr::left_join(results, populations_append)
-  
+
   if (any(is.na(results$population))) {
     message(paste0(
       "NA populations found, check that population start year is >= ",

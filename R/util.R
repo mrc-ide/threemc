@@ -179,7 +179,7 @@ add_area_id <- function(df,
   if (!"area_level" %in% names(df_area_id)) {
     df_area_id$area_level <- par$area_lev_select
   }
-  
+
   return(df_area_id)
 }
 
@@ -213,7 +213,7 @@ combine_areas <- function(.data,
 
   # add area_level to original df, if required
   if (!"area_level" %in% names(.data)) .data$area_level <- area_lev
-  
+
   # all area levels in the data (0 indexed)
   area_levs <- seq_len(area_lev) - 1
   if (length(area_levs) == 0) area_levs <- -1
@@ -245,8 +245,8 @@ combine_areas <- function(.data,
   # return list or dataframe?
   if (join == TRUE) {
     return(data.table::rbindlist(results_list, use.names = TRUE, ...))
-  } 
-  
+  }
+
   return(results_list)
 }
 
@@ -487,8 +487,8 @@ survey_points_dmppt2_convert_convention <- function(.data) {
 #### data.table internal functions ####
 
 #' @title Convert vector to string
-#' @description convert a vector like c(1, 4, 3, 2) into a string like 
-#' `[1, 4, 3, 2]` (common aggregation method for error messages). See also 
+#' @description convert a vector like c(1, 4, 3, 2) into a string like
+#' `[1, 4, 3, 2]` (common aggregation method for error messages). See also
 #' `data.table:::brackify()`.
 #' @rdname brackify
 #' @keywords internal

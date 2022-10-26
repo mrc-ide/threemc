@@ -40,17 +40,17 @@ threemc_aggregate <- function(
 
   # global bindings for data.table non-standard evaluation
   space <- NULL
-  
+
   #### Preparing location/shapefile information ####
   if (inherits(areas, "sf")) {
     areas <- sf::st_drop_geometry(areas)
   }
-  
+
   # Add a unique identifier within Admin code and merging to boundaries
   data.table::setDT(areas)[,  space := seq_len(.N), by = "area_level"]
-  
+
   # wide formatted areas, for changing area levels later
-  areas_wide <- areas[, 
+  areas_wide <- areas[,
       c("area_id", "area_name", "parent_area_id", "area_level", "space")
   ]
   areas_wide <- spread_areas(areas_wide, space = FALSE)
@@ -75,7 +75,7 @@ threemc_aggregate <- function(
   .data <- combine_areas(.data, areas_wide, area_lev, join = FALSE)
 
   # aggregate samples for each individual age or age group
-  num_cols <- c(paste0("samp_", seq_len(N)))  
+  num_cols <- c(paste0("samp_", seq_len(N)))
   if (age_var == "age") {
     .data <- aggregate_sample(.data, num_cols = num_cols, ...)
   } else {
@@ -86,7 +86,7 @@ threemc_aggregate <- function(
   if (type == "prevalence" &&
       !is.null(prev_year) &&
       prev_year %in% .data$year) {
- 
+
     # calculate change in prevalence since prev_year
     data_change_prev_year <- prevalence_change(
       .data,
@@ -140,7 +140,7 @@ prepare_sample_data <- function(N = 100,
                                 no_prog_tmb_fit,
                                 prog_tmb_fit,
                                 type) {
-  
+
   if (is.null(no_prog_results) && is.null(prog_results)) {
     stop("cannot have prog_results == no_prog_results == NULL")
   }
@@ -151,7 +151,7 @@ prepare_sample_data <- function(N = 100,
   }
 
   if (nrow(populations) == 0) stop("No populations present in data")
-  
+
   # global bindings for data.table non-standard evaluation
   model <- NULL
 
@@ -161,7 +161,7 @@ prepare_sample_data <- function(N = 100,
 
   # append samples from different circumcision models together (and pops)
   append_fun <- function(tmp, fit, populations, type) {
-    
+
     # different objects to pull samples from fit, based on desired aggregation
     if (type == "probability") {
       mmc <- "haz_mmc" # medical circumcision
@@ -178,14 +178,14 @@ prepare_sample_data <- function(N = 100,
       mmct <- "cum_inc_mmct"
       mc <- ifelse("cum_inc" %chin% names(fit$sample), "cum_inc", "cum_inc_mc")
     }
-    
+
     # word to be pasted onto the end of circ type below
     if (type == "prevalence") {
       category <- "coverage"
     } else {
       category <- type
     }
-    
+
     # initialise dataframes to store samples for different circ types
     tmpx_1 <- tmpx_2 <- tmpx_3 <- tmpx_4 <- tmpx_5 <- tmpx_6 <- tmp
     # type == "incidence" has 12 different "types"
@@ -194,7 +194,7 @@ prepare_sample_data <- function(N = 100,
     } else {
       tmpx_7 <- tmpx_8 <- tmpx_9 <- tmpx_10 <- tmpx_11 <- tmpx_12 <- NULL
     }
-    
+
     # Pull samples from data
     # Models with no VMMC data cannot distinguish between MMC-nT and MMC-T
     tmpx_1[, paste0("samp_", 1:N)] <- fit$sample[[mmc]][, 1:N]
@@ -231,7 +231,7 @@ prepare_sample_data <- function(N = 100,
     tmpx_4$type <- paste("MMC", category)
     tmpx_5$type <- paste("TMIC", category)
     tmpx_6$type <- paste("MC", category)
-    
+
     # Samples for the number of MCs performed (for incidence)
     if (type == "incidence") {
       tmpx_7 <- tmpx_1
@@ -247,7 +247,7 @@ prepare_sample_data <- function(N = 100,
       tmpx_12 <- tmpx_6
       tmpx_12$type <- "MCs performed"
     }
-    
+
     # Append together
     tmp <- as.list(mget(paste0("tmpx_", 1:12))) %>%
       data.table::rbindlist(use.names = TRUE) %>%
@@ -258,7 +258,7 @@ prepare_sample_data <- function(N = 100,
         .data$type, .data$model,
         dplyr::contains("samp_")
       )
-    
+
     # only keep relevant columns in populations for left_join
     populations_append <- populations %>%
       dplyr::select(
@@ -267,13 +267,13 @@ prepare_sample_data <- function(N = 100,
         # don't join by area_name, in case character encoding etc causes errors
         -dplyr::matches("area_name")
       )
-    
+
     # join with populations
     tmp <- data.table::merge.data.table(
       tmp, populations_append, all.x = TRUE
-    ) %>% 
+    ) %>%
       dplyr::relocate(.data$population, .before = .data$samp_1)
-    
+
     # filter out na populations, with an appropriate message
     if (any(is.na(tmp$population)) == TRUE) {
       n1 <- nrow(tmp)
@@ -282,10 +282,10 @@ prepare_sample_data <- function(N = 100,
       if (n2 == 0) stop("No populations present in data")
       message(paste0("Missing population for ", n1 - n2, " records"))
     }
-    
+
     return(tmp)
   }
-  
+
   # Model with Probability of MC with no program data (only surveys)
   if (!is.null(no_prog_results)) {
     tmp1 <- data.table::copy(
@@ -335,7 +335,7 @@ aggregate_sample <- function(.data,
                              aggr_cols = c(
                                "area_id", "area_name", "year",
                                "age", "age_group", "model", "type"
-                             ), 
+                             ),
                              num_cols,
                              ...) {
 
@@ -357,10 +357,10 @@ aggregate_sample <- function(.data,
     (num_cols) := lapply(.SD, function(x) x * population),
     .SDcols = num_cols
   ]
-  
+
   # ensure aggregation columns are in the data
   aggr_cols <- aggr_cols[aggr_cols %chin% names(.data)]
-  
+
   # summarise num_cols (along with `population`) by aggr_cols
   sd_cols <- grep(
     paste(c("population", num_cols), collapse = "|"), names(.data)
@@ -370,7 +370,7 @@ aggregate_sample <- function(.data,
     by = c(aggr_cols),
     .SDcols = sd_cols
   ]
-  
+
   # divide by population to population weight
   .data <- .data[,
                  (num_cols) := lapply(.SD, function(x) x / population),
@@ -417,49 +417,49 @@ aggregate_sample_age_group <- function(
       "10-39", "15-39", "10-49", "15-49", "30-49"
     )
 ) {
-  
+
   # global bindings for `data.table` non-standard evaluation
   .SD <- population <- type <- NULL
-  
+
   # bind list objects if required
   results <- results_list
   if (!inherits(results, "data.frame")) {
     results <- data.table::rbindlist(results, use.names = TRUE)
   }
-  
+
   # populations, aggr_cols and num_cols should all be present in results
   stopifnot(all(c("population", aggr_cols, num_cols) %chin% names(results)))
-  
+
   # convert to data.table
   data.table::setDT(results)
   # avoid duplication
   results <- unique(results)
   # Multiply num_cols by population to population weight
   results[,
-          (num_cols) := lapply(.SD, function(x) x * population), 
+          (num_cols) := lapply(.SD, function(x) x * population),
           .SDcols = num_cols
         ]
-  # have num_cols at the end 
+  # have num_cols at the end
   other_names <- names(results)[!names(results) %chin% num_cols]
   results <- data.table::setcolorder(results, c(other_names, num_cols))
-  
-  # create data frame matching age groups to ages within 
+
+  # create data frame matching age groups to ages within
   age_group_df <- data.table::rbindlist(
     lapply(age_groups, match_age_group_to_ages, max_age = max(results$age))
   )
-  
+
   # left join in  `age_group` col to results, remove `age` col
   results <- data.table::merge.data.table(
-    results, 
-    age_group_df, 
+    results,
+    age_group_df,
     by = "age",
     all.x = TRUE,
-    # allow duplication of records falling in multiple age groups 
-    allow.cartesian = TRUE 
+    # allow duplication of records falling in multiple age groups
+    allow.cartesian = TRUE
   )[, !c("age")]
-  
+
   if (!"age_group" %chin% aggr_cols) aggr_cols <- c(aggr_cols, "age_group")
-  
+
   # aggregate sample for unique combination of `aggr_cols`
   sd_cols <- c("population", num_cols)
   results <- results[,
@@ -467,10 +467,10 @@ aggregate_sample_age_group <- function(
                      by = c(aggr_cols),
                      .SDcols = sd_cols
              ]
-  
+
   # create dummy type column, if required
   if (!"type" %chin% names(results)) results$type <- "dummy"
-  
+
   # Multiply by population to population weight
   # (don't do this for type ~ "N performed", if present)
   results[,
@@ -481,10 +481,10 @@ aggregate_sample_age_group <- function(
           }),
           .SDcols = num_cols
   ]
-  
+
   # remove dummy column
   if (all(results$type == "dummy")) results <- results[, -c("type")]
-  
+
   # return results
   return(results)
 }
@@ -507,20 +507,20 @@ prevalence_change <- function(results, spec_year) {
 
   # global bindings for data.table non-standard evaluation
   year <- value <- prev_value <- type <- NULL
-  
+
   results <- data.table::setDT(results)
-  
+
   # pull samples from coverage in chosen year
   spec_year_results <- results[
     year == spec_year,
     !c("year", "population")
   ]
   spec_year_results <- data.table::melt(
-    spec_year_results, 
+    spec_year_results,
     measure = patterns("^samp"),
     value.name = "prev_value"
   )
-  
+
   if (nrow(spec_year_results) == 0) {
     stop("Please choose a different year to draw comparisons with")
   }
@@ -529,11 +529,11 @@ prevalence_change <- function(results, spec_year) {
   results <- data.table::melt(
     results[year > spec_year], measure = patterns("^samp")
   )
-  
-  # join into spec_year_results for corresponding categorical vars 
+
+  # join into spec_year_results for corresponding categorical vars
   results <- data.table::merge.data.table(
     results, spec_year_results, all.x = TRUE
-  ) 
+  )
   # subtract value from comparison year from each year
   results <- results[,
                      value := value - prev_value
@@ -561,7 +561,7 @@ n_circumcised <- function(results) {
 
   # global bindings for `data.table` non-standard evaluation
   type <- population <- NULL
-  
+
   # Getting number of circumcised men
   results <- data.table::copy(data.table::setDT(results))[,
                                type := paste0(
@@ -570,7 +570,7 @@ n_circumcised <- function(results) {
                                  ")"
                                )
                               ]
-  
+
   # split by type (uses split.data.table method)
   n_circ <- split(results, by = "type")
 
@@ -583,7 +583,7 @@ n_circumcised <- function(results) {
                          ]
     return(x)
   })
-  
+
   # also calculate unmet need for total circumcisions
   unmet_need <- data.table::copy(results)[
     type == "Number circumcised (MC)"
@@ -597,11 +597,11 @@ n_circumcised <- function(results) {
   # ensure unmet need does not go below 0
   samp_cols <- names(unmet_need)
   samp_cols <- samp_cols[grepl("samp_", samp_cols)]
-  unmet_need[, 
+  unmet_need[,
     (samp_cols) := lapply(.SD, function(x) data.table::fifelse(x < 0, 0, x)),
     .SDcols = samp_cols
   ]
-  
+
   n_circ_type[[length(n_circ_type) + 1]] <- unmet_need
 
   # Append together
@@ -628,7 +628,7 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 
   # ensure probabilities for quantiles are ordered
   probs <- sort(probs)
-  
+
   .data <- data.table::setDT(.data)
 
   # ensure numeric columns (apart from age) are after categorical
@@ -695,41 +695,41 @@ merge_area_info <- function(results, areas) {
 
   # global bindings for `data.table` non-standard evaluation
   . <- area_id <- area_name <- ..rm_cols <- NULL
-  
+
   if (!inherits(results, "data.table")) results <- data.table::setDT(results)
   if (!inherits(areas, "data.table")) areas <- data.table::setDT(areas)
-  
+
   # remove area_name & area_level to avoid mishaps when joining
   rm_cols <- c("area_name", "area_level")
   rm_cols <- rm_cols[rm_cols %chin% names(results)] # avoids warning
   results <- results[, !..rm_cols]
-  
+
   # Add region information
   results <- data.table::merge.data.table(
-    results, 
+    results,
     dplyr::select(areas, .data$area_id:.data$area_level),
     by = "area_id"
-  ) 
-  
+  )
+
   # Merge regional information on the dataset (i.e. parent area info)
   results <- data.table::merge.data.table(
-    results, 
+    results,
     # use parent area names from areas
     data.table::setnames(
       areas[, .(area_id, area_name)],
-      old = c("area_id", "area_name"), 
+      old = c("area_id", "area_name"),
       new = c("parent_area_id", "parent_area_name")
     ),
     by = "parent_area_id",
     all.x = TRUE
-  ) 
-  
-  # relocate area cols to the start of the dataframe  
+  )
+
+  # relocate area cols to the start of the dataframe
   area_cols <- c(
     "area_name", "area_id", "area_level", "parent_area_id", "parent_area_name"
-  ) 
+  )
   data.table::setcolorder(
-    results, 
+    results,
     c(area_cols, dplyr::setdiff(names(results), area_cols))
   )
 }

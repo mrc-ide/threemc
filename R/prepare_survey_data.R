@@ -42,25 +42,25 @@ prepare_survey_data <- function(areas,
                                 norm_kisk_weights = TRUE,
                                 strata.norm = c("survey_id", "area_id"),
                                 strata.kish = c("survey_id")) {
-  
-  
+
+
   # function to parse country specific psnu area levels if desired
   select_area_lev <- function(area_lev, cntry, is_add_data_present) {
-    
-    # if area_lev is provided (i.e as a value, rather than a df), just return 
+
+    # if area_lev is provided (i.e as a value, rather than a df), just return
     if (!inherits(area_lev, "data.frame")) {
       return(area_lev)
-    } 
+    }
     # if area_lev is a df (i.e. threemc::datapack_psnu_area_level) ...
-    
+
     # find area_level for specified country from area_lev df
     area_lev <- area_lev %>%
       dplyr::filter(.data$iso3 == cntry) %>%
       dplyr::pull(.data$psnu_area_level)
-    
-    # if area_lev for specified cntry is present in df, return 
+
+    # if area_lev for specified cntry is present in df, return
     if (length(area_lev) == 1) return(area_lev)
-    
+
     # if area_level for cntry is missing, assume most common lev in surveys
     if (length(area_lev) == 0 && is_add_data_present) {
       # If survey_clusters is specified, find most common area level there
@@ -69,42 +69,42 @@ prepare_survey_data <- function(areas,
       # otherwise, use most common area level in survey_circumcision
       area_lev_df <- survey_circumcision
     }
-    
+
     # pull area_level from area_id col (area_level column not guaranteed)
-    area_levs <- area_lev_df %>% 
-      dplyr::filter(.data$iso3 == cntry) %>% 
-      dplyr::select(dplyr::contains("area_id")) %>% 
-      dplyr::pull() %>% 
+    area_levs <- area_lev_df %>%
+      dplyr::filter(.data$iso3 == cntry) %>%
+      dplyr::select(dplyr::contains("area_id")) %>%
+      dplyr::pull() %>%
       substr(5, 5) # i.e. LSO_1_01 gives area_level 1
-    
+
     # tabulate and return most common level (i.e. with max count in table)
     area_levs_tbl <- table(area_levs)
     area_lev <- as.numeric(
       names(area_levs_tbl)[area_levs_tbl == max(area_levs_tbl)]
     )
-    
+
     return(area_lev)
   }
-  
+
   # if survey_circumcision is a list or contains more than one country,
   # apply function recursively for each iso3
   is_list <- inherits(survey_circumcision, "list")
-  
+
   # Check if cluster & individuals data is provided; if not, assume sufficient
   # data is included in survey_circumcision alone
   is_add_data_present <- !is.null(survey_clusters) &
     !is.null(survey_individuals)
-  
+
   # split based on iso3 if not already a list and containing > 1 country
   if (!is_list && length(unique(survey_circumcision$iso3)) != 1) {
     survey_circumcision <- split(survey_circumcision, survey_circumcision$iso3)
-    
+
     # arrange and filter for country to ensure splitting is the same
     equal_splits <- function(x, survey_circumcision) {
       x <- x[names(x) %chin% names(survey_circumcision)] # same names
       return(x[order(names(survey_circumcision))]) # order names
     }
-    
+
     # If cluster & individuals data are null, splitting would produce an error
     if (is_add_data_present) {
       survey_individuals <- split(survey_individuals, survey_individuals$iso3)
@@ -115,33 +115,33 @@ prepare_survey_data <- function(areas,
       survey_clusters <- equal_splits(survey_clusters, survey_circumcision)
     }
   }
-  
+
   if (inherits(survey_circumcision, "list")) {
     message(paste0(
       "survey_circumcision supplied is a list and/or contains multiple",
       " countries, applying function recursively for each country present"
     ))
-    
+
     # loop over each country
     surveys <- lapply(seq_along(survey_circumcision), function(i) {
-      
+
       # pull country
       cntry <- unique(survey_circumcision[[i]]$iso3)
-      
+
       message("Preparing surveys for ", cntry, "\n")
-      
+
       if (cntry == "LBR" && cens_age > 29) {
         cens_age <- 29
         message("for LBR, age must be censored to those under 29 (at least)")
       }
-      
+
       # pull latest and first censoring year from survey_id
       survey_years <- as.numeric(substr(unique(
         survey_circumcision[[i]]$survey_id
       ), 4, 7))
       cens_year <- max(survey_years)
       start_year <- max(min(survey_years), start_year)
-      
+
       # filter specific country entries in additional dfs, if they are provided
       if (is_add_data_present) {
         survey_individuals_spec <- dplyr::filter(
@@ -156,7 +156,7 @@ prepare_survey_data <- function(areas,
       survey_circumcision_spec <- dplyr::filter(
         survey_circumcision[[i]], .data$iso3 == cntry
       )
-      
+
       # apply function recursively for each country
       prepare_survey_data(
         areas = dplyr::filter(areas, .data$iso3 == cntry),
@@ -178,7 +178,7 @@ prepare_survey_data <- function(areas,
     names(surveys) <- names(survey_circumcision)
     return(surveys)
   }
-  
+
   # if we set cens_year == TRUE, calculate cens_year as max survey year
   if (!is.null(cens_year) && cens_year == TRUE) {
     message("cens_year set to TRUE, calculated as last survey year")
@@ -191,28 +191,28 @@ prepare_survey_data <- function(areas,
       substr(unique(surveys), 4, 7)
     ))
   }
-  
+
   # remove area_level column if present, to avoid row duplication
   survey_circumcision <- dplyr::select(
     survey_circumcision,
     -dplyr::matches("area_level")
   )
-  
-  
+
+
   # Merging circumcision and individuals survey datasets ---------------------
 
   # pull original surveys
   orig_surveys <- unique(survey_circumcision$survey_id)
-  
+
   # Join survey data sources together, if they been provided as joined already
   if (is_add_data_present) {
-    
+
     # change colnames to those in line with areas
     if ("geoloc_area_id" %chin% names(survey_clusters)) {
       survey_clusters <- survey_clusters %>%
         dplyr::rename(area_id = .data$geoloc_area_id)
     }
-    
+
     # Merging datasets, if required
     survey_circumcision <- survey_circumcision %>%
       # Merging on individual information to  the circumcision dataset
@@ -232,14 +232,14 @@ prepare_survey_data <- function(areas,
         by = c("survey_id", "cluster_id")
       )
   }
-  
+
   # Add column of NAs for missing age columns
   age_cols <- c("circ_age", "age")
   if (sum(age_cols %chin% names(survey_circumcision)) < 2) {
     missing_age_cols <- age_cols[!age_cols %chin% names(survey_circumcision)]
     survey_circumcision[, missing_age_cols] <- NA
   }
-  
+
   # Remove those with missing circumcison status
   survey_circumcision <- survey_circumcision %>%
     dplyr::filter(
@@ -257,9 +257,9 @@ prepare_survey_data <- function(areas,
       # If circumcision age > age of the individual set, reset circumcision age
       circ_age = ifelse(.data$circ_age > .data$age, NA_real_, .data$circ_age)
     )
-  
+
   # Censoring if necessary ---------------------------------------------------
-  
+
   # Censoring at cens_year if assumed no circumcisions after a certain year
   if (!is.null(cens_age)) {
     survey_circumcision <- survey_circumcision %>%
@@ -283,7 +283,7 @@ prepare_survey_data <- function(areas,
         )
       )
   }
-  
+
   # Censoring at cens_year if assumed no circumcisions after a certain year
   if (!is.null(cens_year)) {
     survey_circumcision <- survey_circumcision %>%
@@ -301,22 +301,22 @@ prepare_survey_data <- function(areas,
         yoc = ifelse(.data$yoc == cens_year, cens_year - 1, .data$yoc)
       )
   }
-  
+
   # Setting desired level aggregation ----------------------------------------
-  
+
   if (inherits(areas, "sf")) areas <- sf::st_drop_geometry(areas)
   areas <- dplyr::select(
     areas, .data$area_id, .data$area_name,
     .data$parent_area_id, .data$area_level
   )
-  
+
   # Getting the area level id to province
   area_lev <- select_area_lev(
-    area_lev, 
-    cntry = survey_circumcision$iso3[1], 
-    is_add_data_present      
+    area_lev,
+    cntry = survey_circumcision$iso3[1],
+    is_add_data_present
   )
-  
+
   # Join surveys with areas for each level leading up to the desired area level
   # This distributes granular surveys to desired area_level using parent_ids
   for (i in seq_len(max(areas$area_level))) {
@@ -332,28 +332,28 @@ prepare_survey_data <- function(areas,
           as.character(.data$parent_area_id)
         )
       ) %>%
-      # remove parent_area_id etc, to join in next least granular equivalents 
+      # remove parent_area_id etc, to join in next least granular equivalents
       dplyr::select(
         -c(.data$parent_area_id, .data$area_name, .data$area_level)
       )
   }
-  
+
   # check for introduction of NAs in area_id
-  na_area_survey_ids <- survey_circumcision %>% 
+  na_area_survey_ids <- survey_circumcision %>%
     dplyr::filter(is.na(.data$area_id)) %>%
     dplyr::distinct(.data$survey_id) %>%
     dplyr::pull()
-  
+
   if (length(na_area_survey_ids) != 0) {
     message(paste0(
       "The following surveys have NAs for area_id: \n",
       paste(na_area_survey_ids, sep = ", ")
     ))
   }
-  
-  
+
+
   # Final preparation of circumcision variables ------------------------------
-  
+
   # Preparing circumcision variables for the model
   survey_circumcision <- survey_circumcision %>%
     # Merging on the region index
@@ -378,7 +378,7 @@ prepare_survey_data <- function(areas,
       circ_age = .data$yoc - .data$yob,
       age = .data$circ_age + 1
     )
-  
+
   # give message on censored individuals
   event_tbl <- table(survey_circumcision$event)
   names(event_tbl) <- c(
@@ -389,7 +389,7 @@ prepare_survey_data <- function(areas,
   message(
     paste0(utils::capture.output(event_tbl), collapse = "\n")
   )
-  
+
   # Adding circumcision type to dataset
   survey_circumcision <- survey_circumcision %>%
     # Type of circumcision
@@ -409,18 +409,18 @@ prepare_survey_data <- function(areas,
         TRUE ~ "Missing"
       )
     )
-  
+
   # Get surveys without any type information
   if (rm_missing_type == TRUE) {
     tmp <- with(
-      survey_circumcision, 
+      survey_circumcision,
       as.data.frame(table(survey_id, type)) # tabulate type
     ) %>%
       # calculate percentage and find surveys with all missing data
       dplyr::group_by(.data$survey_id) %>%
       dplyr::mutate(Freq = .data$Freq / sum(.data$Freq)) %>%
       dplyr::filter(.data$type == "Missing", .data$Freq == 1)
-    
+
     # return message detailing all surveys which are missing
     n <- nrow(tmp)
     if (n > 0) {
@@ -449,7 +449,7 @@ prepare_survey_data <- function(areas,
         !(.data$circ_status == 1 & .data$type == "Missing")
       )
   }
-  
+
   # normalise survey weights and apply Kish coefficients, if desired
   if (norm_kisk_weights) {
     survey_circumcision <- normalise_weights_kish(
@@ -458,7 +458,7 @@ prepare_survey_data <- function(areas,
       strata.kish = strata.kish
     )
   }
-  
+
   # return message for which surveys are discarded & kept (if any)
   remaining_surveys <- unique(survey_circumcision$survey_id)
   if (length(remaining_surveys) != length(orig_surveys)) {
@@ -485,7 +485,7 @@ prepare_survey_data <- function(areas,
       }
     }))
   }
-  
+
   # Returning prepped circumcision datasets
   return(survey_circumcision)
 }
