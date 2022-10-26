@@ -394,7 +394,6 @@ spread_areas <- function(areas,
   return(areas_wide)
 }
 
-<<<<<<< HEAD
 #' Convert integer CMC date to integer Julian calendar year
 #'
 #' @param cmc_date integer specifying date as CMC (Century-month code)
@@ -408,7 +407,7 @@ cmc_date_to_year_num <- function(cmc_date) {
   year  <- 1900 + floor((cmc_date - 1) / 12)
   return(year)
 }
-=======
+
 #### match_age_group_to_ages ####
 
 #' Create data frame of all ages within provided age group.
