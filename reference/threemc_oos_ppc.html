@@ -60,7 +60,7 @@ age groups (rather than single year ages), split by specified categories.</p>
 <span>  <span class="va">out</span>,</span>
 <span>  <span class="va">populations</span>,</span>
 <span>  <span class="va">survey_estimate</span>,</span>
-<span>  <span class="va">removed_years</span>,</span>
+<span>  removed_years <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"coverage"</span>,</span>
 <span>  area_lev <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  age_groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0-4"</span>, <span class="st">"5-9"</span>, <span class="st">"10-14"</span>, <span class="st">"15-19"</span>, <span class="st">"20-24"</span>, <span class="st">"25-29"</span>, <span class="st">"30-34"</span>, <span class="st">"35-39"</span>,</span>
@@ -96,7 +96,8 @@ from surveys.</p></dd>
 
 <dt>removed_years</dt>
 <dd><p>Years removed from dataset used to fit model
-(i.e. "withheld" surveys from OOS model fitting).</p></dd>
+(i.e. "withheld" surveys from OOS model fitting). Optionally, can specify as
+NULL to perform non-OOS PPC using all surveys, Default: NULL</p></dd>
 
 
 <dt>type</dt>
@@ -119,7 +120,7 @@ c("0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
 
 <dt>CI_range</dt>
 <dd><p>CI interval about which you want to compare empirical and
-posterior predictive estimates for left out surveys.</p></dd>
+posterior predictive estimates for left out surveys, Default = 0.95</p></dd>
 
 
 <dt>N</dt>
