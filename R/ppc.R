@@ -10,7 +10,8 @@
 #' @param survey_estimate Circumcision estimates based on empirical observations
 #' from surveys.
 #' @param removed_years Years removed from dataset used to fit model
-#' (i.e. "withheld" surveys from OOS model fitting).
+#' (i.e. "withheld" surveys from OOS model fitting). Optionally, can specify as 
+#' NULL to perform non-OOS PPC using all surveys, Default: NULL
 #' @param type The desired circumcision estimate. Can be one of
 #' "probability", "incidence" or "coverage".
 #' @param area_lev Area level you wish to aggregate to when performing posterior
@@ -21,7 +22,7 @@
 #' "0+",    "10+",   "15+",   "15-24", "10-24", 15-29",
 #' "10-29", "15-39", "10-39", "15-49", "10-49")
 #' @param CI_range CI interval about which you want to compare empirical and
-#' posterior predictive estimates for left out surveys.
+#' posterior predictive estimates for left out surveys, Default = 0.95
 #' @param N Number of samples to generate, Default: 1000
 #' @param compare_stats Set to TRUE if you wish to compute comparative
 #' statistics (specifically, ELPD and CRPS) to compare with alternative models,
@@ -36,7 +37,7 @@ threemc_oos_ppc <- function(fit,
                             out,
                             populations,
                             survey_estimate,
-                            removed_years,
+                            removed_years = NULL,
                             type = "coverage",
                             area_lev = 1,
                             age_groups = c(
@@ -111,6 +112,13 @@ threemc_oos_ppc <- function(fit,
 
 
   #### Split out between types ####
+  
+  if (is.null(removed_years)) {
+    message(
+      "No `removed_years` specified, performing non-OOS PPC using all surveys"
+    )
+    removed_years <- unique(out$year)
+  }
 
   # join coverage col of interest with samples
   out_types <- lapply(names(samples), function(x) {
@@ -245,22 +253,24 @@ threemc_oos_ppc <- function(fit,
         x <= N - 0.5 * (1 - CI_range) * N
     ) / length(x)
   }
+  CI_range <- sort(CI_range)
+  oos_within_ppd_percent <- vapply(CI_range, function(x) {
+    oos_within_ppd(survey_estimate_ppd$quant_pos_final, x)
+  }, numeric(1)) 
+  names(oos_within_ppd_percent) <- CI_range
   
-  oos_within_ppd_percent <- oos_within_ppd(
-    survey_estimate_ppd$quant_pos_final, CI_range
-  )
-  print(paste0(
-    "Percentage of survey points which fall within posterior predictive",
-    " distribution at ",
-    # 95%
-    CI_range * 100,
-    "%",
-    " CI: ",
-    round(oos_within_ppd_percent * 100, 2),
-    "%"
-  ))
-
-  # TODO: Add option to include additional summary statistics
+  message <- lapply(seq_along(CI_range), function(i) {
+    print(paste0(
+      "Percentage of survey points which fall within posterior predictive",
+      " distribution at ",
+      CI_range[[i]] * 100,
+      "%",
+      " CI: ",
+      round(oos_within_ppd_percent[[i]][1] * 100, 2),
+      "%"
+    ))   
+  })
+  
   summary_stats <- list(
     "oos_observations_within_PPD_CI" = oos_within_ppd_percent
   )
