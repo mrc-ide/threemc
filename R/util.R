@@ -1,9 +1,9 @@
 # Various utility functions for functionality used on multiple occasions
-# throughout package. Generally unexported.
+# throughout package. Generally un-exported.
 
 #### %||% ####
 
-`%||%` <- function(x, y) { # nolint
+`%||%` <- function(x, y) { # no lint
   if (is.null(x)) y else x
 }
 
@@ -34,7 +34,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   ## in NAs in this situation (look at KEN for this)
 
   ## read in data, depending on file type
-  cond <- tools::file_ext(path) %in% c("geojson", "shp", "shx")
+  cond <- tools::file_ext(path) %chin% c("geojson", "shp", "shx")
   if (cond) {
     .data <- sf::read_sf(path, ...)
   } else {
@@ -47,7 +47,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
     cols <- names(filters)
     vals <- as.vector(filters[seq_along(filters)])
     for (i in seq_along(filters)) {
-      if (!cols[i] %in% names(.data)) next
+      if (!cols[i] %chin% names(.data)) next
       ## change col i to symbol (if present), evaluate corresponding filter
       .data <- dplyr::filter(.data, !!rlang::sym(cols[i]) == vals[i])
     }
@@ -56,7 +56,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
   # Select specific columns, if desired (and present) (no need to do for fread)
   if (!is.null(selected) && cond) {
     .data <- .data %>%
-      dplyr::select(dplyr::all_of(selected[selected %in% names(.data)]))
+      dplyr::select(dplyr::all_of(selected[selected %chin% names(.data)]))
   }
 
   ## for areas, add unique identifier within Admin code and merge to boundaries
@@ -146,8 +146,8 @@ add_area_id <- function(df,
     select_cols <- unique(c(select_cols, add_keep_cols))
   }
   # remove columns which interfere with select below
-  select_cols <- select_cols[!select_cols %in% c("area_id", "area_name")]
-  select_cols <- select_cols[select_cols %in% names(df)]
+  select_cols <- select_cols[!select_cols %chin% c("area_id", "area_name")]
+  select_cols <- select_cols[select_cols %chin% names(df)]
 
   df_area_id <- df %>%
     # join in area names for chosen area_id
@@ -176,7 +176,10 @@ add_area_id <- function(df,
     )
 
   # add missing area_level col, if required
-  df_area_id$area_level <- par$area_lev_select
+  if (!"area_level" %in% names(df_area_id)) {
+    df_area_id$area_level <- par$area_lev_select
+  }
+
   return(df_area_id)
 }
 
@@ -208,6 +211,9 @@ combine_areas <- function(.data,
                           add_keep_cols = NULL,
                           ...) {
 
+  # add area_level to original df, if required
+  if (!"area_level" %in% names(.data)) .data$area_level <- area_lev
+
   # all area levels in the data (0 indexed)
   area_levs <- seq_len(area_lev) - 1
   if (length(area_levs) == 0) area_levs <- -1
@@ -237,14 +243,11 @@ combine_areas <- function(.data,
   }
 
   # return list or dataframe?
-  if (join) {
-    return(as.data.frame(data.table::rbindlist(
-      results_list,
-      use.names = TRUE, ...
-    )))
-  } else {
-    return(results_list)
+  if (join == TRUE) {
+    return(data.table::rbindlist(results_list, use.names = TRUE, ...))
   }
+
+  return(results_list)
 }
 
 #### append_mc_name ####
@@ -306,7 +309,7 @@ create_aggregate_structure <- function(areas,
 
   n_sub_region_df <- areas %>%
     dplyr::distinct(.data$area_id) %>%
-    dplyr::mutate(sp_dep = sapply(sub_region_list, length))
+    dplyr::mutate(sp_dep = vapply(sub_region_list, length, numeric(1)))
 
   # Returning list
   list(sub_region_list = sub_region_list, n_sub_region_df = n_sub_region_df)
@@ -343,7 +346,6 @@ spread_areas <- function(areas,
   areas_wide <- areas %>%
     dplyr::filter(.data$area_level == min_level) %>%
     dplyr::select(
-      # What's happening here?
       `:=`(!!paste0("area_id", min_level), .data$area_id),
       `:=`(!!paste0("area_name", min_level), .data$area_name),
       `:=`(!!paste0("space", min_level), .data$space)
@@ -392,6 +394,7 @@ spread_areas <- function(areas,
   return(areas_wide)
 }
 
+<<<<<<< HEAD
 #' Convert integer CMC date to integer Julian calendar year
 #'
 #' @param cmc_date integer specifying date as CMC (Century-month code)
@@ -405,3 +408,127 @@ cmc_date_to_year_num <- function(cmc_date) {
   year  <- 1900 + floor((cmc_date - 1) / 12)
   return(year)
 }
+=======
+#### match_age_group_to_ages ####
+
+#' Create data frame of all ages within provided age group.
+#'
+#' @param age_group Age group, either "x-x" for a fixed upper age, or "x+", for
+#' an age group with an upper age of `max_age`.
+#' @param max_age Maximum age for age groups with no upper limit, Default: 60
+#'
+#' @rdname match_age_group_to_ages
+#' @keywords internal
+match_age_group_to_ages <- function(age_group, max_age = 60) {
+  # if age_group ~ "x-x", expand age group from lower to upper age
+  if (grepl("-", age_group)) {
+    age_bounds <- as.integer(strsplit(age_group, "-")[[1]])
+    ages <- age_bounds[1]:dplyr::last(age_bounds)
+  } else {
+    # if age group ~ "x+", take ages from x to max_age
+    lower_age <- as.integer(gsub("+", "", age_group, fixed = TRUE))
+    ages <- lower_age:max_age
+  }
+  # return data frame of single ages within provided age_group
+  return(data.frame("age_group" = age_group, "age" = ages))
+}
+
+#' @title Change age group convention to match aggregation results
+#' @description Change age group convention from "Y000_004" to "0-4", for
+#' example.
+#' @param .data `data.frame` with `age_group` column whose convention does not
+#' match aggregations from `threemc`.
+#' @rdname change_agegroup_convention
+#' @keywords internal
+change_agegroup_convention <- function(.data) {
+  lower <- as.numeric(substr(.data$age_group, 3, 4))
+  if (all(!is.na(as.numeric(lower)))) {
+    upper <- as.numeric(substr(.data$age_group, 7, 8))
+    .data$age_group <- paste(lower, upper, sep = "-")
+  }
+  return(.data)
+}
+
+#### survey_points_dmppt2_convert_convention ####
+
+#' Create data frame of all ages within provided age group.
+#' Convert survey coverage points & dmppt2 data to match convention of
+#' aggregated results.
+#'
+#' @param .data Data frame with either survey calculated coverage, with
+#' associated error bounds, or DMPPT2 coverage estimates calculated from VMMC
+#' programme data.
+#' @importFrom rlang .data
+#' @importFrom dplyr %>%
+#' @importFrom data.table %chin%
+#' @rdname survey_points_dmppt2_convert_convention
+#' @export
+survey_points_dmppt2_convert_convention <- function(.data) {
+
+  # change column naming convention
+  if ("survey_mid_calendar_quarter" %chin% names(.data)) {
+    .data <- .data %>%
+      dplyr::rename(
+        year  = .data$survey_mid_calendar_quarter,
+        type  = .data$indicator,
+        mean  = .data$estimate,
+        sd    = .data$std_error,
+        lower = .data$ci_lower,
+        upper = .data$ci_upper
+      )
+  } else if ("dmppt2_circumcision_coverage" %chin% names(.data)) {
+    .data <- .data %>%
+      dplyr::rename(mean = .data$dmppt2_circumcision_coverage)
+  }
+  # Change `type` column values to match that of threemc aggregations
+  .data <- .data %>%
+    dplyr::mutate(
+      dplyr::across(
+        dplyr::matches("type"), ~ dplyr::case_when(
+          . == "circumcised" ~ "MC coverage",
+          . == "circ_medical" ~ "MMC coverage",
+          TRUE ~ "TMC coverage"
+        )
+      )
+    )
+
+  # convert age group to threemc convention (i.e. Y000_004 -> 0-4)
+  if (grepl("Y", .data$age_group[1])) {
+    .data <- change_agegroup_convention(.data)
+  }
+  return(.data)
+}
+
+#### data.table internal functions ####
+
+#' @title Convert vector to string
+#' @description convert a vector like c(1, 4, 3, 2) into a string like
+#' `[1, 4, 3, 2]` (common aggregation method for error messages). See also
+#' `data.table:::brackify()`.
+#' @rdname brackify
+#' @keywords internal
+brackify <- function(x, quote = FALSE) {
+    cutoff <- 10L
+    if (quote && is.character(x)) {
+      x <- paste0("'", utils::head(x, cutoff + 1L), "'")
+    }
+    if (length(x) > cutoff) x <- c(x[seq_len(cutoff)], "...")
+    sprintf("[%s]", toString(x))
+}
+
+#' @title Pattern matching for `data.table`
+#' @description patterns returns the matching indices in the argument `cols`
+#' corresponding to the regular expression patterns provided. The patterns must
+#' be supported by `grep.` See also `data.table:::patterns()`.
+#' @rdname patterns
+#' @keywords internal
+patterns <- function(..., cols = character(0L)) {
+    l <- list(...)
+    p <- unlist(l, use.names = any(nzchar(names(l))))
+    if (!is.character(p)) stop("Input patterns must be of type character.")
+    matched <- lapply(p, grep, cols)
+    idx <- which(sapply(matched, length) == 0L)
+    if (length(idx)) stop("Pattern(s) not found: [%s]", brackify(p[idx]))
+    matched
+}
+

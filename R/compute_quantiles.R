@@ -49,7 +49,8 @@ compute_quantiles <- function(out,
   # function to do "legwork" of computing quantiles
   quantile_fun <- function(.data, probs = probs, names = names, ...) {
     .data <- t(apply(
-      .data, 1, stats::quantile, probs = probs, names = names, ...
+      .data, 1, stats::quantile,
+      probs = probs, names = names, ...
     ))
   }
 
@@ -65,7 +66,7 @@ compute_quantiles <- function(out,
 
   # if we are modelling only MC coverage, only want non-type specific "types"
   samples <- NULL
-  if (!"haz_mmc" %in% names(fit$sample)) {
+  if (!"haz_mmc" %chin% names(fit$sample)) {
     types <- types[!grepl(paste(c("mmc", "tmc"), collapse = "|"), types)]
     # pull corresponding samples for each of these hazards from fit object
     samples <- with(fit$sample, list(haz_mc, surv_mc, inc_mc, cum_inc_mc))

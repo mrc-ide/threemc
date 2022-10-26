@@ -45,66 +45,72 @@
 #' samples and standard deviation report (if desired).
 #' @rdname threemc_fit_model
 #' @export
-threemc_fit_model <- function(
-  fit = NULL, dat_tmb = NULL, mod, parameters = NULL, maps = NULL,
-  randoms = c(
-    "u_time_mmc", "u_age_mmc", "u_space_mmc",
-    "u_agetime_mmc", "u_agespace_mmc", "u_spacetime_mmc",
-    "u_age_tmc", "u_space_tmc", "u_agespace_tmc"
-  ),
-  sample = TRUE, smaller_fit_obj = FALSE, sdreport = FALSE, N = 1000, ...
-) {
+threemc_fit_model <- function(fit = NULL,
+                              dat_tmb = NULL,
+                              mod,
+                              parameters = NULL,
+                              maps = NULL,
+                              randoms = c(
+                                "u_time_mmc", "u_age_mmc", "u_space_mmc",
+                                "u_agetime_mmc", "u_agespace_mmc",
+                                "u_spacetime_mmc", "u_age_tmc",
+                                "u_space_tmc", "u_agespace_tmc"
+                              ),
+                              sample = TRUE,
+                              smaller_fit_obj = FALSE,
+                              sdreport = FALSE,
+                              N = 1000,
+                              ...) {
 
   # for specified "smaller fit" object (i.e. fit which requires resampling)
   if (!is.null(fit)) {
     if (!is.null(fit$sample)) stop("Sample already present in fit object")
     if (!is.null(dat_tmb) || !is.null(parameters)) {
       message(paste0(
-       "No need to specify dat_tmb or parameters for non-null fit, as they are",
-       " replaced by those stored in fit"
+        "No need to specify dat_tmb or parameters for non-null fit, as they",
+        " are replaced by those stored in fit"
       ))
-   }
-   # pull dat_tmb and parameters from small fit
-   dat_tmb <- fit$tmb_data
-   parameters <- split(fit$par.full, names(fit$par.full))
-   init_params <- fit$par_init
-   # pull different parameters depending on whether the model has mmc/tmc split
-   if (mod != "Surv_SpaceAgeTime") {
-     parameters <- parameters[names(fit$par_init)]
-   } else {
-     # only need names and lengths, not values
-     names(init_params) <- stringr::str_remove_all(
-       names(init_params), "_mmc|_tmc"
-     )
-     init_params <- init_params[!duplicated(names(init_params))]
-     parameters <- parameters[names(init_params)]
-     # remove duplicate parameters
-     parameters <- parameters[!duplicated(names(parameters))]
-   }
+    }
+    # pull dat_tmb and parameters from small fit
+    dat_tmb <- fit$tmb_data
+    parameters <- split(fit$par.full, names(fit$par.full))
+    init_params <- fit$par_init
+    # pull different pars depending on whether the model has mmc/tmc split
+    if (mod != "Surv_SpaceAgeTime") {
+      parameters <- parameters[names(fit$par_init)]
+    } else {
+      # only need names and lengths, not values
+      names(init_params) <- stringr::str_remove_all(
+        names(init_params), "_mmc|_tmc"
+      )
+      init_params <- init_params[!duplicated(names(init_params))]
+      parameters <- parameters[names(init_params)]
+      # remove duplicate parameters
+      parameters <- parameters[!duplicated(names(parameters))]
+    }
 
-   if (!is.null(maps)) {
-     # ensure mapped parameters are in the same order as parameters for model
-     mapped_pars <- is.na(names(parameters))
-     param_order <- names(init_params)[mapped_pars]
-     maps <- maps[match(names(maps), param_order)]
+    if (!is.null(maps)) {
+      # ensure mapped parameters are in the same order as parameters for model
+      mapped_pars <- is.na(names(parameters))
+      param_order <- names(init_params)[mapped_pars]
+      maps <- maps[match(names(maps), param_order)]
 
-     # replace NAs in parameters with mapped parameters in par_init
-     parameters[mapped_pars] <- init_params[
-       names(init_params) %in% names(maps)
-     ]
-     names(parameters)[mapped_pars] <- names(maps)
-   }
+      # replace NAs in parameters with mapped parameters in par_init
+      parameters[mapped_pars] <- init_params[
+        names(init_params) %chin% names(maps)
+      ]
+      names(parameters)[mapped_pars] <- names(maps)
+    }
 
-   is_matrix <- sapply(init_params, is.matrix)
-   parameters[is_matrix] <- Map(matrix,
-                             parameters[is_matrix],
-                             nrow = lapply(init_params[is_matrix], nrow),
-                             ncol = lapply(init_params[is_matrix], ncol))
-  # if no fit == NULL, must have non-null dat_tmb & parameters
+    is_matrix <- vapply(init_params, is.matrix, logical(1))
+    parameters[is_matrix] <- Map(matrix,
+      parameters[is_matrix],
+      nrow = lapply(init_params[is_matrix], nrow),
+      ncol = lapply(init_params[is_matrix], ncol)
+    )
+    # if no fit == NULL, must have non-null dat_tmb & parameters
   } else {
-
     if (is.null(dat_tmb) || is.null(parameters)) {
-
       stop("Please specify non-null dat_tmb and parameters")
     }
   }
@@ -117,7 +123,7 @@ threemc_fit_model <- function(
     }
 
     dat_tmb <- remove_type_distinction(
-      dat_tmb[!names(dat_tmb) %in% c("A_mmc", "A_tmc")]
+      dat_tmb[!names(dat_tmb) %chin% c("A_mmc", "A_tmc")]
     )
     names(dat_tmb)[names(dat_tmb) == "A_mc"] <- "A"
 
@@ -126,7 +132,7 @@ threemc_fit_model <- function(
   }
 
   # Only have named random parameters
-  randoms <- randoms[randoms %in% names(parameters)]
+  randoms <- randoms[randoms %chin% names(parameters)]
   if (length(randoms) == 0) randoms <- NULL
 
   # Create TMB object
@@ -208,9 +214,12 @@ threemc_fit_model <- function(
 #'  \code{\link[naomi]{sample_tmb}}
 #' @rdname circ_sample_tmb
 #' @keywords internal
-circ_sample_tmb <- function(
-  fit = NULL, obj = NULL, opt, sdreport = FALSE, nsample = 1000, ...
-  ) {
+circ_sample_tmb <- function(fit = NULL,
+                            obj = NULL,
+                            opt,
+                            sdreport = FALSE,
+                            nsample = 1000,
+                            ...) {
 
   # Getting the TMB into "Naomi" format to sample from using the NAOMI package
   if (is.null(fit)) {
@@ -222,7 +231,7 @@ circ_sample_tmb <- function(
 
   # Look at standard deviation report
   if (sdreport == TRUE) {
-      fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
+    fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
   }
 
   # Generating samples
@@ -249,7 +258,6 @@ circ_sample_tmb <- function(
 #' @rdname minimise_fit_obj
 #' @export
 minimise_fit_obj <- function(fit, dat_tmb, parameters) {
-
   fit_small <- fit
   fit_small$tmb_data <- dat_tmb
   fit_small$par_init <- parameters

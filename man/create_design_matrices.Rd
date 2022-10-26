@@ -4,7 +4,7 @@
 \alias{create_design_matrices}
 \title{Create Design Matrices}
 \usage{
-create_design_matrices(dat, area_lev = NULL, k_dt = 5)
+create_design_matrices(dat, area_lev = NULL, k_dt = 5, inc_time_tmc = FALSE)
 }
 \arguments{
 \item{dat}{Shell dataset (datputted by \link[threemc]{create_shell_dataset}
@@ -15,6 +15,9 @@ unique record.}
 \item{area_lev}{Desired admin boundary level to perform the analysis on.}
 
 \item{k_dt}{Age knot spacing in spline definitions, Default: 5}
+
+\item{inc_time_tmc}{Indicator variable which decides whether to include
+temporal random effects for TMC as well as MMC, Default: FALSE}
 }
 \value{
 List of design matrices for fixed and random effects for medical
