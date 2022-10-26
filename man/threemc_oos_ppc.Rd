@@ -9,7 +9,7 @@ threemc_oos_ppc(
   out,
   populations,
   survey_estimate,
-  removed_years,
+  removed_years = NULL,
   type = "coverage",
   area_lev = 1,
   age_groups = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39",
@@ -34,7 +34,8 @@ TMB model.}
 from surveys.}
 
 \item{removed_years}{Years removed from dataset used to fit model
-(i.e. "withheld" surveys from OOS model fitting).}
+(i.e. "withheld" surveys from OOS model fitting). Optionally, can specify as
+NULL to perform non-OOS PPC using all surveys, Default: NULL}
 
 \item{type}{The desired circumcision estimate. Can be one of
 "probability", "incidence" or "coverage".}
@@ -49,7 +50,7 @@ c("0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
 "10-29", "15-39", "10-39", "15-49", "10-49")}
 
 \item{CI_range}{CI interval about which you want to compare empirical and
-posterior predictive estimates for left out surveys.}
+posterior predictive estimates for left out surveys, Default = 0.95}
 
 \item{N}{Number of samples to generate, Default: 1000}
 

@@ -22,7 +22,7 @@
 #' "0+",    "10+",   "15+",   "15-24", "10-24", 15-29",
 #' "10-29", "15-39", "10-39", "15-49", "10-49")
 #' @param CI_range CI interval about which you want to compare empirical and
-#' posterior predictive estimates for left out surveys.
+#' posterior predictive estimates for left out surveys, Default = 0.95
 #' @param N Number of samples to generate, Default: 1000
 #' @param compare_stats Set to TRUE if you wish to compute comparative
 #' statistics (specifically, ELPD and CRPS) to compare with alternative models,
