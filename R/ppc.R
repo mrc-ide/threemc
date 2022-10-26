@@ -253,22 +253,24 @@ threemc_oos_ppc <- function(fit,
         x <= N - 0.5 * (1 - CI_range) * N
     ) / length(x)
   }
+  CI_range <- sort(CI_range)
+  oos_within_ppd_percent <- vapply(CI_range, function(x) {
+    oos_within_ppd(survey_estimate_ppd$quant_pos_final, x)
+  }, numeric(1)) 
+  names(oos_within_ppd_percent) <- CI_range
   
-  oos_within_ppd_percent <- oos_within_ppd(
-    survey_estimate_ppd$quant_pos_final, CI_range
-  )
-  print(paste0(
-    "Percentage of survey points which fall within posterior predictive",
-    " distribution at ",
-    # 95%
-    CI_range * 100,
-    "%",
-    " CI: ",
-    round(oos_within_ppd_percent * 100, 2),
-    "%"
-  ))
-
-  # TODO: Add option to include additional summary statistics
+  message <- lapply(seq_along(CI_range), function(i) {
+    print(paste0(
+      "Percentage of survey points which fall within posterior predictive",
+      " distribution at ",
+      CI_range[[i]] * 100,
+      "%",
+      " CI: ",
+      round(oos_within_ppd_percent[[i]][1] * 100, 2),
+      "%"
+    ))   
+  })
+  
   summary_stats <- list(
     "oos_observations_within_PPD_CI" = oos_within_ppd_percent
   )
