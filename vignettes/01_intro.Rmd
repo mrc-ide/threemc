@@ -1,0 +1,243 @@
+---
+title: "my-vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to threemc}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+`threemc` (or "Matt's model for male circumcision") is a Bayesian 
+multilevel spatio-temporal, competing-risks, time-to-event model for, 
+unsurprisingly, male circumcision. Circumcision is split between two types (or 
+"competing-risks", along with being uncircumcised), medical male circumcision 
+(MMC) and traditional male circumcision (TMC). The model is stratified by age, 
+location and time, and also includes interaction terms for these variables. 
+
+In this vignette, we will go through a simple example of how to fit 
+`threemc` to an example dataset from Malawi. 
+(NOTE: Do I need to "scramble" this data somehow??? Perhaps I should remove 
+the household id etc columns, as they're unneeded)
+
+First, we'll set load the prerequisite packages, which won't be too many 
+beyond  `threemc` itself.
+```{r setup}
+# check that all these packages are needed!
+library(dplyr)
+library(ggplot2)
+library(threemc)
+
+# Revert to using planar rather than spherical geometry in `sf`
+sf::sf_use_s2(FALSE)
+```
+
+TODO: 
+1. Describe model 
+2. Load and describe data 
+3. Walk through script
+4. Create some nice initial plots
+
+## Metadata ##
+
+```{r metadata}
+cntry <- "MWI"
+cens_age <- 59 # max year to model
+N <- 1000 # number of samples to draw for posterior predictive distribution
+start_year <- 2008 # year to begin predictions 
+forecast_year <- 2021 # predictions up to this year
+
+mod <- "Surv_SpaceAgeTime_ByType_withUnknownType"
+
+area_lev <- threemc::datapack_psnu_area_level %>% 
+  filter(iso3 == cntry) %>% 
+  pull(psnu_area_level)
+```
+
+
+## Data
+
+```{r load_data}
+survey_circumcision <- threemc::demo_survey_circumcision
+areas <- threemc::demo_areas %>% 
+  dplyr::mutate(space = row_number()) # may cause an error from removing rows in areas?
+populations <- threemc::demo_populations
+```
+
+## Prepare Survey Data 
+
+```{r preprocess_surveys}
+# pull latest censoring year from survey_id
+survey_years <- unique(survey_circumcision$survey_id)
+cens_year <- max(survey_years)
+
+# Prepare circ data, and normalise survey weights and apply Kish coefficients.
+survey_circ_preprocess <- prepare_survey_data(
+  areas               = areas,
+  survey_circumcision = survey_circumcision,
+  area_lev            = area_lev,
+  start_year          = start_year,
+  cens_year           = cens_year,
+  cens_age            = cens_age
+)
+```
+
+## Create Shell Dataset 
+
+```{r create_shell_data}
+out <- create_shell_dataset(
+    survey_circumcision = survey_circ_preprocess,
+    populations         = populations,
+    areas               = areas,
+    area_lev            = area_lev,
+    start_year          = start_year,
+    end_year            = forecast_year,
+    time1               = "time1",
+    time2               = "time2",
+    strat               = "space",
+    age                 = "age",
+    circ                = "indweight_st"
+)
+```
+
+## Model Fit Matrices
+
+```{r prepare_model_data}
+dat_tmb <- threemc_prepare_model_data(
+    out               = out,
+    areas             = areas,
+    area_lev          = area_lev,
+    aggregated        = TRUE,
+    weight            = "population" # ,
+    # rw_order          = rw_order,
+    # paed_age_cutoff   = paed_age_cutoff,
+    # inc_time_tmc      = inc_time_tmc
+)
+```
+
+
+## Specify model and initialise parameters 
+
+```{r initialise}
+# Initial values
+parameters <- with(
+  dat_tmb,
+  list(
+    # intercept
+    "u_fixed_mmc"            = rep(-5, ncol(X_fixed_mmc)),
+    "u_fixed_tmc"            = rep(-5, ncol(X_fixed_tmc)),
+    # age random effect
+    "u_age_mmc"              = rep(0, ncol(X_age_mmc)),
+    "u_age_tmc"              = rep(0, ncol(X_age_tmc)),
+    # time random effect for (non-paed) MMC
+    "u_time_mmc"             = rep(0, ncol(X_time_mmc)),
+    # time random effect for TMC
+    # "u_time_tmc"             = rep(0, ncol(X_time_tmc)),
+    # Space random effect (district)
+    "u_space_mmc"            = rep(0, ncol(X_space_mmc)),
+    "u_space_tmc"            = rep(0, ncol(X_space_tmc)),
+    # Interactions for MMC
+    "u_agetime_mmc"          = matrix(0, ncol(X_age_mmc), ncol(X_time_mmc)),
+    "u_agespace_mmc"         = matrix(0, ncol(X_age_mmc), ncol(X_space_mmc)),
+    "u_spacetime_mmc"        = matrix(0, ncol(X_time_mmc), ncol(X_space_mmc)),
+    # Interactions for TMC
+    "u_agespace_tmc"         = matrix(0, ncol(X_age_tmc), ncol(X_space_tmc)),
+    # Autocorrelation parameters for priors
+    # Variance
+    "logsigma_age_mmc"            = 0,
+    "logsigma_time_mmc"           = 0,
+    "logsigma_space_mmc"          = 0,
+    "logsigma_agetime_mmc"        = 0,
+    "logsigma_agespace_mmc"       = 0,
+    "logsigma_spacetime_mmc"      = 0,
+    "logsigma_age_tmc"            = 0,
+    # "logsigma_time_tmc"           = 0,
+    "logsigma_space_tmc"          = 0,
+    "logsigma_agespace_tmc"       = 0,
+    # Mean
+    "logitrho_mmc_time1"          = 2,
+    "logitrho_mmc_time2"          = 2,
+    "logitrho_mmc_time3"          = 2,
+    "logitrho_mmc_age1"           = 2,
+    "logitrho_mmc_age2"           = 2,
+    "logitrho_mmc_age3"           = 2,
+    # "logitrho_tmc_time1"          = 2,
+    "logitrho_tmc_age1"           = 2,
+    "logitrho_tmc_age2"           = 2
+  )
+)
+```
+
+
+## Fit Model 
+
+```{r fit_model, results= "hide"}
+# fit model with TMB
+fit <- threemc_fit_model(
+    dat_tmb    = dat_tmb,
+    mod        = mod,
+    parameters = parameters,
+    randoms    = c(
+        "u_time_mmc", "u_age_mmc", "u_age_mmc_paed", "u_space_mmc",
+        "u_agetime_mmc", "u_agespace_mmc", "u_agespace_mmc_paed",
+        "u_spacetime_mmc",
+        "u_time_tmc", "u_age_tmc", "u_space_tmc", "u_agespace_tmc"
+    ),
+    N          = N
+)
+```
+
+
+## Assess Fit 
+
+```{r quantiles}
+# subset to specific area level and calculate quantiles for rates and hazard
+out_spec <- compute_quantiles(out, fit, area_lev = area_lev)
+```
+
+```{r plot_coverage}
+ggplot(out_spec,
+       aes(x = age,
+           y = cum_incM,
+           ymin = cum_incL,
+           ymax = cum_incU,
+           group = as.factor(year),
+           colour = as.factor(year))) +
+  geom_ribbon(fill = "lightgrey",
+              colour = NA) +
+  geom_line(size = 1) +
+  scale_y_continuous(labels = scales::label_percent()) +
+  labs(x = "Age",
+       y = "Coverage",
+       colour = "") +
+  theme_bw() +
+  facet_wrap(. ~ area_name)
+```
+
+```{r plot_rates}
+ggplot(
+  out_spec,
+  aes(
+    x = age,
+    y = rateM,
+    ymin = rateL,
+    ymax = rateU,
+    group = as.factor(year),
+    colour = as.factor(year)
+  )
+) +
+  geom_ribbon(fill = "lightgrey", colour = NA) +
+  geom_line(size = 1) +
+  scale_y_continuous(labels = scales::label_percent()) +
+  labs(x = "Age",
+       y = "Rates",
+       colour = "") +
+  theme_bw() +
+  facet_wrap(. ~ area_name)
+```
