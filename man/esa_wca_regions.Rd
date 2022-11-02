@@ -5,7 +5,7 @@
 \alias{esa_wca_regions}
 \title{WCA - ESA key for Sub-Saharan African countries}
 \format{
-A \code{data.frame} with 38 rows and 3 variables:
+A \code{data.frame} with 38 rows and 3 variables.
 }
 \usage{
 data(esa_wca_regions)
