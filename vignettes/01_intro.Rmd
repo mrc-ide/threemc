@@ -29,10 +29,13 @@ the household id etc columns, as they're unneeded)
 First, we'll set load the prerequisite packages, which won't be too many 
 beyond  `threemc` itself.
 ```{r setup}
-# check that all these packages are needed!
+# for analysis
 library(dplyr)
-library(ggplot2)
 library(threemc)
+
+# for plotting
+library(ggplot2)
+library(scales)
 
 # Revert to using planar rather than spherical geometry in `sf`
 sf::sf_use_s2(FALSE)
@@ -66,7 +69,7 @@ area_lev <- threemc::datapack_psnu_area_level %>%
 ```{r load_data}
 survey_circumcision <- threemc::demo_survey_circumcision
 areas <- threemc::demo_areas %>% 
-  dplyr::mutate(space = row_number()) # may cause an error from removing rows in areas?
+  mutate(space = row_number()) # may cause an error from removing rows in areas?
 populations <- threemc::demo_populations
 ```
 
@@ -202,20 +205,21 @@ out_spec <- compute_quantiles(out, fit, area_lev = area_lev)
 ```
 
 ```{r plot_coverage}
-ggplot(out_spec,
-       aes(x = age,
-           y = cum_incM,
-           ymin = cum_incL,
-           ymax = cum_incU,
-           group = as.factor(year),
-           colour = as.factor(year))) +
-  geom_ribbon(fill = "lightgrey",
-              colour = NA) +
+ggplot(
+  out_spec,
+  aes(
+    x = age,
+    y = cum_incM,
+    ymin = cum_incL,
+    ymax = cum_incU,
+    group = as.factor(year),
+    colour = as.factor(year)
+  )
+) +
+  geom_ribbon(fill = "lightgrey", colour = NA) +
   geom_line(size = 1) +
-  scale_y_continuous(labels = scales::label_percent()) +
-  labs(x = "Age",
-       y = "Coverage",
-       colour = "") +
+  scale_y_continuous(labels = label_percent()) +
+  labs(x = "Age", y = "Coverage", colour = "") +
   theme_bw() +
   facet_wrap(. ~ area_name)
 ```
@@ -234,10 +238,8 @@ ggplot(
 ) +
   geom_ribbon(fill = "lightgrey", colour = NA) +
   geom_line(size = 1) +
-  scale_y_continuous(labels = scales::label_percent()) +
-  labs(x = "Age",
-       y = "Rates",
-       colour = "") +
+  scale_y_continuous(labels = label_percent()) +
+  labs(x = "Age", y = "Rates", colour = "") +
   theme_bw() +
   facet_wrap(. ~ area_name)
 ```
