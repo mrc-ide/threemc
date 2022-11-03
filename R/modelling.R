@@ -259,3 +259,124 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
 
   return(fit_small)
 }
+
+#### Initialise parameters ####
+
+#' @title Initialise `thremec` (hyper)parameters.
+#' @description Return minimised fit object. Often useful when saving the fit
+#' object for later aggregation.
+#' @inheritParams prepare_survey_data
+#' @inheritParams threemc_fit_model
+#' @inheritParams threemc_prepare_model_data
+#' @param custom_init named \code{list} of custom fixed and random
+#' model parameters you want to supersede "hardcoded" defaults, default = NULL.
+#' @return Named \code{list} of intial (hyper)parameters for
+#' `threemc_fit_model`
+#' @rdname threemc_initial_pars
+#' @export
+threemc_initial_pars <- function(dat_tmb,
+                                 custom_init = NULL,
+                                 rw_order = NULL,
+                                 paed_age_cutoff = NULL,
+                                 inc_time_tmc = FALSE) {
+
+
+  # Create dummy matrices if not in dat_tmb for particular model specification:
+
+  # dummy paediatric MMC matrices
+  if (is.null(paed_age_cutoff)) {
+    X_fixed_mmc_paed <- X_age_mmc_paed <- X_space_mmc_paed <- data.frame(0)
+  }
+
+  # dummy time TMC matrices
+  if (inc_time_tmc == FALSE) {
+    X_time_tmc <- data.frame(0)
+  }
+
+  # Initial values
+  parameters <- with(
+    dat_tmb,
+    list(
+      # intercept
+      "u_fixed_mmc"            = rep(-5, ncol(X_fixed_mmc)),
+      "u_fixed_mmc_paed"       = rep(-5, ncol(X_fixed_mmc_paed)),
+      "u_fixed_tmc"            = rep(-5, ncol(X_fixed_tmc)),
+      # age random effect
+      "u_age_mmc"              = rep(0, ncol(X_age_mmc)),
+      "u_age_mmc_paed"         = rep(0, ncol(X_age_mmc_paed)),
+      "u_age_tmc"              = rep(0, ncol(X_age_tmc)),
+      # time random effect for (non-paed) MMC
+      "u_time_mmc"             = rep(0, ncol(X_time_mmc)),
+      # time random effect for TMC
+      "u_time_tmc"             = rep(0, ncol(X_time_tmc)),
+      # Space random effect (district)
+      "u_space_mmc"            = rep(0, ncol(X_space_mmc)),
+      "u_space_mmc_paed"       = rep(0, ncol(X_space_mmc_paed)),
+      "u_space_tmc"            = rep(0, ncol(X_space_tmc)),
+      # Interactions for MMC
+      "u_agetime_mmc"          = matrix(0, ncol(X_age_mmc), ncol(X_time_mmc)),
+      "u_agespace_mmc"         = matrix(0, ncol(X_age_mmc), ncol(X_space_mmc)),
+      "u_spacetime_mmc"        = matrix(
+        0, ncol(X_time_mmc), ncol(X_space_mmc)
+      ),
+      "u_agespace_mmc_paed"    = matrix(
+        0, ncol(X_age_mmc_paed), ncol(X_space_mmc_paed)
+      ),
+      # Interactions for TMC
+      "u_agespace_tmc"         = matrix(0, ncol(X_age_tmc), ncol(X_space_tmc)),
+      # Autocorrelation parameters for priors
+      # Variance
+      "logsigma_age_mmc"            = 0,
+      "logsigma_age_mmc_paed"       = 0,
+      "logsigma_time_mmc"           = 0,
+      "logsigma_space_mmc"          = 0,
+      "logsigma_space_mmc_paed"     = 0,
+      "logsigma_agetime_mmc"        = 0,
+      "logsigma_agespace_mmc"       = 0,
+      "logsigma_agespace_mmc_paed"  = 0,
+      "logsigma_spacetime_mmc"      = 0,
+      "logsigma_age_tmc"            = 0,
+      "logsigma_time_tmc"           = 0,
+      "logsigma_space_tmc"          = 0,
+      "logsigma_agespace_tmc"       = 0,
+      # Mean
+      "logitrho_mmc_time1"          = 2,
+      "logitrho_mmc_time2"          = 2,
+      "logitrho_mmc_time3"          = 2,
+      "logitrho_mmc_age1"           = 2,
+      "logitrho_mmc_paed_age1"      = 2,
+      "logitrho_mmc_age2"           = 2,
+      "logitrho_mmc_paed_age2"      = 2,
+      "logitrho_mmc_age3"           = 2,
+      "logitrho_tmc_time1"          = 2,
+      "logitrho_tmc_age1"           = 2,
+      "logitrho_tmc_age2"           = 2
+    )
+  )
+
+  # remove paed-related parameters if not desired
+  if (is.null(paed_age_cutoff)) {
+    parameters <- parameters[!grepl("paed", names(parameters))]
+  }
+
+  # remove mmc time correlation parameters, if fitting with RW precision matrix
+  if ("Q_time" %in% names(dat_tmb)) {
+    parameters <- parameters[!grepl("logitrho_mmc_time", names(parameters))]
+  }
+
+  # remove time tmc terms, if not fitting model with non-constant tmc over time
+  if (inc_time_tmc == FALSE) {
+    parameters <- parameters[
+      !names(parameters) %in% c(
+        "u_time_tmc", "logsigma_time_tmc", "logitrho_tmc_time1"
+      )
+    ]
+  }
+
+  # Allow for any custom changes to parameter values
+  if (!is.null(custom_init)) {
+    parameters[names(parameters) == names(custom_init)] <- custom_init
+  }
+
+  return(parameters)
+}
