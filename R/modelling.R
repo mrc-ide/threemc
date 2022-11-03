@@ -47,7 +47,7 @@
 #' @export
 threemc_fit_model <- function(fit = NULL,
                               dat_tmb = NULL,
-                              mod,
+                              mod = NULL,
                               parameters = NULL,
                               maps = NULL,
                               randoms = c(
@@ -62,10 +62,49 @@ threemc_fit_model <- function(fit = NULL,
                               N = 1000,
                               ...) {
 
+  
+  # If model is not specified, allow function to choose based on dat_tmb
+  # This also abstracts esoteric model specification from the user
+  if (is.null(mod)) {
+    
+    if (!is.null(parameters)) {
+      param_names <- names(parameters)
+    } else if (!is.null(fit)) {
+      param_names <- names(fit$par)
+      # add mapped parameters which won't be in fit$par, if appropriate
+      if (!is.null(maps)) param_names <- c(param_names, names(maps))
+    } else {
+      stop("Please provide one of `parameters` or `fit`")
+    }
+    
+    # Start with model with no type information
+    mod <- "Surv_SpaceAgeTime"
+    
+    # if there are MMC related param_names terms, use model with MMC/TMC split
+    if ("u_age_mmc" %in% param_names) {
+      mod <- paste0(mod, "_ByType_withUnknownType")
+    }
+    
+    # if there are no correlation hyperparameters, use random walk model
+    if (!any(grepl("logitrho", names(parameters)))) {
+      mod <- paste0(mod, "_RW")
+    }
+
+    # if there is a time term for TMC, use the model with non-constant TMC
+    if ("u_time_tmc" %in% param_names) {
+      mod <- paste0(mod, "2")
+    }
+  }
+  
+  if (is.null(mod)) stop("Please provide one of `mod`, `parameters` or `fit`")
+  
   # for specified "smaller fit" object (i.e. fit which requires resampling)
   if (!is.null(fit)) {
-    if (!is.null(fit$sample)) stop("Sample already present in fit object")
-    if (!is.null(dat_tmb) || !is.null(parameters)) {
+    if (!is.null(fit$sample)) {
+      message("Sample already present in fit object, returning `fit`")
+      return(fit)
+    }
+    if (!is.null(dat_tmb)) {
       message(paste0(
         "No need to specify dat_tmb or parameters for non-null fit, as they",
         " are replaced by those stored in fit"
