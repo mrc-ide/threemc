@@ -534,4 +534,3 @@ normalise_weights_kish <- function(survey_circumcision,
     ) %>%
     dplyr::mutate(indweight_st = .data$indweight_st / .data$ratio)
 }
-
