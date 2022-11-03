@@ -1,8 +1,8 @@
 ---
-title: "my-vignette"
+title: "Introduction"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to threemc}
+  %\VignetteIndexEntry{Introduction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,23 +14,24 @@ knitr::opts_chunk$set(
 )
 ```
 
-`threemc` (or "Matt's model for male circumcision") is a Bayesian 
-multilevel spatio-temporal, competing-risks, time-to-event model for, 
-unsurprisingly, male circumcision. Circumcision is split between two types (or 
-"competing-risks", along with being uncircumcised), medical male circumcision 
-(MMC) and traditional male circumcision (TMC). The model is stratified by age, 
-location and time, and also includes interaction terms for these variables. 
+This vignette serves as an introduction to `threemc` (or "Matt's model for male 
+circumcision"), a Bayesian multilevel spatio-temporal, competing-risks, 
+time-to-event model for, unsurprisingly, male circumcision. 
 
-In this vignette, we will go through a simple example of how to fit 
-`threemc` to an example dataset from Malawi. 
-(NOTE: Do I need to "scramble" this data somehow??? Perhaps I should remove 
-the household id etc columns, as they're unneeded)
+Circumcision is split between two types (or "competing-risks", along with being 
+uncircumcised), medical male circumcision (MMC) and traditional male 
+circumcision (TMC). The model is stratified by age, location and time, and also 
+includes interaction terms between these variables. 
 
-First, we'll set load the prerequisite packages, which won't be too many 
-beyond  `threemc` itself.
+We will go through a simple example of how to fit `threemc` to an example 
+dataset from Malawi. 
+
+First, load the prerequisite packages, which won't be too many beyond 
+`threemc` itself.
 ```{r setup}
 # for analysis
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
+library(sf)
 library(threemc)
 
 # for plotting
@@ -38,7 +39,7 @@ library(ggplot2)
 library(scales)
 
 # Revert to using planar rather than spherical geometry in `sf`
-sf::sf_use_s2(FALSE)
+sf_use_s2(FALSE)
 ```
 
 TODO: 
@@ -49,32 +50,66 @@ TODO:
 
 ## Metadata ##
 
+Next, set the following metadata (to avoid "magic numbers") for our analysis:
 ```{r metadata}
-cntry <- "MWI"
-cens_age <- 59 # max year to model
-N <- 1000 # number of samples to draw for posterior predictive distribution
-start_year <- 2008 # year to begin predictions 
+cntry <- "MWI"        # iso3 code for country to model 
+cens_age <- 59        # maximum circumcision age to include in model, after which we censor
+N <- 1000             # N samples drawn from posterior predictive distribution
+start_year <- 2008    # year to begin predictions 
 forecast_year <- 2021 # predictions up to this year
 
+# Model to fit (assumes constant TMC over time and uses an AR 1 temporal prior)
 mod <- "Surv_SpaceAgeTime_ByType_withUnknownType"
 
+# PSNU recommended area level for modelled country
 area_lev <- threemc::datapack_psnu_area_level %>% 
   filter(iso3 == cntry) %>% 
   pull(psnu_area_level)
+area_lev
 ```
+
+For this example, we will use the "standard" `threemc` model, 
+"Surv_SpaceAgeTime_ByType_withUnknownType", which does not include any time 
+effects for TMC (i.e. it assumes that TMC practises have not changed over time) 
+(yes, the models need to be given more intuitive names, or abstracted from 
+the user!).
+
+Note that `threemc` contains the dataset `datapack_psnu_area_level`, which 
+has the recommended PSNU ("Primary Sampling Unit") area level to fit each 
+country at. For Malawi, this is area level 5, which corresponds to
+"Health District + Cities". Each area level has a different meaning for each 
+county, but in general, higher values correspond to more granular regions.
 
 
 ## Data
 
+Next, we load our required datasets. Note that this data is normally 
+loaded using `read_circ_data`, which avoids having to switch between 
+`readr::read_csv` and `sf::read_sf`, and makes repeated filtering more terse. 
+However, the demo data we will use in this analysis is directly included in 
+`threemc`, so we can just assign it to the global environment from 
+there (could be worded better?)
+
 ```{r load_data}
+#' # "Normal" data loading procedure (same for areas, surveys and pops)
+#' filters = c("iso3" = cntry, "sex" = male)
+#' survey_circumcision = read_circ_data(
+#'   path    = "path/to/survey_circumcision", 
+#'   filters = filters
+#' ) 
 survey_circumcision <- threemc::demo_survey_circumcision
 areas <- threemc::demo_areas %>% 
-  mutate(space = row_number()) # may cause an error from removing rows in areas?
+  mutate(space = row_number()) # Add unique identifier for each area
 populations <- threemc::demo_populations
 ```
 
+For more information on these datasets and what they contain, please see their 
+respective help files (using `help("demo_survey_circumcision)"`).
+
+
 ## Prepare Survey Data 
 
+We now preprocess our survey data.
 ```{r preprocess_surveys}
 # pull latest censoring year from survey_id
 survey_years <- unique(survey_circumcision$survey_id)
@@ -89,10 +124,41 @@ survey_circ_preprocess <- prepare_survey_data(
   cens_year           = cens_year,
   cens_age            = cens_age
 )
+head(survey_circ_preprocess)
 ```
+
+Amongst other things, `prepare_survey_data`:   
+- Removes rows with missing essential information (e.g. circumcision status),
+and identifies surveys which are excluded due to missing data,  
+- Censors circumcisions at `cens_age` and `cens_year`, for circumcision age 
+and year, respectively,  
+- sets the desired area level of aggregation for each survey, reassigning 
+surveys at a more granular level to the specified `area_lev` (e.g. MWI_6_309 
+(STA Tombondiya), a "Traditional Authority" is reassigned to it's 
+"Health District + Cities", MWI_5_22 (Mulanje)),  
+- Identifies left (i.e. those circumcised at an unknown age, labelled with the 
+column `event` == 1) and right (i.e. still uncircumcised, labelled with 
+`event` == 2) individuals (those uncensored have `event` == 0),  
+- Uses `circ_who` and `circ_where` to determine circumcision `type`,  
+- Identifies surveys for which this type information is unavailable, and
+- normalises survey weights and applies Kish coefficient.  
+
+In these Malawi surveys, we do see the presence of some left censoring, but 
+thankfully every survey contains enough valid circumcision data to be used.
+
 
 ## Create Shell Dataset 
 
+
+We would like to make predictions for each unique combination of:  
+- each `area_id` in `survey_circ_preprocess`,  
+- circumcision ages 0-`cens_age`,  
+- circumcision years from `start_year`-`forecast_year`, and  
+- each type of circumcision (TMC, MMC and for "Missing" type, which can 
+still be used when modelling Total MC).
+
+To that end, we use `create_shell_dataset` to use our shapefiles and 
+preprocessed surveys to create, well, a shell dataset!
 ```{r create_shell_data}
 out <- create_shell_dataset(
     survey_circumcision = survey_circ_preprocess,
@@ -107,25 +173,47 @@ out <- create_shell_dataset(
     age                 = "age",
     circ                = "indweight_st"
 )
+head(out)
 ```
+
+For each of these unique combinations, `create_shell_dataset` also 
+adds their respective `population` from `populations`, and calculates:   
+- `N`, the person years, and  
+- `obs_mmc`, `obs_tmc` `obs_mc` (representing those with "Missing" 
+circumcision type), `cens` and `icens`, the observed rate of circumcision for 
+each circumcision type, and that which is censored and interval censored, 
+respectively.  
+
+It is *very* important that `out` is not missing any `population` values, which 
+will create problems in subsequent design matrices that will cause the model 
+to fail when fitting. 
+```{r check_na_pops}
+all(!is.na(out$population))
+```
+
 
 ## Model Fit Matrices
 
+The final step before fitting our model is to prepare our model data. 
+The function `threemc_prepare_model_data` outputs a list, and calculates:
+- design matrices for fixed effects and temporal, age, space and
+  interaction random effects, ()  
+- integration matrices for selecting the instantaneous hazard rate,  
+- survival matrices for MMC, TMC, censored and left censored, and  
+- the precision/adjacency matrix for the spatial random effect.  
+
 ```{r prepare_model_data}
 dat_tmb <- threemc_prepare_model_data(
-    out               = out,
-    areas             = areas,
-    area_lev          = area_lev,
-    aggregated        = TRUE,
-    weight            = "population" # ,
-    # rw_order          = rw_order,
-    # paed_age_cutoff   = paed_age_cutoff,
-    # inc_time_tmc      = inc_time_tmc
+    out      = out,
+    areas    = areas,
+    area_lev = area_lev
 )
 ```
 
+We have implicitly chosen an AR 1 temporal prior here because we have not 
+specified the `rw_order` parameter.
 
-## Specify model and initialise parameters 
+## Initialise parameters 
 
 ```{r initialise}
 # Initial values
@@ -160,7 +248,6 @@ parameters <- with(
     "logsigma_agespace_mmc"       = 0,
     "logsigma_spacetime_mmc"      = 0,
     "logsigma_age_tmc"            = 0,
-    # "logsigma_time_tmc"           = 0,
     "logsigma_space_tmc"          = 0,
     "logsigma_agespace_tmc"       = 0,
     # Mean
@@ -170,7 +257,6 @@ parameters <- with(
     "logitrho_mmc_age1"           = 2,
     "logitrho_mmc_age2"           = 2,
     "logitrho_mmc_age3"           = 2,
-    # "logitrho_tmc_time1"          = 2,
     "logitrho_tmc_age1"           = 2,
     "logitrho_tmc_age2"           = 2
   )
@@ -205,8 +291,16 @@ out_spec <- compute_quantiles(out, fit, area_lev = area_lev)
 ```
 
 ```{r plot_coverage}
+# remove some years to show change more clearly
+out_plot <- out_spec %>% 
+  filter(
+    year %in% c(
+      start_year, ceiling((start_year + forecast_year) / 2), forecast_year
+    )
+  )
+
 ggplot(
-  out_spec,
+  out_plot,
   aes(
     x = age,
     y = cum_incM,
@@ -216,17 +310,23 @@ ggplot(
     colour = as.factor(year)
   )
 ) +
-  geom_ribbon(fill = "lightgrey", colour = NA) +
-  geom_line(size = 1) +
-  scale_y_continuous(labels = label_percent()) +
+  geom_ribbon(fill = "lightgrey", colour = NA) + # add uncertainty bounds
+  geom_line(size = 1) +                          # mean year predictions 
+  facet_wrap(. ~ area_name)                      # split by area
+  scale_y_continuous(labels = label_percent()) + # label y-axis with percent
   labs(x = "Age", y = "Coverage", colour = "") +
-  theme_bw() +
-  facet_wrap(. ~ area_name)
+  theme_bw() + 
+  theme(
+    legend.position  = "bottom",  # place legend on bottom
+    legend.text      = element_text(size = 12),
+    strip.background = element_rect(fill = NA, colour = "white"), # col facets
+    panel.background = element_rect(fill = NA, color = "black")   # col panels
+  )
 ```
 
 ```{r plot_rates}
 ggplot(
-  out_spec,
+  out_plot,
   aes(
     x = age,
     y = rateM,
