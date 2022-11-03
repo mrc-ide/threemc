@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">threemc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.27</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.29</span>
       </span>
     </div>
 
@@ -47,6 +47,12 @@
       <small>Source: <a href="https://github.com/mrc-ide/threemc/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.29" id="threemc-0129">threemc 0.1.29<a class="anchor" aria-label="anchor" href="#threemc-0129"></a></h2>
+<ul><li>Can have <code>threemc_fit_model</code> choose <code>mod</code> itself based on parameters in either <code>parameters</code> (for new fits) or <code>fit$par</code> (for re-sampling from fits). Like 0.1.28, this update abstracts model specification from the end user, which involves generally involves setting a global variable <code>mod</code> to a quite “esoteric” model name, such as “Surv_SpaceAgeTime_ByType_withUnknownType_RW2”. Instead, the user can simply specify the much more intuitive parameters <code>rw_order</code> and <code>include_tmc</code> to <code>threemc_prepare_model_data</code>, simplifying their experience.</li></ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.28" id="threemc-0128">threemc 0.1.28<a class="anchor" aria-label="anchor" href="#threemc-0128"></a></h2>
+<ul><li>new function <code>threemc_initial_pars</code> to abstract initial hyperparameter specification from the end user. In scripts, this section is quite long and ugly and in general can often go wrong due to parameter order etc, so it is best to abstract this functionality. Defaults can still be overridden (e.g.  when we want to fit a model with “mapped”/fixed hyperparameters) by specifying the <code>custom_init</code> argument using a named list of parameter values.</li></ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.1.27" id="threemc-0127">threemc 0.1.27<a class="anchor" aria-label="anchor" href="#threemc-0127"></a></h2>
 <ul><li>In <code>prepare_survey_data</code>, fill <code>NA</code> populations for earlier years than we have data for with the earliest known value for each <code>age</code> and <code>area_id</code>.</li></ul></div>
