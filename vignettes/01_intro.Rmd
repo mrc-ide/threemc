@@ -4,8 +4,6 @@ output: rmarkdown::html_vignette
 # toc: true
 bibliography: library.bib
 csl: plos-one.csl
-fig_width: 10
-fig_height: 8
 vignette: >
   %\VignetteIndexEntry{Introduction to `threemc`}
   %\VignetteEngine{knitr::rmarkdown}
@@ -20,8 +18,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-2. Fix plots 
-
 ## Introduction
 
 This vignette serves as an introduction to `threemc` (or "Matt's model for male 
@@ -33,19 +29,7 @@ cumulative incidence (i.e. circumcision coverage) [@thomas_multi-level_2021].
 Circumcision is split between two types (which form our "competing-risks", 
 along with being uncircumcised), medical male circumcision (MMC) and 
 traditional male circumcision (TMC). The model is stratified by age, location 
-and time, and also includes interaction terms between these variables. 
-
-<!-- `threemc` is implemented in `TMB`, which maximises the Laplace approximation  -->
-<!-- of the marginal likelihood using automatic differentiation (AD) on the joint  -->
-<!-- likelihood. `TMB` models can be optimised with R's built in optimisers, such  -->
-<!-- as `stats::nlminb`. `TMB` is particularly fast in comparison to other methods  -->
-<!-- when there are many random effects, such as are commonly found in  -->
-<!-- spatio-temporal models such as `threemc`, and also allows a lot of flexibility  -->
-<!-- in model specification thorugh it's use of a C++ template function.  -->
-<!-- (REFERENCE) (Could word better) -->
-
-<!-- `threemc` is implemented in `TMB`, which contructs an objective function in  -->
-<!-- the negative joint log-likelihood ??? -->
+and time, and also includes interaction terms between these variables.  
 
 `threemc` is implemented in Template Model Builder (`TMB`).
 TMB is an R package that enables users to flexibly fit latent process/variable 
@@ -349,17 +333,24 @@ is treated with greater detail in the aggregation vignette.
 We can have a quick look at our model predictions by plotting some of our 
 results. For the sake of brevity, we won't go (too much) into 
 differences in circumcision type here, and only look at total circumcision 
-(MC).
+(MC). We'll also have to cheat a little bit and look at only a subset of 
+our modelled region, in order for our plots to be readable when exported to 
+HTML.
 
 First, we look at circumcision rate for each "Health District + Cities" 
 modelled for different (circumcision) ages. We also include several years to 
 observe any changes over time.
-```{r plot_rates}
+```{r plot_rates, out.width = "100%", out.height = "100%", dpi = 500}
 # remove some years to show change more clearly
 out_plot <- out_spec %>% 
   filter(
     year %in% c(
       start_year, ceiling((start_year + forecast_year) / 2), forecast_year
+    ),
+    area_name %in% c(
+      "Blantyre", "Blantyre City", "Lilongwe", 
+      "Lilongwe City", "Machinga", "Mangochi", "Mzimba North", 
+      "Mzimba South", "Zomba City" #  "Chiradzulu", "Mzuzu City", "Zomba"
     )
   )
 
@@ -376,11 +367,17 @@ ggplot(
 ) +
   geom_ribbon(fill = "lightgrey", colour = NA) +
   geom_line(size = 1) +
+  # facet_wrap(. ~ area_name, ncol = 4) + 
   facet_wrap(. ~ area_name) + 
   labs(x = "Age", y = "Rates", colour = "") +
   scale_y_continuous(labels = label_percent()) +
   theme_bw() +
   theme(
+    axis.text.x      = element_text(size = 5),
+    axis.title.x     = element_text(size = 8),
+    axis.text.y      = element_text(size = 5),
+    axis.title.y     = element_text(size = 8),
+    legend.text      = element_text(size = 5),
     legend.position  = "bottom",  # place legend on bottom
     strip.background = element_rect(fill = NA, colour = "white") # col facets
   )
@@ -401,14 +398,14 @@ programmes [@matoga_uptake_2022])) is generally low in these regions (this can
 easily be plotted using `rate_tmc`). 
 
 Also, circumcision rates have increased quite 
-significantly in many regions since 2008. In some (such as Blantyre City and 
-Machinga), MC rates have slowed since 2015 to 2021 (for which we have no survey 
-data and must forecast out-of-sample), indicating that circumcision coverage 
-may have become quite high and started to "taper-off" there.
+significantly in many regions since 2008. However, in some (such as Blantyre 
+City and Machinga), MC rates have slowed in 2021 (for which we have no survey 
+data and must forecast out-of-sample) vs 2015, indicating that circumcision 
+coverage may have become quite high and started to "taper-off" there.
 
 It's also obviously a good idea to look at circumcision coverage to help 
 support or reject our theories, and give additional insight.
-```{r plot_coverage}
+```{r plot_coverage, out.width = "100%", out.height = "100%", dpi = 500}
 ggplot(
   out_plot,
   aes(
@@ -422,11 +419,16 @@ ggplot(
 ) +
   geom_ribbon(fill = "lightgrey", colour = NA) + 
   geom_line(size = 1) +
-  facet_wrap(. ~ area_name) +
+  facet_wrap(. ~ area_name) + 
   labs(x = "Age", y = "Coverage", colour = "") +
   scale_y_continuous(labels = label_percent()) + 
   theme_bw() + 
   theme(
+    axis.text.x      = element_text(size = 5),
+    axis.title.x     = element_text(size = 8),
+    axis.text.y      = element_text(size = 5),
+    axis.title.y     = element_text(size = 8),
+    legend.text      = element_text(size = 5),
     legend.position  = "bottom",  
     strip.background = element_rect(fill = NA, colour = "white") 
   )
