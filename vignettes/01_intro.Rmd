@@ -249,19 +249,20 @@ hyperparameters [@eaton_naomi_2021].
 parameters <- threemc_initial_pars(dat_tmb)
 
 # fit model with TMB and stats::nlminb optimiser
-# fit <- threemc_fit_model(
-#     dat_tmb    = dat_tmb,
-#     parameters = parameters,
-#     randoms    = c(
-#         "u_time_mmc", "u_age_mmc", "u_age_mmc_paed", "u_space_mmc",
-#         "u_agetime_mmc", "u_agespace_mmc", "u_agespace_mmc_paed",
-#         "u_spacetime_mmc",
-#         "u_time_tmc", "u_age_tmc", "u_space_tmc", "u_agespace_tmc"
-#     ),
-#     N          = N
-# )
-fit <- readRDS(file = "MWI_TMBObjects_DistrictAgeTime_ByType.rds")
+fit <- threemc_fit_model(
+    dat_tmb    = dat_tmb,
+    parameters = parameters,
+    randoms    = c(
+        "u_time_mmc", "u_age_mmc", "u_age_mmc_paed", "u_space_mmc",
+        "u_agetime_mmc", "u_agespace_mmc", "u_agespace_mmc_paed",
+        "u_spacetime_mmc",
+        "u_time_tmc", "u_age_tmc", "u_space_tmc", "u_agespace_tmc"
+    ),
+    N          = N
+)
 ```
+
+<!-- fit <- readRDS(file = "MWI_TMBObjects_DistrictAgeTime_ByType.rds") -->
 
 Be aware that this can take quite a long time. Just think of all 
 the random effects, and interactions between these! You can model using lower 
@@ -302,13 +303,14 @@ quantiles (default `c(0.025, 0.5, 0.975)`, but can be changed by specifying the
 `area_level == area_lev` (five)).
 ```{r quantiles}
 # subset to specific area level and calculate quantiles for rates and hazard
-# out_spec <- compute_quantiles(out, fit, area_lev = area_lev)
-out_spec <- readr::read_csv("./MWI_Results_DistrictAgeTime_ByType.csv.gz")
+out_spec <- compute_quantiles(out, fit, area_lev = area_lev)
 
 out_spec %>% 
   select(-c(N:icens)) %>%  # remove observed circ rate cols we already know about
   head()
 ```
+
+<!-- out_spec <- readr::read_csv("./MWI_Results_DistrictAgeTime_ByType.csv.gz") -->
 
 The lower, middle and upper quartiles are labelled with "L", "M" and 
 "U", respectively.
