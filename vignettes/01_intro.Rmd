@@ -1,33 +1,34 @@
 ---
-title: "Introduction"
+title: "Introduction to `threemc`"
 output: rmarkdown::html_vignette
-  toc: true
+# toc: true
+bibliography: library.bib
+csl: plos-one.csl
+fig_width: 10
+fig_height: 8
 vignette: >
-  %\VignetteIndexEntry{Introduction}
+  %\VignetteIndexEntry{Introduction to `threemc`}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+  # collapse = TRUE,
+  # comment = "#>"
+  echo = TRUE
 )
 ```
 
-# Introduction
-
-TODO: 
-
-1. Finish write up (pretty much done)
 2. Fix plots 
-3. Add references to (1) Matt's paper and (2) the TMB paper
+
+## Introduction
 
 This vignette serves as an introduction to `threemc` (or "Matt's model for male 
 circumcision"), a Bayesian multilevel spatio-temporal, competing-risks, 
 time-to-event model for, unsurprisingly, male circumcision. It models the 
 circumcision rate, but also computes circumcision incidence and 
-cumulative incidence (i.e. circumcision coverage). (REFERENCE THREEMC)
+cumulative incidence (i.e. circumcision coverage) [@thomas_multi-level_2021].
 
 Circumcision is split between two types (which form our "competing-risks", 
 along with being uncircumcised), medical male circumcision (MMC) and 
@@ -46,15 +47,15 @@ and time, and also includes interaction terms between these variables.
 <!-- `threemc` is implemented in `TMB`, which contructs an objective function in  -->
 <!-- the negative joint log-likelihood ??? -->
 
-`threemc` is implemented in Template Model Builder (`TMB`) (REFERNCE).
+`threemc` is implemented in Template Model Builder (`TMB`).
 TMB is an R package that enables users to flexibly fit latent process/variable 
 models to data. It uses automatic differentiation and Laplace approximations to 
-estimate posterior distributions for model parameters. (REFERENCE MATT) 
+estimate posterior distributions for model parameters.
 The objective function produced by `TMB` can be called in R, and so can be 
 optimised using e.g. `stats::nlminb`. `TMB` is particularly fast in 
 comparison to other methods (e.g. INLA) when there are many random effects, 
-such as are commonly found in spatio-temporal models like `threemc`. (REFERENCE 
-TMB comparison paper).
+such as are commonly found in spatio-temporal models like `threemc`. 
+[@kristensen_tmb_2016; @thomas_multi-level_2021].
 
 We will go through a simple `threemc` model of an example dataset for Malawi. 
 It's important to note that **we only look at a subset of Malawi's surveys** 
@@ -258,7 +259,7 @@ Next, we run `threemc_fit_model`, which uses `TMB::MakeADFun` to create an
 objective function (the negative log-likelihood) which can then be optimised by 
 `nlminb` using BFGS. Using Monte Carlo sampling, we also draw `N` samples from 
 the joint posterior distribution, conditional on the optimised 
-hyperparameters. (REFERENCE Naomi)
+hyperparameters [@eaton_naomi_2021]. 
 ```{r fit_model, results= "hide"}
 # Initialise `threemc` hyperparameters
 parameters <- threemc_initial_pars(dat_tmb)
@@ -278,7 +279,7 @@ parameters <- threemc_initial_pars(dat_tmb)
 fit <- readRDS(file = "MWI_TMBObjects_DistrictAgeTime_ByType.rds")
 ```
 
-Be aware that this can take quite a long amount of time. Just think of all 
+Be aware that this can take quite a long time. Just think of all 
 the random effects, and interactions between these! You can model using lower 
 `area_lev` for a faster fit time in a pinch.
 
@@ -385,19 +386,25 @@ ggplot(
   )
 ```
 
-We can see that, by and large, MC rates are highest among those aged around 
-10-13. Circumcisions do not seem to occur for those over 30s.
-In many areas (such as Lilongwe), circumcisions do not seem occur in 
-any great numbers. Perhaps this is because circumcision is already high in 
-these regions. However, this may be unlikely, as traditional circumcision 
-(the main reason for high circumcision in Malawi pre-2012 (the year they began 
-implementing Voluntary Male Medical Circumcision (VMMC) programmes REFERENCE)) 
-is generally low in these regions (this can easily be plotted using 
-`rate_tmc`). Also, circumcision rates have increased quite significantly in 
-many regions since 2008. In some (such as Blantyre City and Machinga), MC rates 
-have slowed since 2015 to 2021 (for which we have no survey data and must 
-forecast out-of-sample), indicating that circumcision coverage may be quite 
-have become quite high started "tapering-off" there.
+There is significant spatial heterogeneity in circumcision practises. However, 
+we can see that there is not much heterogeneity when it comes to circumcision 
+age, with the MC rate highest among those aged around 10-13 for every area with 
+less than negligible circumcision. Circumcisions do not seem to occur for those 
+over 30s.
+
+In many areas (such as Lilongwe), there doesn't seem to be a great number of 
+circumcisions being performed. Perhaps this is because circumcision is already 
+high in these regions. However, this may be unlikely, as traditional 
+circumcision (the main reason for high circumcision in Malawi pre-2012 (the 
+year they began implementing Voluntary Male Medical Circumcision (VMMC) 
+programmes [@matoga_uptake_2022])) is generally low in these regions (this can 
+easily be plotted using `rate_tmc`). 
+
+Also, circumcision rates have increased quite 
+significantly in many regions since 2008. In some (such as Blantyre City and 
+Machinga), MC rates have slowed since 2015 to 2021 (for which we have no survey 
+data and must forecast out-of-sample), indicating that circumcision coverage 
+may have become quite high and started to "taper-off" there.
 
 It's also obviously a good idea to look at circumcision coverage to help 
 support or reject our theories, and give additional insight.
@@ -426,20 +433,26 @@ ggplot(
 ```
 
 Here we can see the high MC rates amongst younger individuals reflected in 
-the age-distribution of coverage in many of these same regions, which seems to 
-"peak" at slightly older teenage years (around 17-19).
-In Lilongwe and other regions with "flat" MC rates in our previous plots, we 
-unfortunately learn that coverage is not high.
+the age-distribution of circumcision coverage in many of these same regions, 
+which seems to "peak" at slightly older teenage years (around 17-19).
+
+In Lilongwe and other regions with "flat" MC rates in our previous plot, we 
+unfortunately learn that circumcision coverage is very low.
+
 Circumcision coverage is greater than or the same in every region from 
-2008 to 2015 and from 2015 to 2021. In those regions where we observed some 
-"tapering off" in circumcision rates, we can see that coverage is indeed high. 
-In particular, Machinga and Mangochi have had consistently high coverage across 
-our predictive period, suggesting that TMC is high there.
-Blantyre City and Lilongwe City, which have high HIV burdens (REFERENCE) and 
-had very low coverage in 2008, have seen significant (forecasted) increases in 
-circumcision levels, highlighting the work being done in resource allocation, 
-which motivates this model (this perhaps also suggests a greater ease in 
-implementing circumcision programmes in urban areas).
+2008 to 2015 and from 2015 to 2021 (however, this is one of the assumptions 
+of `threemc`, that MC is cumulative thus monotonically increasing).
+
+In those regions where we observed some "tapering off" in circumcision rates, 
+we can see that coverage is indeed high. In particular, Machinga and Mangochi 
+have had consistently high coverage across our predictive period, suggesting 
+that TMC is high there. Blantyre City and Lilongwe City, which have high HIV 
+burdens [@nutor_spatial_2020] and had very low coverage in 2008, have seen 
+significant (forecasted) increases in circumcision levels, highlighting the 
+work being done in resource allocation, which motivates this model 
+(this perhaps also suggests a greater ease in implementing circumcision 
+programmes in urban areas in Malawi).
+
 
 ## Conclusions
 
@@ -456,3 +469,7 @@ There are also several variations on the "default" `threemc` model used here.
 As mentioned previously, these include having a fixed paediatric MMC rate, a 
 time effect for TMC, and using RW temporal priors. These alternative models are 
 also addressed in another vignette.
+
+## References 
+
+<div id="refs"></div>
