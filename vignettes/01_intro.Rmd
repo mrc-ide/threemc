@@ -1,6 +1,7 @@
 ---
 title: "Introduction"
 output: rmarkdown::html_vignette
+  toc: true
 vignette: >
   %\VignetteIndexEntry{Introduction}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,17 +15,51 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction
+
+TODO: 
+
+1. Finish write up (pretty much done)
+2. Fix plots 
+3. Add references to (1) Matt's paper and (2) the TMB paper
+
 This vignette serves as an introduction to `threemc` (or "Matt's model for male 
 circumcision"), a Bayesian multilevel spatio-temporal, competing-risks, 
-time-to-event model for, unsurprisingly, male circumcision. 
+time-to-event model for, unsurprisingly, male circumcision. It models the 
+circumcision rate, but also computes circumcision incidence and 
+cumulative incidence (i.e. circumcision coverage). (REFERENCE THREEMC)
 
-Circumcision is split between two types (or "competing-risks", along with being 
-uncircumcised), medical male circumcision (MMC) and traditional male 
-circumcision (TMC). The model is stratified by age, location and time, and also 
-includes interaction terms between these variables. 
+Circumcision is split between two types (which form our "competing-risks", 
+along with being uncircumcised), medical male circumcision (MMC) and 
+traditional male circumcision (TMC). The model is stratified by age, location 
+and time, and also includes interaction terms between these variables. 
 
-We will go through a simple example of how to fit `threemc` to an example 
-dataset from Malawi. 
+<!-- `threemc` is implemented in `TMB`, which maximises the Laplace approximation  -->
+<!-- of the marginal likelihood using automatic differentiation (AD) on the joint  -->
+<!-- likelihood. `TMB` models can be optimised with R's built in optimisers, such  -->
+<!-- as `stats::nlminb`. `TMB` is particularly fast in comparison to other methods  -->
+<!-- when there are many random effects, such as are commonly found in  -->
+<!-- spatio-temporal models such as `threemc`, and also allows a lot of flexibility  -->
+<!-- in model specification thorugh it's use of a C++ template function.  -->
+<!-- (REFERENCE) (Could word better) -->
+
+<!-- `threemc` is implemented in `TMB`, which contructs an objective function in  -->
+<!-- the negative joint log-likelihood ??? -->
+
+`threemc` is implemented in Template Model Builder (`TMB`) (REFERNCE).
+TMB is an R package that enables users to flexibly fit latent process/variable 
+models to data. It uses automatic differentiation and Laplace approximations to 
+estimate posterior distributions for model parameters. (REFERENCE MATT) 
+The objective function produced by `TMB` can be called in R, and so can be 
+optimised using e.g. `stats::nlminb`. `TMB` is particularly fast in 
+comparison to other methods (e.g. INLA) when there are many random effects, 
+such as are commonly found in spatio-temporal models like `threemc`. (REFERENCE 
+TMB comparison paper).
+
+We will go through a simple `threemc` model of an example dataset for Malawi. 
+It's important to note that **we only look at a subset of Malawi's surveys** 
+here (not all are publicly available), so 
+**our results are not reliable and shouldn't be taken as genuine predictions**.
 
 First, load the prerequisite packages, which won't be too many beyond 
 `threemc` itself.
@@ -42,43 +77,36 @@ library(scales)
 sf_use_s2(FALSE)
 ```
 
-TODO: 
-1. Describe model 
-2. Load and describe data 
-3. Walk through script
-4. Create some nice initial plots
 
-## Metadata ##
+## Metadata
 
-Next, set the following metadata (to avoid "magic numbers") for our analysis:
+Next, set the following metadata (to avoid "magic numbers") in our analysis:
 ```{r metadata}
-cntry <- "MWI"        # iso3 code for country to model 
-cens_age <- 59        # maximum circumcision age to include in model, after which we censor
-N <- 1000             # N samples drawn from posterior predictive distribution
-start_year <- 2008    # year to begin predictions 
-forecast_year <- 2021 # predictions up to this year
+cntry <- "MWI"          # iso3 code for country to model 
+cens_age <- 59          # max circ. age to include in model, censor older ages
+N <- 1000               # N samples drawn from post. predictive distribution
+start_year <- 2008      # year to begin predictions 
+forecast_year <- 2021   # predictions up to this year
 
-# Model to fit (assumes constant TMC over time and uses an AR 1 temporal prior)
-mod <- "Surv_SpaceAgeTime_ByType_withUnknownType"
-
-# PSNU recommended area level for modelled country
+# PSNU area level for modelled country
 area_lev <- threemc::datapack_psnu_area_level %>% 
   filter(iso3 == cntry) %>% 
   pull(psnu_area_level)
 area_lev
 ```
 
-For this example, we will use the "standard" `threemc` model, 
-"Surv_SpaceAgeTime_ByType_withUnknownType", which does not include any time 
-effects for TMC (i.e. it assumes that TMC practises have not changed over time) 
-(yes, the models need to be given more intuitive names, or abstracted from 
-the user!).
+For this example, we will use the default  "standard" `threemc` model, 
+which does not include a time effect for TMC (i.e. it assumes that TMC 
+practises don't and won't change over time), uses an AR 1 temporal process, and 
+treats MMC for all ages as time varying. Models with these features will be 
+introduced in a later vignette.
 
 Note that `threemc` contains the dataset `datapack_psnu_area_level`, which 
-has the recommended PSNU ("Primary Sampling Unit") area level to fit each 
-country at. For Malawi, this is area level 5, which corresponds to
-"Health District + Cities". Each area level has a different meaning for each 
-county, but in general, higher values correspond to more granular regions.
+contains the PSNU ("Primary Sampling Unit") area level for surveys conducted in 
+many Sub-saharan African countries. For Malawi, this is area level five, which 
+corresponds to "Health District + Cities". Each area level has a different 
+meaning for each county, but in general, higher values correspond to more 
+granular regions.
 
 
 ## Data
@@ -87,8 +115,8 @@ Next, we load our required datasets. Note that this data is normally
 loaded using `read_circ_data`, which avoids having to switch between 
 `readr::read_csv` and `sf::read_sf`, and makes repeated filtering more terse. 
 However, the demo data we will use in this analysis is directly included in 
-`threemc`, so we can just assign it to the global environment from 
-there (could be worded better?)
+`threemc`, so we just explicitly assign it to the global environment from 
+there.
 
 ```{r load_data}
 #' # "Normal" data loading procedure (same for areas, surveys and pops)
@@ -104,7 +132,9 @@ populations <- threemc::demo_populations
 ```
 
 For more information on these datasets and what they contain, please see their 
-respective help files (using `help("demo_survey_circumcision)"`).
+respective help files (using e.g. `help("demo_survey_circumcision)"`). If you 
+wish to fit a model using `threemc` with your own data, it must include the 
+same columns as these datasets.
 
 
 ## Prepare Survey Data 
@@ -129,7 +159,7 @@ head(survey_circ_preprocess)
 
 Amongst other things, `prepare_survey_data`:   
 - Removes rows with missing essential information (e.g. circumcision status),
-and identifies surveys which are excluded due to missing data,  
+and identifies surveys which are completely excluded due to missing data,  
 - Censors circumcisions at `cens_age` and `cens_year`, for circumcision age 
 and year, respectively,  
 - sets the desired area level of aggregation for each survey, reassigning 
@@ -138,10 +168,10 @@ surveys at a more granular level to the specified `area_lev` (e.g. MWI_6_309
 "Health District + Cities", MWI_5_22 (Mulanje)),  
 - Identifies left (i.e. those circumcised at an unknown age, labelled with the 
 column `event` == 1) and right (i.e. still uncircumcised, labelled with 
-`event` == 2) individuals (those uncensored have `event` == 0),  
+`event` == 2) censored individuals (those uncensored have `event` == 0),  
 - Uses `circ_who` and `circ_where` to determine circumcision `type`,  
 - Identifies surveys for which this type information is unavailable, and
-- normalises survey weights and applies Kish coefficient.  
+- normalises survey weights and applies the Kish coefficient.  
 
 In these Malawi surveys, we do see the presence of some left censoring, but 
 thankfully every survey contains enough valid circumcision data to be used.
@@ -149,10 +179,9 @@ thankfully every survey contains enough valid circumcision data to be used.
 
 ## Create Shell Dataset 
 
-
-We would like to make predictions for each unique combination of:  
-- each `area_id` in `survey_circ_preprocess`,  
-- circumcision ages 0-`cens_age`,  
+We wish to make predictions for each unique combination of:  
+- The `area_id`s in `survey_circ_preprocess`,  
+- circumcision age 0-`max(survey_circ_preprocess$circ_age)`,  
 - circumcision years from `start_year`-`forecast_year`, and  
 - each type of circumcision (TMC, MMC and for "Missing" type, which can 
 still be used when modelling Total MC).
@@ -178,18 +207,12 @@ head(out)
 
 For each of these unique combinations, `create_shell_dataset` also 
 adds their respective `population` from `populations`, and calculates:   
-- `N`, the person years, and  
+- `N`, the person years, 
 - `obs_mmc`, `obs_tmc` `obs_mc` (representing those with "Missing" 
 circumcision type), `cens` and `icens`, the observed rate of circumcision for 
-each circumcision type, and that which is censored and interval censored, 
-respectively.  
-
-It is *very* important that `out` is not missing any `population` values, which 
-will create problems in subsequent design matrices that will cause the model 
-to fail when fitting. 
-```{r check_na_pops}
-all(!is.na(out$population))
-```
+each circumcision type, 
+- Also the rate of right-censoring (uncircumcised) and left-censoring 
+(unknown circumcision age).
 
 
 ## Model Fit Matrices
@@ -197,100 +220,140 @@ all(!is.na(out$population))
 The final step before fitting our model is to prepare our model data. 
 The function `threemc_prepare_model_data` outputs a list, and calculates:
 - design matrices for fixed effects and temporal, age, space and
-  interaction random effects, ()  
-- integration matrices for selecting the instantaneous hazard rate,  
-- survival matrices for MMC, TMC, censored and left censored, and  
-- the precision/adjacency matrix for the spatial random effect.  
+  interaction random effects, (the list elements with names 
+  beginning with `X_` below),
+- integration matrices for selecting the instantaneous hazard rate (The 
+  `IntMat`s),  
+- survival matrices for MMC, TMC, censored and left censored, and  (the 
+  matrices labelled "A" (for the various types of circumcision), `B` (for 
+  right-censoring) and `C` (for left-censoring)).
+- the precision/adjacency matrix for the spatial random effect (`Q_space`).
 
 ```{r prepare_model_data}
+# prepare_dataset for modelling
 dat_tmb <- threemc_prepare_model_data(
     out      = out,
     areas    = areas,
     area_lev = area_lev
 )
+
+names(dat_tmb)
 ```
 
-We have implicitly chosen an AR 1 temporal prior here because we have not 
-specified the `rw_order` parameter.
-
-## Initialise parameters 
-
-```{r initialise}
-# Initial values
-parameters <- with(
-  dat_tmb,
-  list(
-    # intercept
-    "u_fixed_mmc"            = rep(-5, ncol(X_fixed_mmc)),
-    "u_fixed_tmc"            = rep(-5, ncol(X_fixed_tmc)),
-    # age random effect
-    "u_age_mmc"              = rep(0, ncol(X_age_mmc)),
-    "u_age_tmc"              = rep(0, ncol(X_age_tmc)),
-    # time random effect for (non-paed) MMC
-    "u_time_mmc"             = rep(0, ncol(X_time_mmc)),
-    # time random effect for TMC
-    # "u_time_tmc"             = rep(0, ncol(X_time_tmc)),
-    # Space random effect (district)
-    "u_space_mmc"            = rep(0, ncol(X_space_mmc)),
-    "u_space_tmc"            = rep(0, ncol(X_space_tmc)),
-    # Interactions for MMC
-    "u_agetime_mmc"          = matrix(0, ncol(X_age_mmc), ncol(X_time_mmc)),
-    "u_agespace_mmc"         = matrix(0, ncol(X_age_mmc), ncol(X_space_mmc)),
-    "u_spacetime_mmc"        = matrix(0, ncol(X_time_mmc), ncol(X_space_mmc)),
-    # Interactions for TMC
-    "u_agespace_tmc"         = matrix(0, ncol(X_age_tmc), ncol(X_space_tmc)),
-    # Autocorrelation parameters for priors
-    # Variance
-    "logsigma_age_mmc"            = 0,
-    "logsigma_time_mmc"           = 0,
-    "logsigma_space_mmc"          = 0,
-    "logsigma_agetime_mmc"        = 0,
-    "logsigma_agespace_mmc"       = 0,
-    "logsigma_spacetime_mmc"      = 0,
-    "logsigma_age_tmc"            = 0,
-    "logsigma_space_tmc"          = 0,
-    "logsigma_agespace_tmc"       = 0,
-    # Mean
-    "logitrho_mmc_time1"          = 2,
-    "logitrho_mmc_time2"          = 2,
-    "logitrho_mmc_time3"          = 2,
-    "logitrho_mmc_age1"           = 2,
-    "logitrho_mmc_age2"           = 2,
-    "logitrho_mmc_age3"           = 2,
-    "logitrho_tmc_age1"           = 2,
-    "logitrho_tmc_age2"           = 2
-  )
-)
-```
+The message returned by `threemc_prepare_model_data` informs us that we have 
+implicitly chosen an AR 1 temporal prior here because we have not specified 
+the `rw_order` parameter.
 
 
 ## Fit Model 
 
+Now we can finally fit our model.  
+
+First, we initialise hyperparameter values using `threemc_initial_pars`. This 
+uses the matrices in `dat_tmb` to create a named list of the initial 
+hyperparameters needed for our `threemc` model. The defaults can be overridden 
+by specifying the `custom_init` parameter with a named list of it's own. 
+
+Next, we run `threemc_fit_model`, which uses `TMB::MakeADFun` to create an 
+objective function (the negative log-likelihood) which can then be optimised by 
+`nlminb` using BFGS. Using Monte Carlo sampling, we also draw `N` samples from 
+the joint posterior distribution, conditional on the optimised 
+hyperparameters. (REFERENCE Naomi)
 ```{r fit_model, results= "hide"}
-# fit model with TMB
-fit <- threemc_fit_model(
-    dat_tmb    = dat_tmb,
-    mod        = mod,
-    parameters = parameters,
-    randoms    = c(
-        "u_time_mmc", "u_age_mmc", "u_age_mmc_paed", "u_space_mmc",
-        "u_agetime_mmc", "u_agespace_mmc", "u_agespace_mmc_paed",
-        "u_spacetime_mmc",
-        "u_time_tmc", "u_age_tmc", "u_space_tmc", "u_agespace_tmc"
-    ),
-    N          = N
-)
+# Initialise `threemc` hyperparameters
+parameters <- threemc_initial_pars(dat_tmb)
+
+# fit model with TMB and stats::nlminb optimiser
+# fit <- threemc_fit_model(
+#     dat_tmb    = dat_tmb,
+#     parameters = parameters,
+#     randoms    = c(
+#         "u_time_mmc", "u_age_mmc", "u_age_mmc_paed", "u_space_mmc",
+#         "u_agetime_mmc", "u_agespace_mmc", "u_agespace_mmc_paed",
+#         "u_spacetime_mmc",
+#         "u_time_tmc", "u_age_tmc", "u_space_tmc", "u_agespace_tmc"
+#     ),
+#     N          = N
+# )
+fit <- readRDS(file = "MWI_TMBObjects_DistrictAgeTime_ByType.rds")
 ```
 
+Be aware that this can take quite a long amount of time. Just think of all 
+the random effects, and interactions between these! You can model using lower 
+`area_lev` for a faster fit time in a pinch.
 
-## Assess Fit 
+```{r}
+names(fit)
+```
 
+`fit` contains all the expected outputs from supplying `TMB::MakeADFun` 
+objective function to `stats::nlminb`. Among other things, we can have a 
+look at the optimised hyperparameters for our model:
+
+```{r}
+fit$par
+```
+
+Here `logsigma` and `logitrho` refer to variance and covariance 
+hyperparameters, respectively.
+
+We can also access `N` samples from the posterior predictive distribution for 
+the following quantities:
+```{r}
+names(fit$sample)
+```
+
+- `"rate_mmc", "rate_tmc", "rate", "surv"` refer to the circumcision rates,  
+- `"inc_mmc", "inc_tmc", "inc"`, refer to the (non-cumulative) circumcision 
+  incidence, and   
+- `"cum_inc_mmc", "cum_inc_tmc", "cum_inc"` refer to the cumulative incidence,
+  i.e. the circumcision coverage.   
+  
+These sample matrices have `N` columns, and their rows match up with the rows 
+in `out`, **for the modelled `area_lev`** (so not at lower area levels). We 
+can use the function `compute_quantiles` to compute lower, middle and upper 
+quantiles (default `c(0.025, 0.5, 0.975)`, but can be changed by specifying the
+`probs` argument) for the samples for each row in `out` (that has 
+`area_level == area_lev` (five)).
 ```{r quantiles}
 # subset to specific area level and calculate quantiles for rates and hazard
-out_spec <- compute_quantiles(out, fit, area_lev = area_lev)
+# out_spec <- compute_quantiles(out, fit, area_lev = area_lev)
+out_spec <- readr::read_csv("./MWI_Results_DistrictAgeTime_ByType.csv.gz")
+
+out_spec %>% 
+  select(-c(N:icens)) %>%  # remove observed circ rate cols we already know about
+  head()
 ```
 
-```{r plot_coverage}
+The lower, middle and upper quartiles are labelled with "L", "M" and 
+"U", respectively.
+
+You can now save `fit` as an `.RData` file using `save`. However, this file is 
+often very large (> 1GB). We can make the `fit` object much smaller using 
+`minimise_fit_obj`, which just stores your `dat_tmb` and `parameters` in `fit` 
+(under the names `tmb_data` and `par_init`, respectively) and removes 
+`fit$sample` and `fit$obj`. This object is much smaller, and can be saved using 
+`saveRDS` as an `.rds` file. The downside is that if we want to reload our 
+`fit_min` at a later time, we must re-sample. However, this can be easily done 
+using `threemc_fit_model` and supplying `fit_min` as the `fit` argument. This 
+is treated with greater detail in the aggregation vignette.
+```{r minimise_fit}
+# minimise fit object for saving
+# fit_min <- minimise_fit_obj(fit, dat_tmb, parameters)
+```
+
+
+## Plotting
+
+We can have a quick look at our model predictions by plotting some of our 
+results. For the sake of brevity, we won't go (too much) into 
+differences in circumcision type here, and only look at total circumcision 
+(MC).
+
+First, we look at circumcision rate for each "Health District + Cities" 
+modelled for different (circumcision) ages. We also include several years to 
+observe any changes over time.
+```{r plot_rates}
 # remove some years to show change more clearly
 out_plot <- out_spec %>% 
   filter(
@@ -299,32 +362,6 @@ out_plot <- out_spec %>%
     )
   )
 
-ggplot(
-  out_plot,
-  aes(
-    x = age,
-    y = cum_incM,
-    ymin = cum_incL,
-    ymax = cum_incU,
-    group = as.factor(year),
-    colour = as.factor(year)
-  )
-) +
-  geom_ribbon(fill = "lightgrey", colour = NA) + # add uncertainty bounds
-  geom_line(size = 1) +                          # mean year predictions 
-  facet_wrap(. ~ area_name)                      # split by area
-  scale_y_continuous(labels = label_percent()) + # label y-axis with percent
-  labs(x = "Age", y = "Coverage", colour = "") +
-  theme_bw() + 
-  theme(
-    legend.position  = "bottom",  # place legend on bottom
-    legend.text      = element_text(size = 12),
-    strip.background = element_rect(fill = NA, colour = "white"), # col facets
-    panel.background = element_rect(fill = NA, color = "black")   # col panels
-  )
-```
-
-```{r plot_rates}
 ggplot(
   out_plot,
   aes(
@@ -338,8 +375,84 @@ ggplot(
 ) +
   geom_ribbon(fill = "lightgrey", colour = NA) +
   geom_line(size = 1) +
-  scale_y_continuous(labels = label_percent()) +
+  facet_wrap(. ~ area_name) + 
   labs(x = "Age", y = "Rates", colour = "") +
+  scale_y_continuous(labels = label_percent()) +
   theme_bw() +
-  facet_wrap(. ~ area_name)
+  theme(
+    legend.position  = "bottom",  # place legend on bottom
+    strip.background = element_rect(fill = NA, colour = "white") # col facets
+  )
 ```
+
+We can see that, by and large, MC rates are highest among those aged around 
+10-13. Circumcisions do not seem to occur for those over 30s.
+In many areas (such as Lilongwe), circumcisions do not seem occur in 
+any great numbers. Perhaps this is because circumcision is already high in 
+these regions. However, this may be unlikely, as traditional circumcision 
+(the main reason for high circumcision in Malawi pre-2012 (the year they began 
+implementing Voluntary Male Medical Circumcision (VMMC) programmes REFERENCE)) 
+is generally low in these regions (this can easily be plotted using 
+`rate_tmc`). Also, circumcision rates have increased quite significantly in 
+many regions since 2008. In some (such as Blantyre City and Machinga), MC rates 
+have slowed since 2015 to 2021 (for which we have no survey data and must 
+forecast out-of-sample), indicating that circumcision coverage may be quite 
+have become quite high started "tapering-off" there.
+
+It's also obviously a good idea to look at circumcision coverage to help 
+support or reject our theories, and give additional insight.
+```{r plot_coverage}
+ggplot(
+  out_plot,
+  aes(
+    x = age,
+    y = cum_incM,
+    ymin = cum_incL,
+    ymax = cum_incU,
+    group = as.factor(year),
+    colour = as.factor(year)
+  )
+) +
+  geom_ribbon(fill = "lightgrey", colour = NA) + 
+  geom_line(size = 1) +
+  facet_wrap(. ~ area_name) +
+  labs(x = "Age", y = "Coverage", colour = "") +
+  scale_y_continuous(labels = label_percent()) + 
+  theme_bw() + 
+  theme(
+    legend.position  = "bottom",  
+    strip.background = element_rect(fill = NA, colour = "white") 
+  )
+```
+
+Here we can see the high MC rates amongst younger individuals reflected in 
+the age-distribution of coverage in many of these same regions, which seems to 
+"peak" at slightly older teenage years (around 17-19).
+In Lilongwe and other regions with "flat" MC rates in our previous plots, we 
+unfortunately learn that coverage is not high.
+Circumcision coverage is greater than or the same in every region from 
+2008 to 2015 and from 2015 to 2021. In those regions where we observed some 
+"tapering off" in circumcision rates, we can see that coverage is indeed high. 
+In particular, Machinga and Mangochi have had consistently high coverage across 
+our predictive period, suggesting that TMC is high there.
+Blantyre City and Lilongwe City, which have high HIV burdens (REFERENCE) and 
+had very low coverage in 2008, have seen significant (forecasted) increases in 
+circumcision levels, highlighting the work being done in resource allocation, 
+which motivates this model (this perhaps also suggests a greater ease in 
+implementing circumcision programmes in urban areas).
+
+## Conclusions
+
+We have fitted a `threemc` model to Malawi's "Health District and Cities", 
+and interpreted our results (which, again, are 
+**not to be taken as genuine forecasts for Malawi**). Hopefully this vignette 
+can empower you to fit `threemc` to your own data!
+
+We can also aggregate these results to less granular regions, producing 
+estimates for each of Malawi's five area levels, including at the 
+national level. This is the focus of the next vignette.
+
+There are also several variations on the "default" `threemc` model used here. 
+As mentioned previously, these include having a fixed paediatric MMC rate, a 
+time effect for TMC, and using RW temporal priors. These alternative models are 
+also addressed in another vignette.
