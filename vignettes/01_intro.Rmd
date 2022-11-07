@@ -12,9 +12,8 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  # collapse = TRUE,
-  # comment = "#>"
-  echo = TRUE
+  collapse = TRUE,
+  comment = "#>"
 )
 ```
 
@@ -65,11 +64,11 @@ sf_use_s2(FALSE)
 
 ## Metadata
 
-Next, set the following metadata (to avoid "magic numbers") in our analysis:
+Next, set the following metadata in our analysis:
 ```{r metadata}
 cntry <- "MWI"          # iso3 code for country to model 
 cens_age <- 59          # max circ. age to include in model, censor older ages
-N <- 1000               # N samples drawn from post. predictive distribution
+N <- 1000               # N samples from posterior predictive distribution
 start_year <- 2008      # year to begin predictions 
 forecast_year <- 2021   # predictions up to this year
 
@@ -326,11 +325,11 @@ using `threemc_fit_model` and supplying `fit_min` as the `fit` argument. This
 is treated with greater detail in the aggregation vignette.
 ```{r minimise_fit}
 # minimise fit object for saving
-# fit_min <- minimise_fit_obj(fit, dat_tmb, parameters)
+fit_min <- minimise_fit_obj(fit, dat_tmb, parameters)
 ```
 
 
-## Plotting
+## Interpretation
 
 We can have a quick look at our model predictions by plotting some of our 
 results. For the sake of brevity, we won't go (too much) into 
