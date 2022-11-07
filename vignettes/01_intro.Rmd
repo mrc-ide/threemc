@@ -326,6 +326,7 @@ is treated with greater detail in the aggregation vignette.
 ```{r minimise_fit}
 # minimise fit object for saving
 fit_min <- minimise_fit_obj(fit, dat_tmb, parameters)
+names(fit_min) # no "sample" or "obj", but has "tmb_data" and "par_init"
 ```
 
 
@@ -335,8 +336,8 @@ We can have a quick look at our model predictions by plotting some of our
 results. For the sake of brevity, we won't go (too much) into 
 differences in circumcision type here, and only look at total circumcision 
 (MC). We'll also have to cheat a little bit and look at only a subset of 
-our modelled region, in order for our plots to be readable when exported to 
-HTML.
+our modelled region, in order for the plots in this vignette to be readable 
+when exported to HTML.
 
 First, we look at circumcision rate for each "Health District + Cities" 
 modelled for different (circumcision) ages. We also include several years to 
