@@ -1,3 +1,25 @@
+# threemc 0.1.29
+
+* Can have `threemc_fit_model` choose `mod` itself based on parameters in 
+either `parameters` (for new fits) or `fit$par` (for re-sampling from fits). 
+Like 0.1.28, this update abstracts model specification from the end user, which 
+involves generally involves setting a global variable `mod` to a quite 
+"esoteric" model name, such as "Surv_SpaceAgeTime_ByType_withUnknownType_RW2". 
+Instead, the user can simply specify the much more intuitive parameters 
+`rw_order` and `include_tmc` to `threemc_prepare_model_data`, simplifying their 
+experience.
+
+
+# threemc 0.1.28
+
+* new function `threemc_initial_pars` to abstract initial hyperparameter 
+specification from the end user. In scripts, this section is quite long and 
+ugly and in general can often go wrong due to parameter order etc, so it is 
+best to abstract this functionality. Defaults can still be overridden (e.g. 
+when we want to fit a model with "mapped"/fixed hyperparameters) by specifying 
+the `custom_init` argument using a named list of parameter values.
+
+
 # threemc 0.1.27 
 
 * In `prepare_survey_data`, fill `NA` populations for earlier years than we 
