@@ -80,20 +80,32 @@ threemc_fit_model <- function(fit = NULL,
     # Start with model with no type information
     mod <- "Surv_SpaceAgeTime"
     
-    # if there are MMC related param_names terms, use model with MMC/TMC split
-    if ("u_age_mmc" %in% param_names) {
+    # Column numbers matching suggests model with MMC/TMC split
+    ncolums <- ncol(dat_tmb$A_mc)
+    cond <- all(
+      sapply(with(dat_tmb, list(A_mc, A_mmc, A_tmc, B, C)), function(x) {
+        ncol(x) == ncolums
+      })
+    )
+    if (cond == TRUE) {
       mod <- paste0(mod, "_ByType_withUnknownType")
     }
     
+    if (any(grepl("paed", param_names))) {
+      mod <- paste0(mod, "_Const_Paed_MMC")
+    }
+    
     # if there are no correlation hyperparameters, use random walk model
-    if (!any(grepl("logitrho", names(parameters)))) {
+    if (!any(grepl("logitrho_mmc_time", param_names))) {
       mod <- paste0(mod, "_RW")
     }
 
     # if there is a time term for TMC, use the model with non-constant TMC
-    if ("u_time_tmc" %in% param_names) {
+    if (cond == TRUE && "u_time_tmc" %in% param_names) {
       mod <- paste0(mod, "2")
     }
+    
+    message("mod not supplied, mod used = ", mod)
   }
   
   if (is.null(mod)) stop("Please provide one of `mod`, `parameters` or `fit`")
@@ -155,7 +167,7 @@ threemc_fit_model <- function(fit = NULL,
   }
 
   # remove "mmc" from parameter & matrix names if required
-  if (mod == "Surv_SpaceAgeTime") {
+  if (mod %in% c("Surv_SpaceAgeTime", "Surv_SpaceAgeTime_RW")) {
     remove_type_distinction <- function(x) {
       names(x) <- stringr::str_remove(names(x), "_mmc")
       x <- x[!grepl("_tmc", names(x))]
