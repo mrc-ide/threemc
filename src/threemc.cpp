@@ -1,13 +1,13 @@
 #define TMB_LIB_INIT R_init_threemc
 #include <TMB.hpp>
 // #include <Rcpp.h> 
-// #include <Eigen>
 // #include <Eigen/SparseCore>
-// #include <Eigen/Sparse>
+#include <Eigen/Sparse>
 // #include "functions.h"
 
 
 using namespace density;
+using namespace Eigen;
 // using namespace Rcpp;
 
 /***************************************************/
@@ -35,27 +35,27 @@ Type geninvlogit(Type x, Type a, Type b){
 template <class Type>
 Type threemc_type(
     // sparse model matrices
-    const Eigen::SparseMatrix<Type> A_mmc,
-    const Eigen::SparseMatrix<Type> A_tmc, 
-    const Eigen::SparseMatrix<Type> A_mc, 
-    const Eigen::SparseMatrix<Type> B, 
-    const Eigen::SparseMatrix<Type> C, 
-    const Eigen::SparseMatrix<Type> IntMat1, 
-    const Eigen::SparseMatrix<Type> IntMat2, 
+    const SparseMatrix<Type> A_mmc,
+    const SparseMatrix<Type> A_tmc, 
+    const SparseMatrix<Type> A_mc, 
+    const SparseMatrix<Type> B, 
+    const SparseMatrix<Type> C, 
+    const SparseMatrix<Type> IntMat1, 
+    const SparseMatrix<Type> IntMat2, 
     
-    const Eigen::SparseMatrix<Type> X_fixed_mmc, 
-    const Eigen::SparseMatrix<Type> X_time_mmc,
-    const Eigen::SparseMatrix<Type> X_age_mmc, 
-    const Eigen::SparseMatrix<Type> X_space_mmc,
-    const Eigen::SparseMatrix<Type> X_agetime_mmc, 
-    const Eigen::SparseMatrix<Type> X_agespace_mmc,
-    const Eigen::SparseMatrix<Type> X_spacetime_mmc, 
-    const Eigen::SparseMatrix<Type> X_fixed_tmc,
-    const Eigen::SparseMatrix<Type> X_age_tmc, 
-    const Eigen::SparseMatrix<Type> X_space_tmc,
-    const Eigen::SparseMatrix<Type> X_agespace_tmc,
+    const SparseMatrix<Type> X_fixed_mmc, 
+    const SparseMatrix<Type> X_time_mmc,
+    const SparseMatrix<Type> X_age_mmc, 
+    const SparseMatrix<Type> X_space_mmc,
+    const SparseMatrix<Type> X_agetime_mmc, 
+    const SparseMatrix<Type> X_agespace_mmc,
+    const SparseMatrix<Type> X_spacetime_mmc, 
+    const SparseMatrix<Type> X_fixed_tmc,
+    const SparseMatrix<Type> X_age_tmc, 
+    const SparseMatrix<Type> X_space_tmc,
+    const SparseMatrix<Type> X_agespace_tmc,
 
-    const Eigen::SparseMatrix<Type> Q_space,
+    const SparseMatrix<Type> Q_space,
   
     vector<Type> u_fixed_mmc, 
     vector<Type> u_fixed_tmc, vector<Type> u_age_mmc,
