@@ -1,9 +1,14 @@
 #define TMB_LIB_INIT R_init_threemc
 #include <TMB.hpp>
+// #include <Rcpp.h> 
 // #include <Eigen>
 // #include <Eigen/SparseCore>
 // #include <Eigen/Sparse>
 // #include "functions.h"
+
+
+using namespace density;
+// using namespace Rcpp;
 
 /***************************************************/
 /* Function to inverse logit transform for vectors */
@@ -105,7 +110,7 @@ Type threemc_type(
   // /// Prior on the temporal random effects ///
   // ////////////////////////////////////////////
   // AR1 Process
-  nll += density::AR1(rho_mmc_time1)(u_time_mmc);
+  nll += AR1(rho_mmc_time1)(u_time_mmc);
 
   // Sum to zero constraint
   nll -= dnorm(u_time_mmc.sum(), Type(0), Type(0.001) * u_time_mmc.size(), TRUE);
@@ -120,8 +125,8 @@ Type threemc_type(
   /// Prior on the age random effects ///
   ///////////////////////////////////////
   // AR1 processes
-  nll += density::AR1(rho_mmc_age1)(u_age_mmc);
-  nll += density::AR1(rho_tmc_age1)(u_age_tmc);
+  nll += AR1(rho_mmc_age1)(u_age_mmc);
+  nll += AR1(rho_tmc_age1)(u_age_tmc);
 
   // Sum to zero constraint
   nll -= dnorm(u_age_mmc.sum(), Type(0), Type(0.001) * u_age_mmc.size(), TRUE);
@@ -139,8 +144,8 @@ Type threemc_type(
   /// Prior on the spatial random effects ///
   ///////////////////////////////////////////
   // Gaussian markov random field with prespecified precision matrix
-  nll += density::GMRF(Q_space)(u_space_mmc);
-  nll += density::GMRF(Q_space)(u_space_tmc);
+  nll += GMRF(Q_space)(u_space_mmc);
+  nll += GMRF(Q_space)(u_space_tmc);
 
   // Sum to zero constraints
   nll -= dnorm(u_space_mmc.sum(), Type(0), Type(0.001) * u_space_mmc.size(), TRUE);
@@ -154,10 +159,10 @@ Type threemc_type(
   /// Prior on the interaction random effects ///
   ///////////////////////////////////////////////
   // Interactions: space-time (GMRF x AR1), age-time (AR1 x AR1) and age-space (AR1 x GMRF)
-  nll += SEPARABLE(density::AR1(rho_mmc_time2), density::AR1(rho_mmc_age2))(u_agetime_mmc);
-  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_mmc_age3))(u_agespace_mmc);
-  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_mmc_time3))(u_spacetime_mmc);
-  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_tmc_age2))(u_agespace_tmc);
+  nll += SEPARABLE(AR1(rho_mmc_time2), AR1(rho_mmc_age2))(u_agetime_mmc);
+  nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_age3))(u_agespace_mmc);
+  nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_time3))(u_spacetime_mmc);
+  nll += SEPARABLE(GMRF(Q_space), AR1(rho_tmc_age2))(u_agespace_tmc);
   
   // Sum-to-zero constraints
   for (int i = 0; i < u_agespace_mmc.cols(); i++) {
@@ -282,7 +287,6 @@ Type threemc_type(
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
-  using namespace density;
   
    ////////////////////////
   /// Data definitions ///
@@ -360,8 +364,6 @@ Type objective_function<Type>::operator() ()
   // Negative log likelihood definition
   Type nll = Type(0);
   
-  // nll = threemc_type(3, 2, 1);
-  // nll = threemc_type(u_fixed_mmc, u_fixed_tmc, u_agetime_mmc);
   nll = threemc_type(
     
     A_mmc, A_tmc, A_mc, B, C, IntMat1, IntMat2, 
