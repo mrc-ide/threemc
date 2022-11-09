@@ -179,10 +179,13 @@ threemc_oos_ppc <- function(fit,
       .data$indicator
     ) %>%
     dplyr::summarise(dplyr::across(
-      dplyr::all_of(c("mean", "upper", "lower")),
+      # dplyr::all_of(c("mean", "upper", "lower")),
+      dplyr::all_of(c("mean", "upper", "lower", "n_eff_kish")),
       sum,
       na.rm = TRUE
-    ), .groups = "drop")
+    ), .groups = "drop") %>% 
+    # floor kish effective sample size
+    mutate(n_eff_kish = floor(.data$n_eff_kish))
 
   # join with samples
   survey_estimate_ppd <- dplyr::left_join(
