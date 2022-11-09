@@ -202,14 +202,30 @@ threemc_oos_ppc <- function(fit,
   ))
   mid_samp <- samp_cols[length(samp_cols) / 2]
 
-
   # func calculating where in model sample distribution empirical values are
   quant_pos_sum <- function(y, x) if (y < x) 0 else 1
 
+  # pull out columns with samples and n_eff_kish 
+  samp_df <- survey_estimate_ppd %>% 
+    dplyr::select(.data$n_eff_kish, dplyr::contains("samp_"))
+  
+  # take N samples from n_eff_kish trials with success probability "samp_x"
+  samples_binom <- data.frame(t(apply(
+    samp_df, 1, function(x) {
+      stats::rbinom(N, x["n_eff_kish"], x[names(x) != "n_eff_kish"])
+    }
+  )))
+  names(samples_binom) <- paste0("samp_", seq_len(N))
+  
   survey_estimate_ppd_dist <- survey_estimate_ppd %>%
-    dplyr::relocate(
-      dplyr::all_of(c("mean", "upper", "lower")), .before = .data$samp_1
-    ) %>%
+    # replace coverage sample columns with binomial samples
+    dplyr::select(-dplyr::contains("samp_")) %>% 
+    dplyr::bind_cols(samples_binom) %>% 
+    # divide binomial samples by n_eff_kish; compare these to survey estimates
+    dplyr::mutate(
+      dplyr::across(dplyr::contains("samp_"), ~ .x / .data$n_eff_kish)
+    ) %>% 
+    dplyr::ungroup() %>% 
     dplyr::group_by(dplyr::across(.data$area_id:.data$area_level)) %>%
     dplyr::summarise(
       # find position of mean estimate from surveys amongst PPD
@@ -219,29 +235,30 @@ threemc_oos_ppc <- function(fit,
         ))
       ),
       # find corresponding uncertainty bounds (based on survey uncertainty)
-      quant_pos_lower = sum(
-        dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
-          lower, .x
-        ))
-      ),
-      quant_pos_upper = sum(
-        dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
-          upper, .x
-        ))
-      ),
+      # quant_pos_lower = sum(
+      #   dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
+      #     lower, .x
+      #   ))
+      # ),
+      # quant_pos_upper = sum(
+      #   dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
+      #     upper, .x
+      #   ))
+      # ),
       .groups = "rowwise"
     ) %>%
     # find optimum quant position (i.e. closest to middle of sample)
-    tidyr::pivot_longer(dplyr::contains("quant_pos")) %>%
-    dplyr::mutate(diff_mid_samp = abs(.data$value - mid_samp)) %>%
-    dplyr::group_by(dplyr::across(.data$area_id:.data$area_level)) %>%
-    dplyr::mutate(
-      quant_pos_final = .data$value[which.min(.data$diff_mid_samp)]
-    ) %>%
-    dplyr::select(-.data$diff_mid_samp) %>%
+    # tidyr::pivot_longer(dplyr::contains("quant_pos")) %>%
+    # dplyr::mutate(diff_mid_samp = abs(.data$value - mid_samp)) %>%
+    # dplyr::group_by(dplyr::across(.data$area_id:.data$area_level)) %>%
+    # dplyr::mutate(
+    #   quant_pos_final = .data$value[which.min(.data$diff_mid_samp)]
+    # ) %>%
+    # dplyr::select(-.data$diff_mid_samp) %>%
     dplyr::ungroup() %>%
-    tidyr::pivot_wider(names_from = "name", values_from = "value") %>%
-    dplyr::select(dplyr::contains("quant_pos"))
+    # tidyr::pivot_wider(names_from = "name", values_from = "value") %>%
+    # dplyr::select(dplyr::contains("quant_pos"))
+    dplyr::select(.data$quant_pos)
 
   # add quant pos columns to dataframe with survey obs and PPD samples
   survey_estimate_ppd <- dplyr::bind_cols(
@@ -258,7 +275,8 @@ threemc_oos_ppc <- function(fit,
   }
   CI_range <- sort(CI_range)
   oos_within_ppd_percent <- vapply(CI_range, function(x) {
-    oos_within_ppd(survey_estimate_ppd$quant_pos_final, x)
+    # oos_within_ppd(survey_estimate_ppd$quant_pos_final, x)
+    oos_within_ppd(survey_estimate_ppd$quant_pos, x)
   }, numeric(1))
   names(oos_within_ppd_percent) <- CI_range
 
