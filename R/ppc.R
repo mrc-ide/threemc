@@ -185,7 +185,7 @@ threemc_oos_ppc <- function(fit,
       na.rm = TRUE
     ), .groups = "drop") %>% 
     # floor kish effective sample size
-    mutate(n_eff_kish = floor(.data$n_eff_kish))
+    dplyr::mutate(n_eff_kish = floor(.data$n_eff_kish))
 
   # join with samples
   survey_estimate_ppd <- dplyr::left_join(
