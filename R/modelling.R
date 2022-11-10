@@ -192,8 +192,8 @@ threemc_fit_model <- function(fit = NULL,
   if (parallel == TRUE) {
     # if ncores not specified, use maximum as default
     if (is.null(ncores)) {
-      ncores <- parallel::detectCores()
-      message("ncores not specified, using max(", ncores, ") as default")
+      ncores <- parallel::detectCores() - 1
+      message("ncores not specified, using max - 1(", ncores, ") as default")
     }
     TMB::openmp(n = ncores, DLL = mod)
   }
