@@ -60,6 +60,8 @@ threemc_fit_model <- function(fit = NULL,
                               smaller_fit_obj = FALSE,
                               sdreport = FALSE,
                               N = 1000,
+                              parallel = FALSE,
+                              ncores = NULL,
                               ...) {
 
   
@@ -185,6 +187,16 @@ threemc_fit_model <- function(fit = NULL,
   # Only have named random parameters
   randoms <- randoms[randoms %chin% names(parameters)]
   if (length(randoms) == 0) randoms <- NULL
+  
+  # Parallelise mod if desired
+  if (parallel == TRUE) {
+    # if ncores not specified, use maximum as default
+    if (is.null(ncores)) {
+      ncores <- parallel::detectCores()
+      message("ncores not specified, using max(", ncores, ") as default")
+    }
+    TMB::openmp(n = ncores, DLL = mod)
+  }
 
   # Create TMB object
   obj <- TMB::MakeADFun(
