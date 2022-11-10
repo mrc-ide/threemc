@@ -60,8 +60,7 @@ threemc_fit_model <- function(fit = NULL,
                               smaller_fit_obj = FALSE,
                               sdreport = FALSE,
                               N = 1000,
-                              parallel = FALSE,
-                              ncores = NULL,
+                              ncores = 1,
                               ...) {
 
   
@@ -188,13 +187,11 @@ threemc_fit_model <- function(fit = NULL,
   randoms <- randoms[randoms %chin% names(parameters)]
   if (length(randoms) == 0) randoms <- NULL
   
-  # Parallelise mod if desired
-  if (parallel == TRUE) {
-    # if ncores not specified, use maximum as default
-    if (is.null(ncores)) {
-      ncores <- parallel::detectCores() - 1
-      message("ncores not specified, using max - 1(", ncores, ") as default")
-    }
+  # Parallelise mod if 
+  if (!is.null(ncores) && ncores > 1) {
+    # pull original cores used 
+    orig_cores <- TMB::openmp(DLL = mod)[[1]] 
+    # set numbers of cores to use for mod (in this function only)
     TMB::openmp(n = ncores, DLL = mod)
   }
 
@@ -232,6 +229,9 @@ threemc_fit_model <- function(fit = NULL,
       ...
     )
   }
+  
+  # reset global cores used for model to original
+  if (!is.null(ncores) && ncores > 1) TMB::openmp(n = orig_cores, DLL = mod)
 
   # sample from TMB fit
   if (sample == TRUE) {
