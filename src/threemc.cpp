@@ -3,8 +3,6 @@
 #include "misc.h"
 // #include "threemc_type.h"
 
-using namespace density;
-
 // /***************************************************/
 // /* Function to inverse logit transform for vectors */
 // /***************************************************/
@@ -55,27 +53,27 @@ using namespace density;
 template <class Type>
 Type threemc_type(
     // sparse model matrices
-    const SparseMatrix<Type> A_mmc,
-    const SparseMatrix<Type> A_tmc,
-    const SparseMatrix<Type> A_mc,
-    const SparseMatrix<Type> B,
-    const SparseMatrix<Type> C,
-    const SparseMatrix<Type> IntMat1,
-    const SparseMatrix<Type> IntMat2,
+    const density::SparseMatrix<Type> A_mmc,
+    const density::SparseMatrix<Type> A_tmc,
+    const density::SparseMatrix<Type> A_mc,
+    const density::SparseMatrix<Type> B,
+    const density::SparseMatrix<Type> C,
+    const density::SparseMatrix<Type> IntMat1,
+    const density::SparseMatrix<Type> IntMat2,
 
-    const SparseMatrix<Type> X_fixed_mmc,
-    const SparseMatrix<Type> X_time_mmc,
-    const SparseMatrix<Type> X_age_mmc,
-    const SparseMatrix<Type> X_space_mmc,
-    const SparseMatrix<Type> X_agetime_mmc,
-    const SparseMatrix<Type> X_agespace_mmc,
-    const SparseMatrix<Type> X_spacetime_mmc,
-    const SparseMatrix<Type> X_fixed_tmc,
-    const SparseMatrix<Type> X_age_tmc,
-    const SparseMatrix<Type> X_space_tmc,
-    const SparseMatrix<Type> X_agespace_tmc,
+    const density::SparseMatrix<Type> X_fixed_mmc,
+    const density::SparseMatrix<Type> X_time_mmc,
+    const density::SparseMatrix<Type> X_age_mmc,
+    const density::SparseMatrix<Type> X_space_mmc,
+    const density::SparseMatrix<Type> X_agetime_mmc,
+    const density::SparseMatrix<Type> X_agespace_mmc,
+    const density::SparseMatrix<Type> X_spacetime_mmc,
+    const density::SparseMatrix<Type> X_fixed_tmc,
+    const density::SparseMatrix<Type> X_age_tmc,
+    const density::SparseMatrix<Type> X_space_tmc,
+    const density::SparseMatrix<Type> X_agespace_tmc,
 
-    const SparseMatrix<Type> Q_space,
+    const density::SparseMatrix<Type> Q_space,
 
     vector<Type> u_fixed_mmc,
     vector<Type> u_fixed_tmc, vector<Type> u_age_mmc,
@@ -133,7 +131,7 @@ Type threemc_type(
   // /// Prior on the temporal random effects ///
   // ////////////////////////////////////////////
   // AR1 Process
-  nll += AR1(rho_mmc_time1)(u_time_mmc);
+  nll += density::AR1(rho_mmc_time1)(u_time_mmc);
 
   // Sum to zero constraint
   nll -= dnorm(u_time_mmc.sum(), Type(0), Type(0.001) * u_time_mmc.size(), TRUE);
@@ -147,9 +145,9 @@ Type threemc_type(
   ///////////////////////////////////////
   /// Prior on the age random effects ///
   ///////////////////////////////////////
-  // AR1 processes
-  nll += AR1(rho_mmc_age1)(u_age_mmc);
-  nll += AR1(rho_tmc_age1)(u_age_tmc);
+  // density::AR1 processes
+  nll += density::AR1(rho_mmc_age1)(u_age_mmc);
+  nll += density::AR1(rho_tmc_age1)(u_age_tmc);
 
   // Sum to zero constraint
   nll -= dnorm(u_age_mmc.sum(), Type(0), Type(0.001) * u_age_mmc.size(), TRUE);
@@ -167,8 +165,8 @@ Type threemc_type(
   /// Prior on the spatial random effects ///
   ///////////////////////////////////////////
   // Gaussian markov random field with prespecified precision matrix
-  nll += GMRF(Q_space)(u_space_mmc);
-  nll += GMRF(Q_space)(u_space_tmc);
+  nll += density::GMRF(Q_space)(u_space_mmc);
+  nll += density::GMRF(Q_space)(u_space_tmc);
 
   // Sum to zero constraints
   nll -= dnorm(u_space_mmc.sum(), Type(0), Type(0.001) * u_space_mmc.size(), TRUE);
@@ -182,10 +180,10 @@ Type threemc_type(
   /// Prior on the interaction random effects ///
   ///////////////////////////////////////////////
   // Interactions: space-time (GMRF x AR1), age-time (AR1 x AR1) and age-space (AR1 x GMRF)
-  nll += SEPARABLE(AR1(rho_mmc_time2), AR1(rho_mmc_age2))(u_agetime_mmc);
-  nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_age3))(u_agespace_mmc);
-  nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_time3))(u_spacetime_mmc);
-  nll += SEPARABLE(GMRF(Q_space), AR1(rho_tmc_age2))(u_agespace_tmc);
+  nll += SEPARABLE(density::AR1(rho_mmc_time2), density::AR1(rho_mmc_age2))(u_agetime_mmc);
+  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_mmc_age3))(u_agespace_mmc);
+  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_mmc_time3))(u_spacetime_mmc);
+  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_tmc_age2))(u_agespace_tmc);
 
   // Sum-to-zero constraints
   for (int i = 0; i < u_agespace_mmc.cols(); i++) {
@@ -311,7 +309,10 @@ template<class Type>
 Type objective_function<Type>::operator() ()
 {
   
-   ////////////////////////
+  
+  using namespace density;
+  
+  ////////////////////////
   /// Data definitions ///
   ////////////////////////
   // Survival analysis matrices
