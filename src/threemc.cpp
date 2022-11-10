@@ -1,57 +1,54 @@
 #define TMB_LIB_INIT R_init_threemc
 #include <TMB.hpp>
+#include "misc.h"
+// #include "threemc_type.h"
 
 using namespace density;
 
-/***************************************************/
-/* Function to inverse logit transform for vectors */
-/***************************************************/
-template <class vector>
-vector invlogit_vec(vector x){
-  vector y = 1.0 / (1.0 + exp(-x));
-  return y;
-}
-/*******************************************************************/
-/* Function to inverse logit transform on a general interval [a,b] */
-/*******************************************************************/
-template <class Type>
-Type geninvlogit(Type x, Type a, Type b){
-  Type y; 
-  y = 1.0 / (1.0 + exp(-x));
-  y = y * (b - a) + a;
-  return y;
-}
-
-/*******************************************************************/
-/* Struct to contain items to Report                               */
-/*******************************************************************/
-template <class Type>
-struct report_values {
-  
-  // Report vectors 
-  vector<Type> u_fixed_mmc;
-  vector<Type> haz_mmc;
-  vector<Type> haz_tmc;
-  vector<Type> haz;
-  vector<Type> inc_mmc;
-  vector<Type> inc_tmc;
-  vector<Type> inc;
-  vector<Type> cum_inc_mmc;
-  vector<Type> cum_inc_tmc;
-  vector<Type> cum_inc;
-  vector<Type> surv;
-  
-  // Constructor (mainly just a dummy!)
-  report_values(SEXP x){ 
-    // a = asVector<Type>(getListElement(x,"a"));
-    u_fixed_mmc = asVector<Type>(getListElement(x,"u_fixed_mmc"));
-    // b = asMatrix<Type>(getListElement(x,"b"));
-    
-  }
-};
-
-
-
+// /***************************************************/
+// /* Function to inverse logit transform for vectors */
+// /***************************************************/
+// template <class vector>
+// vector invlogit_vec(vector x){
+//   vector y = 1.0 / (1.0 + exp(-x));
+//   return y;
+// }
+// /*******************************************************************/
+// /* Function to inverse logit transform on a general interval [a,b] */
+// /*******************************************************************/
+// template <class Type>
+// Type geninvlogit(Type x, Type a, Type b){
+//   Type y;
+//   y = 1.0 / (1.0 + exp(-x));
+//   y = y * (b - a) + a;
+//   return y;
+// }
+// 
+// /*******************************************************************/
+// /* Struct to contain items to Report                               */
+// /*******************************************************************/
+// template <class Type>
+// struct report_values {
+// 
+//   // Report vectors
+//   vector<Type> u_fixed_mmc; // change this to be indicator of model to use
+//   vector<Type> haz_mmc;
+//   vector<Type> haz_tmc;
+//   vector<Type> haz;
+//   vector<Type> inc_mmc;
+//   vector<Type> inc_tmc;
+//   vector<Type> inc;
+//   vector<Type> cum_inc_mmc;
+//   vector<Type> cum_inc_tmc;
+//   vector<Type> cum_inc;
+//   vector<Type> surv;
+// 
+//   // Constructor (mainly just a dummy!)
+//   report_values(SEXP x){
+//     u_fixed_mmc = asVector<Type>(getListElement(x,"u_fixed_mmc"));
+//   }
+// };
+// 
 /*******************************************************************/
 /* Function to calculate nll where we have type information        */
 /*******************************************************************/
@@ -59,47 +56,47 @@ template <class Type>
 Type threemc_type(
     // sparse model matrices
     const SparseMatrix<Type> A_mmc,
-    const SparseMatrix<Type> A_tmc, 
-    const SparseMatrix<Type> A_mc, 
-    const SparseMatrix<Type> B, 
-    const SparseMatrix<Type> C, 
-    const SparseMatrix<Type> IntMat1, 
-    const SparseMatrix<Type> IntMat2, 
-    
-    const SparseMatrix<Type> X_fixed_mmc, 
+    const SparseMatrix<Type> A_tmc,
+    const SparseMatrix<Type> A_mc,
+    const SparseMatrix<Type> B,
+    const SparseMatrix<Type> C,
+    const SparseMatrix<Type> IntMat1,
+    const SparseMatrix<Type> IntMat2,
+
+    const SparseMatrix<Type> X_fixed_mmc,
     const SparseMatrix<Type> X_time_mmc,
-    const SparseMatrix<Type> X_age_mmc, 
+    const SparseMatrix<Type> X_age_mmc,
     const SparseMatrix<Type> X_space_mmc,
-    const SparseMatrix<Type> X_agetime_mmc, 
+    const SparseMatrix<Type> X_agetime_mmc,
     const SparseMatrix<Type> X_agespace_mmc,
-    const SparseMatrix<Type> X_spacetime_mmc, 
+    const SparseMatrix<Type> X_spacetime_mmc,
     const SparseMatrix<Type> X_fixed_tmc,
-    const SparseMatrix<Type> X_age_tmc, 
+    const SparseMatrix<Type> X_age_tmc,
     const SparseMatrix<Type> X_space_tmc,
     const SparseMatrix<Type> X_agespace_tmc,
 
     const SparseMatrix<Type> Q_space,
-  
-    vector<Type> u_fixed_mmc, 
+
+    vector<Type> u_fixed_mmc,
     vector<Type> u_fixed_tmc, vector<Type> u_age_mmc,
-    vector<Type> u_age_tmc, vector<Type> u_time_mmc, vector<Type> u_space_mmc, 
+    vector<Type> u_age_tmc, vector<Type> u_time_mmc, vector<Type> u_space_mmc,
     vector<Type> u_space_tmc,
-    
+
     array<Type> u_agetime_mmc, array<Type> u_agespace_mmc,
     array<Type> u_spacetime_mmc, array<Type> u_agespace_tmc,
-    
+
     Type logsigma_age_mmc, Type logsigma_time_mmc, Type logsigma_space_mmc,
     Type logsigma_agetime_mmc, Type logsigma_agespace_mmc, Type logsigma_spacetime_mmc,
     Type logsigma_age_tmc, Type logsigma_space_tmc, Type logsigma_agespace_tmc,
 
     Type logitrho_mmc_time1, Type logitrho_mmc_time2, Type logitrho_mmc_time3,
-    Type logitrho_mmc_age1, Type logitrho_mmc_age2, Type logitrho_mmc_age3, 
+    Type logitrho_mmc_age1, Type logitrho_mmc_age2, Type logitrho_mmc_age3,
     Type logitrho_tmc_age1, Type logitrho_tmc_age2,
-    
+
     // reference to struct with report values; function can only return nll
     report_values<Type>& report_vals
   ){
-  
+
   Type sigma_age_mmc       = exp(logsigma_age_mmc);
   Type sigma_time_mmc      = exp(logsigma_time_mmc);
   Type sigma_space_mmc     = exp(logsigma_space_mmc);
@@ -121,11 +118,11 @@ Type threemc_type(
 
   //////////////////////////////////
   /// Prior on the fixed effects ///
-  //////////////////////////////////  
-  
+  //////////////////////////////////
+
   // Negative log likelihood definition
   Type nll = Type(0);
-  
+
   // Fixed effects for the medical circumcision rate
   nll -= dnorm(u_fixed_mmc,  Type(0), Type(5), TRUE).sum();
 
@@ -189,21 +186,21 @@ Type threemc_type(
   nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_age3))(u_agespace_mmc);
   nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_time3))(u_spacetime_mmc);
   nll += SEPARABLE(GMRF(Q_space), AR1(rho_tmc_age2))(u_agespace_tmc);
-  
+
   // Sum-to-zero constraints
   for (int i = 0; i < u_agespace_mmc.cols(); i++) {
     nll -= dnorm(u_agespace_mmc.col(i).sum(), Type(0), Type(0.001) * u_agespace_mmc.col(i).size(), true);
-  }  
+  }
   for (int i = 0; i < u_agetime_mmc.cols(); i++) {
     nll -= dnorm(u_agetime_mmc.col(i).sum(), Type(0), Type(0.001) * u_agetime_mmc.col(i).size(), true);
-  }  
+  }
   for (int i = 0; i < u_spacetime_mmc.cols(); i++) {
     nll -= dnorm(u_spacetime_mmc.col(i).sum(), Type(0), Type(0.001) * u_spacetime_mmc.col(i).size(), true);
-  }  
+  }
   for (int i = 0; i < u_agespace_tmc.cols(); i++) {
     nll -= dnorm(u_agespace_tmc.col(i).sum(), Type(0), Type(0.001) * u_agespace_tmc.col(i).size(), true);
-  }  
-  
+  }
+
   // Vectorising the interaction
   vector<Type> u_agespace_mmc_v(u_agespace_mmc);
   vector<Type> u_agetime_mmc_v(u_agetime_mmc);
@@ -268,7 +265,7 @@ Type threemc_type(
   vector<Type> cum_inc_tmc = IntMat1 * inc_tmc;
   vector<Type> cum_inc_mmc = IntMat1 * inc_mmc;
   vector<Type> cum_inc = cum_inc_tmc + cum_inc_mmc;
-  
+
   //////////////////
   /// Likelihood ///
   //////////////////
@@ -290,7 +287,7 @@ Type threemc_type(
   ///////////////////////////
   /// Reporting variables ///
   ///////////////////////////
-  
+
   /// Assign report values to struct ///
   report_vals.haz_mmc = haz_mmc;
   report_vals.haz_tmc = haz_tmc;         // Traditional hazard rate
@@ -302,7 +299,7 @@ Type threemc_type(
   report_vals.cum_inc_mmc = cum_inc_mmc; // Medical circumcision cumulative incidence rate
   report_vals.cum_inc = cum_inc;         // Total circumcision cumulative incidence rate
   report_vals.surv = surv;               // Survival probabilities
-  
+
   /////////////////////////////////////////
   /// Returning negative log likelihood ///
   /////////////////////////////////////////
