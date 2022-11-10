@@ -1,14 +1,7 @@
 #define TMB_LIB_INIT R_init_threemc
 #include <TMB.hpp>
-// #include <Rcpp.h> 
-// #include <Eigen/SparseCore>
-#include <Eigen/Sparse>
-// #include "functions.h"
-
 
 using namespace density;
-using namespace Eigen;
-// using namespace Rcpp;
 
 /***************************************************/
 /* Function to inverse logit transform for vectors */
@@ -28,6 +21,36 @@ Type geninvlogit(Type x, Type a, Type b){
   y = y * (b - a) + a;
   return y;
 }
+
+/*******************************************************************/
+/* Struct to contain items to Report                               */
+/*******************************************************************/
+template <class Type>
+struct report_values {
+  
+  // Report vectors 
+  vector<Type> u_fixed_mmc;
+  vector<Type> haz_mmc;
+  vector<Type> haz_tmc;
+  vector<Type> haz;
+  vector<Type> inc_mmc;
+  vector<Type> inc_tmc;
+  vector<Type> inc;
+  vector<Type> cum_inc_mmc;
+  vector<Type> cum_inc_tmc;
+  vector<Type> cum_inc;
+  vector<Type> surv;
+  
+  // Constructor (mainly just a dummy!)
+  report_values(SEXP x){ 
+    // a = asVector<Type>(getListElement(x,"a"));
+    u_fixed_mmc = asVector<Type>(getListElement(x,"u_fixed_mmc"));
+    // b = asMatrix<Type>(getListElement(x,"b"));
+    
+  }
+};
+
+
 
 /*******************************************************************/
 /* Function to calculate nll where we have type information        */
@@ -71,7 +94,10 @@ Type threemc_type(
 
     Type logitrho_mmc_time1, Type logitrho_mmc_time2, Type logitrho_mmc_time3,
     Type logitrho_mmc_age1, Type logitrho_mmc_age2, Type logitrho_mmc_age3, 
-    Type logitrho_tmc_age1, Type logitrho_tmc_age2
+    Type logitrho_tmc_age1, Type logitrho_tmc_age2,
+    
+    // reference to struct with report values; function can only return nll
+    report_values<Type>& report_vals
   ){
   
   Type sigma_age_mmc       = exp(logsigma_age_mmc);
@@ -242,7 +268,7 @@ Type threemc_type(
   vector<Type> cum_inc_tmc = IntMat1 * inc_tmc;
   vector<Type> cum_inc_mmc = IntMat1 * inc_mmc;
   vector<Type> cum_inc = cum_inc_tmc + cum_inc_mmc;
-
+  
   //////////////////
   /// Likelihood ///
   //////////////////
@@ -265,17 +291,17 @@ Type threemc_type(
   /// Reporting variables ///
   ///////////////////////////
   
-  //  Will need to somehow include these in the main file
-  // REPORT(haz_mmc);     // Medical hazard rate
-  // REPORT(haz_tmc);     // Traditional hazard rate
-  // REPORT(haz);         // Total hazard rate
-  // REPORT(inc_tmc);     // Traditional circumcision incidence rate
-  // REPORT(inc_mmc);     // Medical circumcision incidence rate
-  // REPORT(inc);         // Total circumcision incidence rate
-  // REPORT(cum_inc_tmc); // Traditional circumcision cumulative incidence rate
-  // REPORT(cum_inc_mmc); // Medical circumcision cumulative incidence rate
-  // REPORT(cum_inc);     // Total circumcision cumulative incidence rate
-  // REPORT(surv);        // Survival probabilities
+  /// Assign report values to struct ///
+  report_vals.haz_mmc = haz_mmc;
+  report_vals.haz_tmc = haz_tmc;         // Traditional hazard rate
+  report_vals.haz = haz;                 // Total hazard rate
+  report_vals.inc_tmc = inc_tmc;         // Traditional circumcision incidence rate
+  report_vals.inc_mmc = inc_mmc;         // Medical circumcision incidence rate
+  report_vals.inc = inc;                 // Total circumcision incidence rate
+  report_vals.cum_inc_tmc = cum_inc_tmc; // Traditional circumcision cumulative incidence rate
+  report_vals.cum_inc_mmc = cum_inc_mmc; // Medical circumcision cumulative incidence rate
+  report_vals.cum_inc = cum_inc;         // Total circumcision cumulative incidence rate
+  report_vals.surv = surv;               // Survival probabilities
   
   /////////////////////////////////////////
   /// Returning negative log likelihood ///
@@ -364,6 +390,9 @@ Type objective_function<Type>::operator() ()
   // Negative log likelihood definition
   Type nll = Type(0);
   
+  // Define covariance structure for the conditional model
+  DATA_STRUCT(report_vals, report_values);
+  
   nll = threemc_type(
     
     A_mmc, A_tmc, A_mc, B, C, IntMat1, IntMat2, 
@@ -388,38 +417,28 @@ Type objective_function<Type>::operator() ()
     
     logitrho_mmc_time1, logitrho_mmc_time2, logitrho_mmc_time3,
     logitrho_mmc_age1, logitrho_mmc_age2, logitrho_mmc_age3, logitrho_tmc_age1,
-    logitrho_tmc_age2
-  );
-    // A_mmc, A_tmc, A_mc, B, C, IntMat1, IntMat2, 
-    // 
-    // X_fixed_mmc, X_time_mmc, X_age_mmc, X_space_mmc, X_agetime_mmc, 
-    // X_agespace_mmc, X_spacetime_mmc, X_fixed_tmc, X_age_tmc, X_space_tmc,
-    // X_agespace_tmc,
-    // 
-    // Q_space,
-    // 
-    // u_fixed_mmc, u_fixed_tmc, u_age_mmc, u_age_tmc, u_time_mmc, u_space_mmc, 
-    // u_space_tmc, 
-    // 
-    // u_agetime_mmc, u_agespace_mmc, u_spacetime_mmc, u_agespace_tmc, 
-    // u_agespace_tmc, 
-    // 
-    // // sigma_age_mmc, sigma_time_mmc, sigma_space_mmc,
-    // // sigma_agetime_mmc, sigma_agespace_mmc, sigma_spacetime_mmc,
-    // // sigma_age_tmc, sigma_space_tmc, sigma_agespace_tmc,
-    // 
-    // logsigma_age_mmc, logsigma_time_mmc, logsigma_space_mmc,
-    // logsigma_agetime_mmc, logsigma_agespace_mmc, logsigma_spacetime_mmc,
-    // logsigma_age_tmc, logsigma_space_tmc, logsigma_agespace_tmc,
-    // 
-    // // rho_mmc_time1, rho_mmc_time2, rho_mmc_time3,
-    // // rho_mmc_age1, rho_mmc_age2, rho_mmc_age3, rho_tmc_age1,
-    // // rho_tmc_age2 
-    // 
-    // logitrho_mmc_time1, logitrho_mmc_time2, logitrho_mmc_time3,
-    // logitrho_mmc_age1, logitrho_mmc_age2, logitrho_mmc_age3, logitrho_tmc_age1,
-    // logitrho_tmc_age2 
-  // );
+    logitrho_tmc_age2,
     
+    report_vals
+  );
+  
+  ///////////////////////////
+  /// Reporting variables ///
+  ///////////////////////////
+  
+  REPORT(report_vals.haz_mmc);     // Medical hazard rate
+  REPORT(report_vals.haz_tmc);     // Traditional hazard rate
+  REPORT(report_vals.haz);         // Total hazard rate
+  REPORT(report_vals.inc_tmc);     // Traditional circumcision incidence rate
+  REPORT(report_vals.inc_mmc);     // Medical circumcision incidence rate
+  REPORT(report_vals.inc);         // Total circumcision incidence rate
+  REPORT(report_vals.cum_inc_tmc); // Traditional circumcision cumulative incidence rate
+  REPORT(report_vals.cum_inc_mmc); // Medical circumcision cumulative incidence rate
+  REPORT(report_vals.cum_inc);     // Total circumcision cumulative incidence rate
+  REPORT(report_vals.surv);        // Survival probabilities
+    
+  /////////////////////////////////////////
+  /// Returning negative log likelihood ///
+  /////////////////////////////////////////
   return(nll);
 }
