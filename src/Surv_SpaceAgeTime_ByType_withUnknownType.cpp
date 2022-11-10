@@ -103,8 +103,9 @@ Type objective_function<Type>::operator() ()
   //////////////////////////////////
   /// Prior on the fixed effects ///
   //////////////////////////////////
-  // Negative log likelihood definition
-  Type nll = Type(0);
+  // (parallel) Negative log likelihood definition
+  // Type nll = Type(0);
+  parallel_accumulator<Type> nll(this);
   
   // Fixed effects for the medical circumcision rate
   nll -= dnorm(u_fixed_mmc,  Type(0), Type(5), TRUE).sum();
