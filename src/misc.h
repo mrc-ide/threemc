@@ -1,3 +1,5 @@
+/* Odd Functions, Including Report Structure */
+
 /***************************************************/
 /* Function to inverse logit transform for vectors */
 /***************************************************/
@@ -36,7 +38,7 @@ struct report_values {
   vector<Type> cum_inc;
   vector<Type> surv;
   
-  // Constructor (mainly just a dummy!)
+  // Constructor (just a dummy! Would like to change to be model indicator)
   report_values(SEXP x){ 
     u_fixed_mmc = asVector<Type>(getListElement(x,"u_fixed_mmc"));
   }
