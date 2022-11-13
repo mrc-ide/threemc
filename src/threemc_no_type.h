@@ -1,4 +1,4 @@
-#include "misc.h"
+/// @file threemc_type.h
 
 /*******************************************************************/
 /* Function to calculate nll where we have NO type information     */
