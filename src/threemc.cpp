@@ -1,5 +1,8 @@
+/// @file threemc.cpp
+
 #define TMB_LIB_INIT R_init_threemc
 #include <TMB.hpp>
+#include "utils.h"
 #include "threemc_type.h"
 
 /************************************************************************/
