@@ -60,6 +60,12 @@ threemc_prepare_model_data <- function( # data
     )
     area_lev <- max(out$area_level, na.rm = TRUE)
   }
+  
+  type_info <- TRUE
+  if(all(out$obs_mmc == 0) && all(out$obs_tmc == 0)) {
+    message("No circumcision type information present in `out`")
+    type_info <- FALSE
+  }
 
   # Create design matrices for fixed effects and temporal, age, space and
   # interaction random effects
@@ -127,8 +133,8 @@ threemc_prepare_model_data <- function( # data
     message("rw_order = NULL, AR 1 temporal prior specified")
   }
 
-  # Combine Data for TMB model
-  return(dat_tmb)
+  # Combine Data for TMB model (also add whether type info is present in out)
+  return(c(dat_tmb, "type_info" = type_info))
 }
 
 #### create_design_matrices ####

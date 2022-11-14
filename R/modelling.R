@@ -80,14 +80,8 @@ threemc_fit_model <- function(fit = NULL,
     # Start with model with no type information
     mod <- "Surv_SpaceAgeTime"
     
-    # Column numbers matching suggests model with MMC/TMC split
-    ncolums <- ncol(dat_tmb$A_mc)
-    cond <- all(
-      sapply(with(dat_tmb, list(A_mc, A_mmc, A_tmc, B, C)), function(x) {
-        ncol(x) == ncolums
-      })
-    )
-    if (cond == TRUE) {
+    # determine whether there was information on circumcision type in `out`
+    if (dat_tmb$type_info == TRUE) {
       mod <- paste0(mod, "_ByType_withUnknownType")
     }
     
