@@ -59,4 +59,4 @@ LinkingTo:
     RcppEigen (>= 0.3.3.9.1),
 Config/testthat/edition: 3
 Remotes:
-    mrc-ide/naomi
+    paddy7wb/naomi@naomi.options_remote
