@@ -250,7 +250,8 @@ prepare_sample_data <- function(N = 100,
 
     # Append together
     tmp <- as.list(mget(paste0("tmpx_", 1:12))) %>%
-      data.table::rbindlist(use.names = TRUE) %>%
+      # fill needed for no type models as tmpx_i may have all NAs
+      data.table::rbindlist(use.names = TRUE, fill = TRUE) %>%
       # only keep relevant columns
       dplyr::select(
         .data$area_id, .data$area_name,
