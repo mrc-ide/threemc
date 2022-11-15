@@ -26,7 +26,15 @@ TMB model.}
 outputted by \link[threemc]{compute_quantiles}.}
 
 \item{survey_circumcision_test}{\code{survey_circumcision} dataset loaded with
-\link[threemc]{read_circ_data}.}
+\link[threemc]{read_circ_data}. \emph{Do not preprocess with}
+\emph{\link[threemc]{prepare_survey_data}} If performing an OOS validation of
+model performance, you should filter this dataset for the years "held back"
+from your model fit.}
+
+\item{areas}{\code{sf} shapefile for specific country/region. Only required
+if \code{survey_circumcision_test} has records for area levels higher (i.e. more
+granular) than \code{area_lev}, in which case they must be reassigned to their
+\code{parent_area_id} at \code{area_lev}, Default = NULL.}
 
 \item{area_lev}{Area level you wish to aggregate to when performing posterior
 predictive comparisons with survey estimates.}
