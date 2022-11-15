@@ -249,9 +249,12 @@ threemc_oos_ppc <- function(fit,
     )
   }
 
-  # filter to modelled area_lev
+  # filter to modelled area_lev and ages
   survey_estimate_prep <- survey_circumcision_test %>%
-    dplyr::filter(.data$area_level == area_lev)
+    dplyr::filter(
+      .data$area_level == area_lev, 
+      .data$age < max(out_types$age)
+    )
 
   # join with samples
   survey_estimate_ppd <- survey_estimate_prep %>%
@@ -261,11 +264,19 @@ threemc_oos_ppc <- function(fit,
         dplyr::select(area_id, year, age, dplyr::starts_with("samp"))
     )
 
+  # stop (or give message) for unusable survey_estimate_ppd/NAs in sample cols
   if (nrow(survey_estimate_ppd) == 0) {
-      stop(
-          "No matches between test data (survey_circumcision_test) and model results,",
-          " (out), check inputs"
-      )
+    stop(
+      "No matches between test data (survey_circumcision_test) and model results,",
+      " (out), check inputs"
+    )
+  }
+  samp_cols <- grepl("samp_", names(survey_estimate_ppd))
+  if (any(is.na(survey_estimate_ppd[, samp_cols]))) {
+    message(
+      "Some NAs when matching PPD samples and test survey data, check ",
+      "that ages and years match in both"
+    )
   }
 
 
@@ -293,7 +304,9 @@ threemc_oos_ppc <- function(fit,
   #   ) %>%
   #   dplyr::ungroup() %>%
 
-  # switch samp columns to long "predicted" column
+  # switch samp columns to long "predicted" column 
+  # Could probably do something less memory intensive here!
+  set.seed(123)
   survey_estimate_ppd_long <- survey_estimate_ppd %>%
     tidyr::pivot_longer(
       starts_with("samp"),
@@ -305,6 +318,7 @@ threemc_oos_ppc <- function(fit,
       simulated = stats::rbinom(dplyr::n(), 1, prob = .data$predicted)
     )
 
+  
   #### Group by Age Group ####
 
   # create df to match five year age groups to single ages
@@ -341,7 +355,7 @@ threemc_oos_ppc <- function(fit,
   }
   
   # find quantiles for age group PPDs
-  # TODO: This isn't right for ZMB!!! Should be a lot better
+  # TODO: Can do a better across here!
   ppd_quantiles <- survey_estimate_age_group %>%
     # survey_estimate_age_group %>%
     group_by(age_group) %>%
