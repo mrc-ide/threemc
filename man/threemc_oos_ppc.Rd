@@ -7,15 +7,12 @@
 threemc_oos_ppc(
   fit,
   out,
-  populations,
-  survey_estimate,
-  removed_years = NULL,
-  type = "coverage",
+  survey_circumcision_test,
+  areas = NULL,
   area_lev = 1,
   age_groups = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39",
-    "40-44", "45-49", "50-54", "54-59", "0+", "10+", "15+", "10-24", "15-24", "10-29",
-    "15-29", "10-39", "15-39", "10-49", "15-49"),
-  CI_range = 0.95,
+    "40-44", "45-49", "50-54", "54-59"),
+  CI_range = c(0.5, 0.8, 0.95),
   N = 1000,
   compare_stats = TRUE
 )
@@ -25,32 +22,22 @@ threemc_oos_ppc(
 among other things, the optimised parameters and subsequent sample for our
 TMB model.}
 
-\item{out}{Unaggregated results of model fitting outputted by
-\link[threemc]{compute_quantiles}.}
+\item{out}{Results of model fitting (at specified model \code{area_lev})
+outputted by \link[threemc]{compute_quantiles}.}
 
-\item{populations}{Single age male population counts by space and time.}
-
-\item{survey_estimate}{Circumcision estimates based on empirical observations
-from surveys.}
-
-\item{removed_years}{Years removed from dataset used to fit model
-(i.e. "withheld" surveys from OOS model fitting). Optionally, can specify as
-NULL to perform non-OOS PPC using all surveys, Default: NULL}
-
-\item{type}{The desired circumcision estimate. Can be one of
-"probability", "incidence" or "coverage".}
+\item{survey_circumcision_test}{\code{survey_circumcision} dataset loaded with
+\link[threemc]{read_circ_data}.}
 
 \item{area_lev}{Area level you wish to aggregate to when performing posterior
 predictive comparisons with survey estimates.}
 
 \item{age_groups}{Age groups to aggregate by, Default:
 c("0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
-"30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
-"0+",    "10+",   "15+",   "15-24", "10-24", 15-29",
-"10-29", "15-39", "10-39", "15-49", "10-49")}
+"30-34", "35-39", "40-44", "45-49", "50-54", "54-59")}
 
 \item{CI_range}{CI interval about which you want to compare empirical and
-posterior predictive estimates for left out surveys, Default = 0.95}
+posterior predictive estimates for left out surveys,
+Default = c(0.5, 0.8, 0.95)}
 
 \item{N}{Number of samples to generate, Default: 1000}
 
