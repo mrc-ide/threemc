@@ -207,7 +207,6 @@ threemc_oos_ppc <- function(fit,
   #### Binomial Sample from PPD ####
 
   # switch samp columns to long "predicted" column 
-  # Could probably do something less memory intensive here!
   set.seed(123)
   survey_estimate_ppd_long <- survey_estimate_ppd %>%
     tidyr::pivot_longer(
@@ -216,11 +215,11 @@ threemc_oos_ppc <- function(fit,
       values_to = "predicted"
     ) %>%
     # sample at individual level from binomial dist with success prob from PPD
-    # TODO: Try do this with an apply instead
     dplyr::mutate(
       simulated = stats::rbinom(dplyr::n(), 1, prob = .data$predicted)
     )
-
+  gc()
+  
   
   #### Group by Age Group ####
 
@@ -242,12 +241,13 @@ threemc_oos_ppc <- function(fit,
     ) %>%
     # calculate weighted means for observed and simulated proportions
     dplyr::summarise(
-      # better to do with wide format, recalculating the same value each time!
+      # could be a better way to do this, repeated computation happening here
       mean     = stats::weighted.mean(.data$circ_status, .data$indweight), 
       sim_prop = stats::weighted.mean(.data$simulated, .data$indweight),
       .groups = "drop"
     )
-
+  gc()
+  
   # give warning about missing age groups
   missing_age_groups <- age_groups[
     !age_groups %chin% survey_estimate_age_group$age_group
@@ -275,7 +275,7 @@ threemc_oos_ppc <- function(fit,
       ppd_0.975  = stats::quantile(.data$sim_prop, 0.975)
     )
   
-
+  
   #### Posterior Predictive Check for Prevalence Estimations ####
 
   # fun to calculate where in model sample distribution empirical values are
@@ -343,62 +343,24 @@ threemc_oos_ppc <- function(fit,
   #### Calculate ELPD, CRPS & Error Stats ####
 
   # compute summary stats for comparison with other models, if specified
-  if (compare_stats == TRUE) {
-
-    # Actual OOS survey obs vs posterior predictive distribution for each
-    actual <- survey_estimate_ppd$mean
-    predictions <- dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
-
-    # calculate ELPD
-    elpd <- loo::elpd(t(predictions))
-    
-    # calculate CRPS
-    crps <- scoringutils::crps_sample(
-      true_values = actual,
-      predictions = as.matrix(predictions)
-    )
-    
-    # add pointwise elpd and crps to output df
-    survey_estimate_ppd$elpd <- elpd$pointwise[, 1]
-    survey_estimate_ppd$crps <- crps
-
-    # calculate error stats (MAE, MSE & RMSE)
-
-    # errors for each sample from PPD for each observation
-    errors <- actual - as.matrix(predictions) # errors
-    ae <- abs(errors) # absolute errors
-    se <- errors^2 # squared error
-
-    # mean errors for each observations
-    mae_vec <- apply(ae, 1, mean)
-    mse_vec <- apply(se, 1, mean)
-    rmse_vec <- sqrt(mse_vec)
-
-    # mean errors overall
-    mae <- mean(mae_vec)
-    mse <- mean(mse_vec)
-    rmse <- sqrt(mse)
-
-    # Add error stats to return df
-    survey_estimate_ppd <- survey_estimate_ppd %>%
-      dplyr::mutate(
-        mae = mae_vec,
-        mse = mse_vec,
-        rmse = rmse_vec
-      )
-
-    summary_stats <- c(
-      summary_stats,
-      list(
-        "elpd" = elpd,
-        "crps" = crps,
-        "mae"  = mae,
-        "mse"  = mse,
-        "rmse" = rmse
-      )
-    )
-  }
-
+  # Actual OOS survey obs vs posterior predictive distribution for each
+  actual <- survey_estimate_ppd$mean
+  predictions <- dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
+  
+  # calculate elpd, crps, mean error stats
+  actual_pred_comparison <- compare_predictions(actual, predictions)
+  
+  # Add pointwise error stats to return df
+  survey_estimate_ppd <- dplyr::bind_cols(
+    survey_estimate_ppd, actual_pred_comparison$summary_stats_df
+  )
+  
+  # add mean error stats to return list
+  summary_stats <- c(
+    summary_stats,
+    actual_pred_comparison$summary_stats
+  )
+  
   # move sample columns to the end (also moves summary cols to the start)
   survey_estimate_ppd <- survey_estimate_ppd %>%
     dplyr::relocate(dplyr::contains("samp"), .after = dplyr::everything())
@@ -407,5 +369,70 @@ threemc_oos_ppc <- function(fit,
   return(list(
     "ppc_df"        = survey_estimate_ppd,
     "summary_stats" = summary_stats
+  ))
+}
+
+#' @title Define circumcision type
+#' @description Using `circ_who` and `circ_where`, determines survey 
+#' type. 
+#' @param actual `vector` of observed values. 
+#' @param predictions `dataframe/tibble/data.table` or `matrix` with 
+#' a row for each value in `actual`, and a column for each prediction. 
+#' @return List of: 
+#' \itemize{
+#'  \item{"summary_stats_df"}{pointwise prediction stats as a `data.frame`}
+#'  \item{"summary_stats"}{mean/summed overall prediction stats}
+#' }
+#' @export
+#' @rdname reassign_surey_level
+#' @keywords internal
+compare_predictions <- function(actual, predictions) {
+  
+  # convert to matrix (required for error calculations)
+  predictions <- as.matrix(predictions)
+  
+  # calculate ELPD
+  elpd <- loo::elpd(t(predictions))
+  
+  # calculate CRPS
+  crps <- scoringutils::crps_sample(
+    true_values = actual,
+    predictions = as.matrix(predictions)
+  )
+  
+  # calculate error stats (MAE, MSE & RMSE)
+  
+  # errors for each sample from PPD for each observation
+  errors <- actual - predictions # errors
+  ae <- abs(errors) # absolute errors
+  se <- errors^2 # squared error
+  
+  # mean errors for each observations
+  mae_vec <- apply(ae, 1, mean)
+  mse_vec <- apply(se, 1, mean)
+  rmse_vec <- sqrt(mse_vec)
+  
+  # mean errors overall
+  mae <- mean(mae_vec)
+  mse <- mean(mse_vec)
+  rmse <- sqrt(mse)
+  
+  return(list(
+    # pointwise summaries
+    "summary_stats_df" = data.frame(
+      "elpd" = elpd$pointwise[, 1], # pointwise elpd
+      "crps" = crps,
+      "mae"  = mae_vec,
+      "mse"  = mse_vec,
+      "rmse" = rmse_vec
+    ), 
+    # mean summaries
+    "summary_stats" = list(
+      "elpd" = elpd,
+      "crps" = sum(crps),
+      "mae"  = mae,
+      "mse"  = mse,
+      "rmse" = rmse
+    )
   ))
 }
