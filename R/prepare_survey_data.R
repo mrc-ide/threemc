@@ -323,7 +323,6 @@ prepare_survey_data <- function(areas,
   ) %>% 
     # remove cols which will be joined in from areas below
     dplyr::select(-c(
-      # dplyr::matches("parent_area_id"), dplyr::matches("area_name"), matches("area_level")
       dplyr::any_of(c("parent_area_id", "area_name", "area_level"))
     ))
   
@@ -512,12 +511,11 @@ find_circ_type <- function(survey_circumcision) {
 reassign_survey_level <- function(survey_circumcision, areas, area_lev) {
   for (i in seq_len(max(areas$area_level))) {
     survey_circumcision <- survey_circumcision %>%
-      # merge on boundary information
-      # dplyr::select(-dplyr::matches("area_name")) %>%
-      # remove all cols also in areas, except area_id, which is used to join
+      # remove cols also in areas, except area_id, which is used to join
       dplyr::select(
         -dplyr::any_of(names(areas)[names(areas) != "area_id"])
       ) %>% 
+      # merge on boundary information
       dplyr::left_join(areas, by = "area_id") %>%
       # take area_id to be parent_area_id, unless (at least) at area_lev
       dplyr::mutate(
@@ -526,12 +524,7 @@ reassign_survey_level <- function(survey_circumcision, areas, area_lev) {
           as.character(.data$area_id),
           as.character(.data$parent_area_id)
         )
-      ) %>%
-      # remove parent_area_id etc, to join in next least granular equivalents
-      # dplyr::select(-c(
-      #     matches("parent_area_id"), matches("area_name"), matches("area_level")
-      # )) %>% 
-      identity()
+      )
   }  
   return(survey_circumcision)
 }

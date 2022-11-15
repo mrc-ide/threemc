@@ -49,17 +49,6 @@ threemc_oos_ppc <- function(fit,
                             compare_stats = TRUE) {
 
 
-  # check that all age groups are in survey estimates
-  # TODO: Must check this later with test data
-  # missing_age_groups <- age_groups[!age_groups %chin% survey_estimate$age_group]
-  # if (length(missing_age_groups) > 0) {
-  #   message(paste0(
-  #     "The following `age_groups` are missing in `survey_estimate`:\n",
-  #     paste(missing_age_groups, collapse = ", ")
-  #   ))
-  # }
-
-
   # remove unneeded columns from survey_circumcision_test
   unneeded_cols <- c(
       "individual_id", "cluster_id", "household",
@@ -91,30 +80,9 @@ threemc_oos_ppc <- function(fit,
 
   # filter to area_lev
   out <- dplyr::filter(out, .data$area_level == area_lev)
-  # join in populations
-  # dplyr::left_join(
-  #   dplyr::select(
-  #     populations,
-  #     -c(dplyr::matches("area_name"), dplyr::matches("area_level"))
-  #   )
-  # )
 
-  # pull sample name corresponding with type column values in results
-  # sample_colnames <- switch(type,
-  #   "coverage"    = "cum_inc",
-  #   "incidence"   = "inc",
-  #   "probability" = "haz"
-  # )
-  # if (is.null(sample_colnames)) {
-  #   stop(
-  #     "Please choose a valid type
-  #       (one of 'probability', 'incidence', 'prevalence'"
-  #   )
-  # }
-
-  # pull N "cum_inc" samples for each desired output from fit
+  # pull N "cum_inc" (only doing coverage) samples from fit
   samples <- fit$sample[
-    # grepl(paste0("^", sample_colnames), names(fit$sample))
     grepl("cum_inc", names(fit$sample))
   ]
   # ensure names for MC columns in fit have the suffix "_mc"
@@ -128,22 +96,15 @@ threemc_oos_ppc <- function(fit,
   # TEMP: take only medical
   samples <- samples[names(samples) == "MMC coverage"]
   survey_circumcision_test <- find_circ_type(survey_circumcision_test) %>%
-      # filter(type %in% c("MMC", "Missing")) %>%
-      # mutate(type = "MMC Coverage")
       # Any non-medical circumcision is treated as a "competing risk"
-      dplyr::mutate(type = ifelse(.data$type == "MMC", "MMC Coverage", "Missing"))
+      dplyr::mutate(
+        type = ifelse(.data$type == "MMC", "MMC Coverage", "Missing")
+      )
 
   #### Split out between types ####
 
-  # if (is.null(removed_years)) {
-  #   message(
-  #     "No `removed_years` specified, performing non-OOS PPC using all surveys"
-  #   )
-  #   removed_years <- unique(out$year)
-  # }
-
   # join coverage col of interest with samples
-  # NOTE: Only doing for medical now, so can change
+  # NOTE: Only doing for medical now, need to expand for other types
   out_types <- lapply(names(samples), function(x) {
     out_spec <- dplyr::select(out, .data$area_id:.data$population)
     n <- length(out_spec)
@@ -152,79 +113,18 @@ threemc_oos_ppc <- function(fit,
   }) %>%
     dplyr::bind_rows() %>%
     # filter for test year(s) and modelled area level
-    # dplyr::filter(.data$year %in% removed_years, .data$area_level == area_lev)
     dplyr::filter(
       .data$year %in% survey_circumcision_test$year,
       .data$area_level == area_lev
     )
 
-  ## out_types <- dplyr::select(out, .data$area_id:.data$population)
-  ## n <- length(out_types)
-  ## out_types[, (n + 1):(n + N)] <- samples
-  ## out_types <- dplyr::mutate(out_types, indicator = "MMC coverage") %>%
-  ##     # filter for test year(s) and modelled area level
-  ##     dplyr::filter(
-  ##         .data$year %in% survey_circumcision_test$year,
-  ##         .data$area_level == area_lev
-  ##     )
-
   # change col names to work in aggregate_sample_age_group
   names(out_types)[grepl("V", names(out_types))] <- paste0("samp_", 1:N)
-  # out_types <- dplyr::rename(out_types, type = .data$indicator)
   out_types <- out_types %>%
     dplyr::relocate(type = .data$indicator, .before = dplyr::contains("samp"))
 
 
-  #### Aggregate to Age Groups ####
-
-  # out_types_agegroup <- aggregate_sample_age_group(
-  #   out_types,
-  #   aggr_cols = c(
-  #     "area_id", "area_name", "area_level", "year", "type"
-  #   ),
-  #   num_cols = paste0("samp_", seq_len(N)),
-  #   age_groups = age_groups
-  # ) %>%
-  #   # rename to match survey points df
-  #   dplyr::rename(indicator = .data$type) %>%
-  #   dplyr::relocate(
-  #     dplyr::contains("samp_"),
-  #     .after = dplyr::everything()
-  #   ) %>%
-  #   # filter for at least area_level 1
-  #   dplyr::filter(.data$area_level == min(area_lev, 1))
-  #
-  # # check for NAs in posterior predictive distributions
-  # stopifnot(!all(is.na(
-  #   as.matrix(dplyr::select(out_types_agegroup, dplyr::contains("samp")))
-  # )))
-
-
   #### Prepare Survey Points & Join with Samples ####
-
-  # survey_estimate_prep <- survey_estimate %>%
-  #   # filter for OOS year(s) and modelled area_level
-  #   dplyr::filter(
-  #     .data$year %in% removed_years,
-  #     .data$area_level == min(area_lev, 1),
-  #     .data$age_group %chin% out_types_agegroup$age_group,
-  #     .data$mean != 0
-  #   ) %>%
-  #   # ignore survey_id, merging for the same year
-  #   dplyr::group_by(
-  #     .data$area_id,
-  #     .data$year,
-  #     .data$age_group,
-  #     .data$indicator
-  #   ) %>%
-  #   dplyr::summarise(dplyr::across(
-  #     # dplyr::all_of(c("mean", "upper", "lower")),
-  #     dplyr::all_of(c("mean", "upper", "lower", "n_eff_kish")),
-  #     sum,
-  #     na.rm = TRUE
-  #   ), .groups = "drop") %>%
-  #   # floor kish effective sample size
-  #   dplyr::mutate(n_eff_kish = floor(.data$n_eff_kish))
 
   # reassign test data area level to area_lev, if any are more granular
   if (any(survey_circumcision_test$area_level > area_lev)) {
@@ -249,16 +149,17 @@ threemc_oos_ppc <- function(fit,
   # join with samples
   survey_estimate_ppd <- survey_estimate_prep %>%
     dplyr::left_join(
-      # out_types_agegroup
       out_types %>%
-        dplyr::select(.data$area_id, .data$year, .data$age, dplyr::starts_with("samp"))
+        dplyr::select(
+          .data$area_id, .data$year, .data$age, dplyr::starts_with("samp")
+        )
     )
 
   # stop (or give message) for unusable survey_estimate_ppd/NAs in sample cols
   if (nrow(survey_estimate_ppd) == 0) {
     stop(
-      "No matches between test data (survey_circumcision_test) and model results,",
-      " (out), check inputs"
+      "No matches between test data (survey_circumcision_test) and model",
+      " results, (out), check inputs"
     )
   }
   samp_cols <- grepl("samp_", names(survey_estimate_ppd))
@@ -271,28 +172,6 @@ threemc_oos_ppc <- function(fit,
 
 
   #### Binomial Sample from PPD ####
-
-  # pull out columns with samples and n_eff_kish
-  # samp_df <- survey_estimate_ppd %>%
-  #   dplyr::select(.data$n_eff_kish, dplyr::contains("samp_"))
-  #
-  # # take N samples from n_eff_kish trials with success probability "samp_x"
-  # samples_binom <- data.frame(t(apply(
-  #   samp_df, 1, function(x) {
-  #     stats::rbinom(N, x["n_eff_kish"], x[names(x) != "n_eff_kish"])
-  #   }
-  # )))
-  # names(samples_binom) <- paste0("samp_", seq_len(N))
-  #
-  # survey_estimate_ppd_dist <- survey_estimate_ppd %>%
-  #   # replace coverage sample columns with binomial samples
-  #   dplyr::select(-dplyr::contains("samp_")) %>%
-  #   dplyr::bind_cols(samples_binom) %>%
-  #   # divide binomial samples by n_eff_kish; compare these to survey estimates
-  #   dplyr::mutate(
-  #     dplyr::across(dplyr::contains("samp_"), ~ .x / .data$n_eff_kish)
-  #   ) %>%
-  #   dplyr::ungroup() %>%
 
   # switch samp columns to long "predicted" column 
   # Could probably do something less memory intensive here!
@@ -324,11 +203,13 @@ threemc_oos_ppc <- function(fit,
     # remove missing age groups and unknown circ_status
     dplyr::filter(!is.na(.data$circ_status), !is.na(.data$age_group)) %>%
     # aggregate single ages to age groups
-    dplyr::group_by(.data$area_id, .data$year, .data$age_group, .data$sample) %>%
+    dplyr::group_by(
+      .data$area_id, .data$year, .data$age_group, .data$sample
+    ) %>%
     # calculate weighted means for observed and simulated proportions
     dplyr::summarise(
-      # obs_prop = stats::weighted.mean(circ_status, indweight), # replace
-      mean     = stats::weighted.mean(.data$circ_status, .data$indweight), # better to do this with wide format, recalculating the same value each time here!
+      # better to do with wide format, recalculating the same value each time!
+      mean     = stats::weighted.mean(.data$circ_status, .data$indweight), 
       sim_prop = stats::weighted.mean(.data$simulated, .data$indweight),
       .groups = "drop"
     )
@@ -350,7 +231,6 @@ threemc_oos_ppc <- function(fit,
     # survey_estimate_age_group %>%
     dplyr::group_by(.data$area_id, .data$year, .data$age_group) %>%
     dplyr::summarise(
-      # mean       = mean(mean),
       ppd_mean   = mean(.data$sim_prop),
       ppd_0.025  = stats::quantile(.data$sim_prop, 0.025),
       ppd_0.10   = stats::quantile(.data$sim_prop, 0.1),
@@ -363,13 +243,6 @@ threemc_oos_ppc <- function(fit,
   
 
   #### Posterior Predictive Check for Prevalence Estimations ####
-
-  # find middle samp column
-  # samp_cols <- as.numeric(gsub(
-  #   ".*?([0-9]+).*", "\\1",
-  #   names(survey_estimate_ppd)[grepl("samp", names(survey_estimate_ppd))]
-  # ))
-  # mid_samp <- samp_cols[length(samp_cols) / 2]
 
   # fun to calculate where in model sample distribution empirical values are
   quant_pos_sum <- function(y, x) if (y < x) 0 else 1
@@ -393,7 +266,10 @@ threemc_oos_ppc <- function(fit,
 
   # add quant pos columns to dataframe with survey obs and PPD samples
   survey_estimate_ppd <- survey_estimate_ppd_dist %>%
-    dplyr::left_join(survey_estimate_ppd_wide, by = c("area_id", "year", "age_group"))
+    dplyr::left_join(
+      survey_estimate_ppd_wide, 
+      by = c("area_id", "year", "age_group")
+    )
 
   # calculate position of oos obs within ordered PPD (i.e. estimate of hist)
   oos_within_ppd <- function(x, CI_range) {
@@ -404,7 +280,6 @@ threemc_oos_ppc <- function(fit,
   }
   CI_range <- sort(CI_range)
   oos_within_ppd_percent <- vapply(CI_range, function(x) {
-    # oos_within_ppd(survey_estimate_ppd$quant_pos_final, x)
     oos_within_ppd(survey_estimate_ppd$quant_pos, x)
   }, numeric(1))
   names(oos_within_ppd_percent) <- CI_range
@@ -437,7 +312,6 @@ threemc_oos_ppc <- function(fit,
   if (compare_stats == TRUE) {
 
     # Actual OOS survey obs vs posterior predictive distribution for each
-    # actual <- survey_estimate_ppd$mean
     actual <- survey_estimate_ppd$mean
     predictions <- dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
 
@@ -491,6 +365,7 @@ threemc_oos_ppc <- function(fit,
     )
   }
 
+  # move sample columns to the end (also moves summary cols to the start)
   survey_estimate_ppd <- survey_estimate_ppd %>%
     dplyr::relocate(dplyr::contains("samp"), .after = dplyr::everything())
 

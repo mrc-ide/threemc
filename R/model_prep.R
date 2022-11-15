@@ -62,7 +62,7 @@ threemc_prepare_model_data <- function( # data
   }
   
   type_info <- TRUE
-  if(all(out$obs_mmc == 0) && all(out$obs_tmc == 0)) {
+  if (all(out$obs_mmc == 0) && all(out$obs_tmc == 0)) {
     message("No circumcision type information present in `out`")
     type_info <- FALSE
   }
