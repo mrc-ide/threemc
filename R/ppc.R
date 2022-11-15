@@ -4,25 +4,25 @@
 #' @param fit Fit object returned by \link[naomi]{sample_tmb}, which includes,
 #' among other things, the optimised parameters and subsequent sample for our
 #' TMB model.
-#' @param out Unaggregated results of model fitting outputted by
-#' \link[threemc]{compute_quantiles}.
-#' @param populations Single age male population counts by space and time.
-#' @param survey_estimate Circumcision estimates based on empirical observations
-#' from surveys.
-#' @param removed_years Years removed from dataset used to fit model
-#' (i.e. "withheld" surveys from OOS model fitting). Optionally, can specify as
-#' NULL to perform non-OOS PPC using all surveys, Default: NULL
-#' @param type The desired circumcision estimate. Can be one of
-#' "probability", "incidence" or "coverage".
+#' @param out Results of model fitting (at specified model `area_lev`) 
+#' outputted by \link[threemc]{compute_quantiles}.
+#' @param survey_circumcision_test `survey_circumcision` dataset loaded with 
+#' \link[threemc]{read_circ_data}. *Do not preprocess with*
+#' *\link[threemc]{prepare_survey_data}* If performing an OOS validation of 
+#' model performance, you should filter this dataset for the years "held back" 
+#' from your model fit.
+#' @param areas `sf` shapefile for specific country/region. Only required 
+#' if `survey_circumcision_test` has records for area levels higher (i.e. more
+#' granular) than `area_lev`, in which case they must be reassigned to their 
+#' `parent_area_id` at `area_lev`, Default = NULL. 
 #' @param area_lev Area level you wish to aggregate to when performing posterior
 #' predictive comparisons with survey estimates.
 #' @param age_groups Age groups to aggregate by, Default:
 #' c("0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
-#' "30-34", "35-39", "40-44", "45-49", "50-54", "54-59",
-#' "0+",    "10+",   "15+",   "15-24", "10-24", 15-29",
-#' "10-29", "15-39", "10-39", "15-49", "10-49")
+#' "30-34", "35-39", "40-44", "45-49", "50-54", "54-59")
 #' @param CI_range CI interval about which you want to compare empirical and
-#' posterior predictive estimates for left out surveys, Default = 0.95
+#' posterior predictive estimates for left out surveys, 
+#' Default = c(0.5, 0.8, 0.95)
 #' @param N Number of samples to generate, Default: 1000
 #' @param compare_stats Set to TRUE if you wish to compute comparative
 #' statistics (specifically, ELPD and CRPS) to compare with alternative models,
@@ -35,23 +35,14 @@
 #' @export
 threemc_oos_ppc <- function(fit,
                             out,
-                            # populations,
-                            # survey_estimate,
-                            survey_circumcision_test, # survey_circumcision_test = survey_circumcision_test
-                            # removed_years = NULL,
-                            # type = "coverage", # no longer works for other types!
+                            survey_circumcision_test, 
                             areas = NULL,
                             area_lev = 1,
                             age_groups = c(
                               # five-year age groups
                               "0-4", "5-9", "10-14", "15-19",
                               "20-24", "25-29", "30-34", "35-39",
-                              "40-44", "45-49", "50-54", "54-59" # ,
-                              # age groups with only minimum cut-off
-                              # "0+", "10+", "15+",
-                              # other, wider age groups of interest
-                              # "10-24", "15-24", "10-29", "15-29",
-                              # "10-39", "15-39", "10-49", "15-49"
+                              "40-44", "45-49", "50-54", "54-59" 
                             ),
                             CI_range = c(0.5, 0.8, 0.95),
                             N = 1000,
@@ -80,10 +71,9 @@ threemc_oos_ppc <- function(fit,
   # add year (i.e. survey_year) if not present
   if ("survey_year" %in% names(survey_circumcision_test)) {
     survey_circumcision_test$year <- survey_circumcision_test$survey_year
-  } else if (!"year" %in% names(survey_circumcision)) {
-    
+  } else if (!"year" %in% names(survey_circumcision_test)) {
     survey_circumcision_test <- survey_circumcision_test %>% 
-      mutate(year = as.numeric(substr(survey_id, 4, 7)))
+      dplyr::mutate(year = as.numeric(substr(.data$survey_id, 4, 7)))
   }
 
 
@@ -141,7 +131,7 @@ threemc_oos_ppc <- function(fit,
       # filter(type %in% c("MMC", "Missing")) %>%
       # mutate(type = "MMC Coverage")
       # Any non-medical circumcision is treated as a "competing risk"
-      mutate(type = ifelse(type == "MMC", "MMC Coverage", "Missing"))
+      dplyr::mutate(type = ifelse(.data$type == "MMC", "MMC Coverage", "Missing"))
 
   #### Split out between types ####
 
@@ -182,7 +172,7 @@ threemc_oos_ppc <- function(fit,
   names(out_types)[grepl("V", names(out_types))] <- paste0("samp_", 1:N)
   # out_types <- dplyr::rename(out_types, type = .data$indicator)
   out_types <- out_types %>%
-    dplyr::relocate(type = .data$indicator, .before = contains("samp"))
+    dplyr::relocate(type = .data$indicator, .before = dplyr::contains("samp"))
 
 
   #### Aggregate to Age Groups ####
@@ -239,7 +229,7 @@ threemc_oos_ppc <- function(fit,
   # reassign test data area level to area_lev, if any are more granular
   if (any(survey_circumcision_test$area_level > area_lev)) {
     # must provide areas for this
-    stopifnot(!is.null(areas))
+    if (is.null(areas)) stop("areas required for reassigning area level")
     # remove unwanted geometry information, if present
     if (inherits(areas, "sf")) areas <- sf::st_drop_geometry(areas)
     survey_circumcision_test <- reassign_survey_level(
@@ -261,7 +251,7 @@ threemc_oos_ppc <- function(fit,
     dplyr::left_join(
       # out_types_agegroup
       out_types %>%
-        dplyr::select(area_id, year, age, dplyr::starts_with("samp"))
+        dplyr::select(.data$area_id, .data$year, .data$age, dplyr::starts_with("samp"))
     )
 
   # stop (or give message) for unusable survey_estimate_ppd/NAs in sample cols
@@ -309,7 +299,7 @@ threemc_oos_ppc <- function(fit,
   set.seed(123)
   survey_estimate_ppd_long <- survey_estimate_ppd %>%
     tidyr::pivot_longer(
-      starts_with("samp"),
+      dplyr::starts_with("samp"),
       names_to  = "sample",
       values_to = "predicted"
     ) %>%
@@ -322,7 +312,7 @@ threemc_oos_ppc <- function(fit,
   #### Group by Age Group ####
 
   # create df to match five year age groups to single ages
-  age_group_df <- bind_rows(lapply(
+  age_group_df <- dplyr::bind_rows(lapply(
     age_groups,
     match_age_group_to_ages,
     max_age = max(survey_estimate_ppd_long$age)
@@ -332,14 +322,14 @@ threemc_oos_ppc <- function(fit,
     # join in age groups matching each single age
     dplyr::left_join(age_group_df, by = "age") %>%
     # remove missing age groups and unknown circ_status
-    dplyr::filter(!is.na(circ_status), !is.na(age_group)) %>%
+    dplyr::filter(!is.na(.data$circ_status), !is.na(.data$age_group)) %>%
     # aggregate single ages to age groups
-    dplyr::group_by(area_id, year, age_group, sample) %>%
+    dplyr::group_by(.data$area_id, .data$year, .data$age_group, .data$sample) %>%
     # calculate weighted means for observed and simulated proportions
     dplyr::summarise(
       # obs_prop = stats::weighted.mean(circ_status, indweight), # replace
-      mean     = stats::weighted.mean(circ_status, indweight), # replace
-      sim_prop = stats::weighted.mean(simulated, indweight),
+      mean     = stats::weighted.mean(.data$circ_status, .data$indweight), # better to do this with wide format, recalculating the same value each time here!
+      sim_prop = stats::weighted.mean(.data$simulated, .data$indweight),
       .groups = "drop"
     )
 
@@ -358,38 +348,38 @@ threemc_oos_ppc <- function(fit,
   # TODO: Can do a better across here!
   ppd_quantiles <- survey_estimate_age_group %>%
     # survey_estimate_age_group %>%
-    group_by(age_group) %>%
-    summarise(
+    dplyr::group_by(.data$area_id, .data$year, .data$age_group) %>%
+    dplyr::summarise(
       # mean       = mean(mean),
-      ppd_mean   = mean(sim_prop),
-      ppd_0.025  = quantile(sim_prop, 0.025),
-      ppd_0.10   = quantile(sim_prop, 0.1),
-      ppd_0.25   = quantile(sim_prop, 0.25),
-      ppd_median = quantile(sim_prop, 0.5),
-      ppd_0.75   = quantile(sim_prop, 0.75),
-      ppd_0.90   = quantile(sim_prop, 0.9),
-      ppd_0.975  = quantile(sim_prop, 0.975)
+      ppd_mean   = mean(.data$sim_prop),
+      ppd_0.025  = stats::quantile(.data$sim_prop, 0.025),
+      ppd_0.10   = stats::quantile(.data$sim_prop, 0.1),
+      ppd_0.25   = stats::quantile(.data$sim_prop, 0.25),
+      ppd_median = stats::quantile(.data$sim_prop, 0.5),
+      ppd_0.75   = stats::quantile(.data$sim_prop, 0.75),
+      ppd_0.90   = stats::quantile(.data$sim_prop, 0.9),
+      ppd_0.975  = stats::quantile(.data$sim_prop, 0.975)
     )
   
 
   #### Posterior Predictive Check for Prevalence Estimations ####
 
   # find middle samp column
-  samp_cols <- as.numeric(gsub(
-    ".*?([0-9]+).*", "\\1",
-    names(survey_estimate_ppd)[grepl("samp", names(survey_estimate_ppd))]
-  ))
-  mid_samp <- samp_cols[length(samp_cols) / 2]
+  # samp_cols <- as.numeric(gsub(
+  #   ".*?([0-9]+).*", "\\1",
+  #   names(survey_estimate_ppd)[grepl("samp", names(survey_estimate_ppd))]
+  # ))
+  # mid_samp <- samp_cols[length(samp_cols) / 2]
 
-  # func calculating where in model sample distribution empirical values are
+  # fun to calculate where in model sample distribution empirical values are
   quant_pos_sum <- function(y, x) if (y < x) 0 else 1
 
   survey_estimate_ppd_wide <- survey_estimate_age_group %>%
     # convert back to wide format
-    pivot_wider(names_from = "sample", values_from = "sim_prop")
+    tidyr::pivot_wider(names_from = "sample", values_from = "sim_prop")
 
   survey_estimate_ppd_dist <- survey_estimate_ppd_wide %>%
-    dplyr::group_by(dplyr::across(area_id:age_group)) %>%
+    dplyr::group_by(dplyr::across(.data$area_id:.data$age_group)) %>%
     dplyr::summarise(
       # find position of mean estimate from surveys amongst predictions
       quant_pos = sum(
@@ -403,7 +393,7 @@ threemc_oos_ppc <- function(fit,
 
   # add quant pos columns to dataframe with survey obs and PPD samples
   survey_estimate_ppd <- survey_estimate_ppd_dist %>%
-    left_join(survey_estimate_ppd_wide, by = c("area_id", "year", "age_group"))
+    dplyr::left_join(survey_estimate_ppd_wide, by = c("area_id", "year", "age_group"))
 
   # calculate position of oos obs within ordered PPD (i.e. estimate of hist)
   oos_within_ppd <- function(x, CI_range) {
@@ -419,6 +409,7 @@ threemc_oos_ppc <- function(fit,
   }, numeric(1))
   names(oos_within_ppd_percent) <- CI_range
 
+  # assign to message so we don't print to console with [[i]] separators
   message <- lapply(seq_along(CI_range), function(i) {
     print(paste0(
       "Percentage of survey points which fall within posterior predictive",
