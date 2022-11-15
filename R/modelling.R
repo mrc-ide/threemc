@@ -259,7 +259,7 @@ circ_sample_tmb <- function(fit = NULL,
                             nsample = 1000,
                             ...) {
 
-  # Getting the TMB into "Naomi" format to sample from using the NAOMI package
+  # Get TMB into "Naomi" format to sample from using naomi
   if (is.null(fit)) {
     opt$par.fixed <- opt$par
     opt$par.full <- obj$env$last.par
@@ -272,7 +272,7 @@ circ_sample_tmb <- function(fit = NULL,
     fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
   }
 
-  # Generating samples
+  # Generate samples
   fit <- naomi::sample_tmb(fit, nsample = nsample, ...)
 
   # ensure names for MC columns in fit have the suffix "_mc"

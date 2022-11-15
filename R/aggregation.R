@@ -41,7 +41,7 @@ threemc_aggregate <- function(
   # global bindings for data.table non-standard evaluation
   space <- NULL
 
-  #### Preparing location/shapefile information ####
+  #### Prepare location/shapefile information ####
   if (inherits(areas, "sf")) {
     areas <- sf::st_drop_geometry(areas)
   }
@@ -93,7 +93,7 @@ threemc_aggregate <- function(
       spec_year = prev_year
     )
 
-    # Getting number of people circumcised
+    # Get number of people circumcised
     data_n <- n_circumcised(.data)
 
     # add "change from prev_year" and "n_circumcised" .data to .data
@@ -155,9 +155,7 @@ prepare_sample_data <- function(N = 100,
   # global bindings for data.table non-standard evaluation
   model <- NULL
 
-  #########################################
-  ### Loading rates from survival model ###
-  #########################################
+  #### Load rates from survival model ####
 
   # append samples from different circumcision models together (and pops)
   append_fun <- function(tmp, fit, populations, type) {
@@ -356,7 +354,7 @@ aggregate_sample <- function(.data,
   # remove population from num_cols, if present 
   num_cols <- num_cols[!num_cols == "population"]
 
-  # Multiplying by population to population weight
+  # Multiply by population to population weight
   .data <- data.table::setDT(.data)[,
     (num_cols) := lapply(.SD, function(x) x * population),
     .SDcols = num_cols
@@ -567,7 +565,7 @@ n_circumcised <- function(results) {
   # global bindings for `data.table` non-standard evaluation
   type <- population <- NULL
 
-  # Getting number of circumcised men
+  # Get number of circumcised men
   results <- data.table::copy(data.table::setDT(results))[,
                                type := paste0(
                                  "Number circumcised (",
@@ -615,7 +613,6 @@ n_circumcised <- function(results) {
 
 #### posterior_summary_fun ####
 
-# Getting summary statistics
 #' @title Calculate summary statistics from Samples
 #' @description Takes samples and calculates summary statistics (mean, standard
 #' deviation, and quantiles (if desired)).

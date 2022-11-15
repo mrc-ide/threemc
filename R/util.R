@@ -132,7 +132,7 @@ add_area_id <- function(df,
                         par,
                         add_keep_cols = NULL) {
 
-  # Getting area_id's
+  # Get area_id's
   area_lev_current_id <- paste0("area_id", par$area_lev)
   # The level we want
   area_lev_select_id <- paste0("area_id", par$area_lev_select)
@@ -301,7 +301,7 @@ create_aggregate_structure <- function(areas,
     dplyr::pull()
   area_id_seq <- seq(1, max_space, 1)
   sub_region_list <- lapply(area_id_seq, function(i) {
-    # Getting areas lower in the hierarchy
+    # Get areas lower in the hierarchy
     areas_wide %>%
       dplyr::filter(dplyr::if_any(dplyr::starts_with("space"), ~ . == i)) %>%
       dplyr::pull(paste0("space", area_lev))
@@ -311,8 +311,9 @@ create_aggregate_structure <- function(areas,
     dplyr::distinct(.data$area_id) %>%
     dplyr::mutate(sp_dep = vapply(sub_region_list, length, numeric(1)))
 
-  # Returning list
-  list(sub_region_list = sub_region_list, n_sub_region_df = n_sub_region_df)
+  return(
+    list(sub_region_list = sub_region_list, n_sub_region_df = n_sub_region_df)
+  )
 }
 
 
@@ -385,7 +386,7 @@ spread_areas <- function(areas,
     )
   }
 
-  # removing "space" columns returns same object as naomi::spread_areas
+  # remove "space" columns returns same object as naomi::spread_areas
   if (space == FALSE) {
     areas_wide <- areas_wide %>%
       dplyr::select(-dplyr::contains("space"))

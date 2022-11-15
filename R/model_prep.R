@@ -319,10 +319,10 @@ shell_data_spec_area <- function(dat, area_lev = NULL) {
   # Only doing the matrices on the specified aggregation
   dat <- dat %>%
     dplyr::filter(.data$area_level == area_lev) %>%
-    # Resetting counter on space
+    # Reset counter on space
     dplyr::mutate(space = .data$space - min(.data$space) + 1)
 
-  # Returning matrix
+  # Return matrix
   return(dat)
 }
 
@@ -372,7 +372,7 @@ create_integration_matrices <- function(out,
   # Only doing the matrices on the specified aggregation
   out <- shell_data_spec_area(out, area_lev)
 
-  # Preparing age and time variables
+  # Prepare age and time variables
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
   out$age <- out$circ_age + 1
@@ -465,7 +465,7 @@ create_integration_matrix_agetime <- function(dat,
     pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1)
   )
 
-  # Shifting time points by the time caps
+  # Shift time points by the time caps
   dat$time1_cap2 <- dat[[time1]] - timecaps[1] + 1
   dat$time2_cap2 <- dat[[time2]] - timecaps[1] + 1
 
@@ -480,11 +480,11 @@ create_integration_matrix_agetime <- function(dat,
   if (is.null(Nage)) Nage <- max(dat[age])
   if (is.null(strat) == FALSE && is.null(Nstrat)) Nstrat <- max(dat[strat])
 
-  # Subsetting data if necessary
+  # Subset data if necessary
   if (is.null(subset) == FALSE) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
-  # Adding dummy variable for the rows of the matrix
+  # Add dummy variable for the rows of the matrix
   dat$row <- seq_len(nrow(dat))
 
   # column entries for integration matrix
@@ -520,14 +520,14 @@ create_integration_matrix_agetime <- function(dat,
     rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]) + 1)
   }, simplify = FALSE))
 
-  # Outputting sparse matrix
+  # Output sparse matrix
   A <- Matrix::sparseMatrix(
     i = rows,
     j = cols,
     x = 1,
     dims = c(nrow(dat), ncol)
   )
-  # Returning matrix
+  # Return matrix
   return(A)
 }
 
@@ -582,7 +582,7 @@ create_integration_matrix_agetime_lag <- function(dat,
     pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1)
   )
 
-  # Shifting time points by the time caps
+  # Shift time points by the time caps
   dat$time1_cap2 <- dat[[time1]] - timecaps[1] + 1
   dat$time2_cap2 <- dat[[time2]] - timecaps[1] + 1
 
@@ -596,14 +596,14 @@ create_integration_matrix_agetime_lag <- function(dat,
   if (is.null(Ntime)) Ntime <- max(dat[, "time1_cap", drop = TRUE])
   if (is.null(Nage)) Nage <- max(dat[age])
   if (!is.null(strat) && is.null(Nstrat)) Nstrat <- max(dat[strat])
-  # Subsetting data if necessary
+  # Subset data if necessary
   if (!is.null(subset)) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
   # Number of rows in the resulting matrix
   nrow <- nrow(dat)
 
-  # Adding dummy variable for the rows of the matrix
+  # Add dummy variable for the rows of the matrix
   dat$row <- seq_len(nrow(dat))
 
   # column entries for integration matrix
@@ -641,14 +641,14 @@ create_integration_matrix_agetime_lag <- function(dat,
     rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]))
   }, simplify = FALSE))
 
-  # Outputting sparse matrix
+  # Output sparse matrix
   A <- Matrix::sparseMatrix(
     i = rows,
     j = cols,
     x = 1,
     dims = c(nrow, ncol)
   )
-  # Returning matrix
+  # Return matrix
   return(A)
 }
 
@@ -851,7 +851,7 @@ create_hazard_matrix_agetime <- function(dat,
   if (is.null(Nage)) Nage <- max(dat[age])
   if (is.null(Nstrat)) Nstrat <- max(dat[strat])
 
-  # Subsetting data if necessary
+  # Subsett data if necessary
   if (!is.null(subset)) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
@@ -859,19 +859,19 @@ create_hazard_matrix_agetime <- function(dat,
   # If the selection matrices need to be taken from one reference aggregation
   # then we get a list of the hierarchical structure to that level
   if (aggregated == TRUE) {
-    # If no weighting variable create a dummy variable
+    # If no weight variable create a dummy variable
     if (is.null(weight)) {
       weight <- "weight"
       dat$weight <- 1
     }
 
-    # Getting aggregation structure
+    # Get aggregation structure
     areas_agg <- create_aggregate_structure(
       areas = areas,
       area_lev = area_lev
     )
 
-    # Merging on number of times to
+    # Merge on number of times to
     # replicate to the main dataset
     dat <- dat %>%
       dplyr::left_join(
@@ -891,22 +891,22 @@ create_hazard_matrix_agetime <- function(dat,
       dplyr::pull() %>%
       length()
 
-    # Only keeping strata where we have data
+    # Only keep strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = "")))) %>%
       dplyr::mutate(row = seq_len(dplyr::n()))
 
     # Aggregation for each row in the dataframe
     entries <- apply(dat2, 1, function(x) {
-      # Getting areas in reference administrative
+      # Get areas in reference administrative
       # boundaries to aggregate over
       tmp_space <- areas_agg$sub_region_list[[as.numeric(x[strat])]]
-      # Getting columns with non-zero entries for sparse matrix
+      # Get columns with non-zero entries for sparse matrix
       cols <- Ntime * Nage * (tmp_space - min_ref_space) +
         Ntime * (as.numeric(x[age]) - 1) +
         as.numeric(x["time2_cap"])
-      # Getting rows for sparse matrix
+      # Get rows for sparse matrix
       rows <- rep(as.numeric(x["row"]), length(cols))
-      # Getting weights
+      # Get weights
       vals <-
         as.numeric(x[circ]) *
           dat[cols, weight, drop = TRUE] / sum(dat[cols, weight, drop = TRUE])
@@ -916,14 +916,14 @@ create_hazard_matrix_agetime <- function(dat,
       return(tmp)
     })
 
-    # Extracting entries for sparse matrix
+    # Extract entries for sparse matrix
     cols <- as.numeric(unlist(lapply(entries, "[", "cols")))
     rows <- as.numeric(unlist(lapply(entries, "[", "rows")))
     vals <- as.numeric(unlist(lapply(entries, "[", "vals")))
 
     # Else the selection matrices will be taken from the aggregation they are on
   } else {
-    # Only keeping strata where we have data
+    # Only keep strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))
 
     # Column entries for hazard matrix
@@ -935,8 +935,7 @@ create_hazard_matrix_agetime <- function(dat,
     vals <- dat2[[circ]]
   }
 
-  # Outputting sparse hazard matrix which selects the
-  # corresponding incidence rates for the likelihood.
+  # sparse haz matrix which selects corresponding incidence rates for lik.
   A <- Matrix::sparseMatrix(
     i = rows,
     j = cols,
@@ -944,7 +943,7 @@ create_hazard_matrix_agetime <- function(dat,
     dims = c(nrow(dat2), Ntime * Nage * Nstrat)
   )
 
-  # Returning matrix
+  # Return matrix
   return(A)
 }
 
@@ -983,9 +982,9 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
 
   # if area_lev == 0, adjacency matrix will be a 1x1 matrix with single entry 0
   if (area_lev > 0) {
-    # Creating neighbourhood structure
+    # Create neighbourhood structure
     Q_space <- spdep::poly2nb(sf_obj, row.names = sf_obj[, row.names])
-    # Converting to adjacency matrix
+    # Convert to adjacency matrix
     Q_space <- spdep::nb2mat(Q_space, style = "B", zero.policy = TRUE)
 
     # for precision matrix
@@ -995,10 +994,10 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
     Q <- as.matrix(0)
   }
 
-  # Converting to sparse matrix
+  # Convert to sparse matrix
   Q_space <- methods::as(Q_space, "sparseMatrix")
 
-  # Creating precision matrix from adjacency
+  # Create precision matrix from adjacency
   Q_space <- naomi::scale_gmrf_precision(
     Q   = Q,
     A   = matrix(1, 1, nrow(Q_space)),
@@ -1028,15 +1027,15 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
 create_rw_prec_matrix <- function(dim,
                                   order = 1,
                                   offset.diag = TRUE) {
-  # Creating structure matrix
+  # Create structure matrix
   Q <- diff(diag(dim), differences = order)
   Q <- t(Q) %*% Q
-  # Adding offset to diagonal if required
+  # Add offset to diagonal if required
   if (offset.diag) {
     diag(Q) <- diag(Q) + 1E-6
   }
-  # Converting to sparse matrix
+  # Convert to sparse matrix
   Q <- methods::as(Q, "sparseMatrix")
-  # Returning matrix
+  # Return matrix
   return(Q)
 }
