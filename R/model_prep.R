@@ -42,8 +42,7 @@
 #' @rdname threemc_prepare_model_data
 #' @importFrom R.utils Arguments
 #' @export
-threemc_prepare_model_data <- function( # data
-                                       out,
+threemc_prepare_model_data <- function(out,
                                        areas,
                                        # options
                                        area_lev = NULL,
@@ -142,15 +141,11 @@ threemc_prepare_model_data <- function( # data
 #' @title Create Design Matrices
 #' @description Create design matrices for fixed effects and temporal, age,
 #' spatial and random effects, for both medical and traditional circumcision.
-#'
+#' @inheritParams threemc_prepare_model_data
 #' @param dat Shell dataset (datputted by \link[threemc]{create_shell_dataset}
 #' with a row for every unique record in circumcision survey data for a given
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
-#' @param area_lev Desired admin boundary level to perform the analysis on.
-#' @param k_dt Age knot spacing in spline definitions, Default: 5
-#' @param inc_time_tmc Indicator variable which decides whether to include
-#' temporal random effects for TMC as well as MMC, Default: FALSE
 #' @return List of design matrices for fixed and random effects for medical
 #' and traditional circumcision.
 #'
@@ -237,13 +232,9 @@ create_design_matrices <- function(dat,
 #' them into two parts; one paediatric set of design matrices which does not
 #' include any time-related components, and one non-paediatric set.
 #'
-#' @param out Shell dataset used for modelling
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' Defaults to the maximum area level found in `dat` if not supplied.
+#' @inheritParams threemc_prepare_model_data
 #' @param design_matrices Design matrices for fixed effects and temporal, age,
 #' spatial and random effects, for both medical and traditional circumcision.
-#' @param paed_age_cutoff Age at which to no longer consider an individual as
-#' part of the "paediatric" population of a country, Default: 10
 #' @importFrom rlang .data
 #' @rdname split_mmc_design_matrices_paed
 #' @keywords internal
@@ -302,8 +293,7 @@ split_mmc_design_matrices_paed <- function(out,
 #' components on the specified administrative boundaries.
 #'
 #' @param dat Shell dataset used for modelling
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' Defaults to the maximum area level found in `dat` if not supplied.
+#' @inheritParams threemc_prepare_model_data
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @rdname shell_data_spec_area
@@ -332,13 +322,7 @@ shell_data_spec_area <- function(dat, area_lev = NULL) {
 #' @title Create Integration Matrices for Selecting Instantaneous Hazard
 #' @description Create (unlagged and lagged) integration matrices for selecting
 #' instantaneous hazard rate, required for fitting TMB model.
-#'
-#' @param out Shell dataset (outputted by \link[threemc]{create_shell_dataset}
-#' with a row for every unique record in circumcision survey data for a given
-#' area. Also includes empirical estimates for circumcision estimates for each
-#' unique record.
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' Defaults to the maximum area level found in `dat` if not supplied.
+#' @inheritParams threemc_prepare_model_data
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,
 #' Default: "time2"
@@ -416,22 +400,8 @@ create_integration_matrices <- function(out,
 #' for survival analysis by age and time. The option to include an additional
 #' stratification variable is also available, creating a 3D hazard function.
 #'
-#' @param dat Dataset used for modelling.
-#' @param subset Subset for dataset, Default: NULL
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored, Default: "time2"
-#' @param timecaps Window to fix temporal dimension before and after,
-#' Default: c(1, Inf)
-#' @param Ntime Number of time points (if NULL, function will calculate),
-#' Default: NULL
-#' @param age - Variable with age circumcised or censored, Default: "age"
-#' @param Nage Number of age groups (if NULL, function will calculate),
-#' Default: NULL
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: NULL
-#' @param Nstrat Number of stratification groups (if NULL, function will
-#' calculate), Default: NULL
-#
+#' @inheritParams create_integration_matrices
+#' @inheritParams create_integration_matrix_agetime
 #' @return Matrix for selecting instantaneous hazard rate.
 #' @seealso
 #'   \code{\link[Matrix]{sparseMatrix}}
@@ -540,21 +510,8 @@ create_integration_matrix_agetime <- function(dat,
 #' additional stratification variable is also available, creating a 3D hazard
 #' function.
 #'
-#' @param dat Dataset used for modelling.
-#' @param subset Subset for dataset, Default: NULL
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored, Default: "time2"
-#' @param timecaps Window to fix temporal dimension before and after,
-#' Default: c(1, Inf)
-#' @param Ntime Number of time points (if NULL, function will calculate),
-#' Default: NULL
-#' @param age - Variable with age circumcised or censored, Default: "age"
-#' @param Nage Number of age groups (if NULL, function will calculate),
-#' Default: NULL
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: NULL
-#' @param Nstrat Number of stratification groups (if NULL, function will
-#' calculate), Default: NULL
+#' @inheritParams create_integration_matrices
+#' @inheritParams create_integration_matrix_agetime
 #' @return Matrix for selecting instantaneous hazard rate.
 #'
 #' @seealso
@@ -659,19 +616,8 @@ create_integration_matrix_agetime_lag <- function(dat,
 #' traditional circumcision, as well as for censored (i.e. non-circumcised) and
 #' left-censored (i.e. age of circumcision unknown) individuals.
 #'
-#' @param out Shell dataset (outputted by \link[threemc]{create_shell_dataset}
-#' with a row for every unique record in circumcision survey data for a given
-#' area. Also includes empirical estimates for circumcision estimates for each
-#' unique record.
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' maximum area level found in `areas` if not supplied.
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored,
-#' Default: "time2"
-#' @param age - Variable with age circumcised or censored. Default: "age"
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: "space"
+#' @inheritParams threemc_prepare_model_data
+#' @inheritParams create_integration_matrices
 #' @param aggregated `agggregated = FALSE` treats every area_id as its own
 #' object, allowing for the use of surveys for lower area hierarchies.
 #' `aggregated = TRUE` means we only look at area level of interest.
@@ -777,27 +723,9 @@ create_survival_matrices <- function(out,
 #' for survival analysis by age and time. The option to include an additional
 #' stratification variable is also available, creating a 3D hazard function.
 #'
-#' @param dat Shell dataset (outputted by \link[threemc]{create_shell_dataset}
-#' with a row for every unique record in circumcision survey data for a given
-#' area. Also includes empirical estimates for circumcision estimates for each
-#' unique record.
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country.
-#' @param subset Subset for dataset, Default: NULL
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored,
-#' Default: "time2"
-#' @param timecaps Window to fix temporal dimension before and after,
-#' Default: c(1, Inf)
-#' @param Ntime Number of time points (if NULL, function will calculate),
-#' Default: NULL
-#' @param age - Variable with age circumcised or censored. Default: "age"
-#' @param Nage Number of age groups (if NULL, function will calculate),
-#' Default: NULL
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: NULL
-#' @param Nstrat Number of stratification groups (if NULL, function will
-#' calculate), Default: NULL
+#' @inheritParams threemc_prepare_model_data 
+#' @inheritParams create_design_matrices
+#' @inheritParams create_integration_matrix_agetime
 #' @param circ Variables with circumcision matrix, Default: "circ"
 #' @param aggregated `agggregated = FALSE` treats every area_id as its own
 #' object, allowing for the use of surveys for lower area hierarchies.

@@ -273,8 +273,7 @@ append_mc_name <- function(.data) {
 #' @description Create a list containing all the area dependencies and number
 #' of for each area in the hierarchy
 #'
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country.
+#' @inheritParams prepare_survey_data
 #' @returns A list of length 2 containing:
 #' \itemize{
 #'  \item{"sub_region_list"}{A list of the specific sub-regions contained
@@ -321,7 +320,7 @@ create_aggregate_structure <- function(areas,
 
 #' Spread area hierarchy to wide format
 #'
-#' @param areas area hierarchy data.frame
+#' @inheritParams prepare_survey_data
 #' @param min_level integer specifying the minimum level wanted
 #' @param max_level integer specifying the maximum level wanted
 #' @param space whether to include "space" columns. Excluding these returns the

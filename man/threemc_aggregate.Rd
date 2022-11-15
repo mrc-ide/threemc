@@ -2,7 +2,7 @@
 % Please edit documentation in R/aggregation.R
 \name{threemc_aggregate}
 \alias{threemc_aggregate}
-\title{Produce Population weighted Aggregated Samples}
+\title{Produce Population Weighted Aggregated Samples for All Area Levels}
 \usage{
 threemc_aggregate(
   .data,

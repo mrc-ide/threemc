@@ -2,7 +2,7 @@
 % Please edit documentation in R/aggregation.R
 \name{posterior_summary_fun}
 \alias{posterior_summary_fun}
-\title{Calculate summary statistics from Samples}
+\title{Calculate Summary Statistics From Samples}
 \usage{
 posterior_summary_fun(.data, probs = c(0.025, 0.5, 0.975))
 }

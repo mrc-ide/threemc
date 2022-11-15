@@ -2,7 +2,7 @@
 % Please edit documentation in R/aggregation.R
 \name{aggregate_sample}
 \alias{aggregate_sample}
-\title{Produce Population weighted Aggregated Samples}
+\title{Produce Population Weighted Aggregated Samples}
 \usage{
 aggregate_sample(
   .data,

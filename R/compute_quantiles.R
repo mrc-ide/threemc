@@ -4,12 +4,11 @@
 #' outputted from \link[threemc]{threemc_fit_model}, and add them as columns to
 #' the shell `data.frame` `out` with estimated empirical circumcision rates.
 #'
+#' @inheritParams threemc_prepare_model_data
+#' @inheritParams threemc_fit_model
 #' @param out Shell dataset with a row for every unique record in
 #' circumcision survey data for a given area. Also includes empirical estimates
 #'  for circumcision estimates for each unique record.
-#' @param fit Object containing `samples` list for the (cumulative) incidence
-#' and hazard rate of circumcision for the region(s) in question.
-#' @param area_lev PSNU area level for specific country
 #' @param probs Specific quantiles to be calculated,
 #' Default: c(0.025, 0.5, 0.975)
 #' @param names Parameter with \link[stats]{quantile}: logical; if true, the

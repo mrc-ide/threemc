@@ -12,7 +12,7 @@ spread_areas(
 )
 }
 \arguments{
-\item{areas}{area hierarchy data.frame}
+\item{areas}{\code{sf} shapefiles for specific country/region.}
 
 \item{min_level}{integer specifying the minimum level wanted}
 

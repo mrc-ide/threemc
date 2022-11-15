@@ -567,12 +567,7 @@ reassign_survey_level <- function(survey_circumcision,
 
 #' @title Normalise Survey Weights and apply Kish Coefficients
 #' @description Normalise survey weights and apply Kish coefficients.
-#' @param survey_circumcision Information on male circumcision status from
-#' surveys containing survey weights.
-#' @param strata.norm Stratification variables for normalising survey weights,
-#' Default: c("survey_id", "area_id")
-#' @param strata.kish Stratification variables for estimating and applying the
-#' Kish coefficients, Default: "survey_id"
+#' @inheritParams prepare_survey_data
 #' @return Survey data with normalised survey weights and required variables to
 #' run circumcision model.
 #' @export

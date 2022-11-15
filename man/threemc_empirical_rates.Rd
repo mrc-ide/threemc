@@ -19,10 +19,12 @@ threemc_empirical_rates(
 
 \item{areas}{\code{sf} shapefiles for specific country/region.}
 
-\item{area_lev}{PSNU area level for specific country. Defaults to the
-maximum area level found in \code{areas} if not supplied.}
+\item{area_lev}{\itemize{
+\item Desired admin boundary level to perform the analysis on.
+}}
 
-\item{populations}{Single age male population counts by space and time.}
+\item{populations}{\code{data.frame} containing populations for each
+region in tmb fits.}
 
 \item{age_groups}{Age groups to aggregate by, Default:
 c("0-4",   "5-9",   "10-14", "15-19",

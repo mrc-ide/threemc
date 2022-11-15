@@ -286,12 +286,7 @@ circ_sample_tmb <- function(fit = NULL,
 #' @title Minimise Fit Object Size
 #' @description Return minimised fit object. Often useful when saving the fit
 #' object for later aggregation.
-#' @param fit Fit object returned by \link[naomi]{sample_tmb}, which includes,
-#' among other things, the optimised parameters and subsequent sample for our
-#' TMB model.
-##' @param dat_tmb \code{list} of data required for model fitting, outputted
-#' by \link[threemc]{threemc_prepare_model_data}.
-#' @param parameters \code{list} of fixed and random model parameters.
+#' @inheritParams threemc_fit_model
 #' @return Object of class "naomi_fit".
 #' @rdname minimise_fit_obj
 #' @export
@@ -310,7 +305,6 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
 #' @title Initialise `thremec` (hyper)parameters.
 #' @description Return minimised fit object. Often useful when saving the fit
 #' object for later aggregation.
-#' @inheritParams prepare_survey_data
 #' @inheritParams threemc_fit_model
 #' @inheritParams threemc_prepare_model_data
 #' @param custom_init named \code{list} of custom fixed and random

@@ -12,7 +12,7 @@ with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.}
 
-\item{area_lev}{Desired admin boundary level to perform the analysis on.}
+\item{area_lev}{PSNU area level for specific country.}
 
 \item{k_dt}{Age knot spacing in spline definitions, Default: 5}
 
