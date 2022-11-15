@@ -352,6 +352,9 @@ aggregate_sample <- function(.data,
       ...
     )
   }
+  
+  # remove population from num_cols, if present 
+  num_cols <- num_cols[!num_cols == "population"]
 
   # Multiplying by population to population weight
   .data <- data.table::setDT(.data)[,
@@ -377,6 +380,7 @@ aggregate_sample <- function(.data,
                  (num_cols) := lapply(.SD, function(x) x / population),
                  .SDcols = num_cols
   ]
+  return(.data)
 }
 
 #### aggregate_sample_age_group ####
