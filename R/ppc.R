@@ -33,9 +33,9 @@
 #' weighted by population.
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
-#' @rdname threemc_oos_ppc
+#' @rdname threemc_ppc
 #' @export
-threemc_oos_ppc <- function(fit,
+threemc_ppc <- function(fit,
                             out,
                             survey_circumcision_test, 
                             areas = NULL,
