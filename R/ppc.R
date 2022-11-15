@@ -127,7 +127,9 @@ threemc_oos_ppc <- function(fit,
   out_types <- dplyr::mutate(out_types, indicator = "MMC coverage")
   
   # change col names to work in aggregate_sample_age_group
-  names(out_types)[grepl("V", names(out_types))] <- paste0("samp_", 1:N)
+  names(out_types)[grepl("V", names(out_types))] <- 
+    sprintf("samp_%0*d", nchar(N), seq_len(N))
+  
   out_types <- out_types %>%
     dplyr::relocate(type = .data$indicator, .before = dplyr::contains("samp"))
   
