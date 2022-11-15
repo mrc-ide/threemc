@@ -549,9 +549,11 @@ reassign_survey_level <- function(survey_circumcision,
   
   # replace old area_levels
   survey_circumcision <- survey_circumcision %>% 
-    mutate(
-      area_level = substr(area_id, 5, 5),
-      area_level = ifelse(area_level == "", 0, as.numeric(area_level))
+    dplyr::mutate(
+      area_level = substr(.data$area_id, 5, 5),
+      area_level = ifelse(
+        .data$area_level == "", 0, as.numeric(.data$area_level)
+      )
     )
   
   # remove columns not originally present, if desired

@@ -82,26 +82,6 @@ threemc_ppc <- function(fit,
 
   #### Preprocess survey data and samples ####
 
-  # reassign to desired `area_lev`
-  # if (!all(out$area_level == area_lev)) {
-  #   # must provide areas for this
-  #   if (is.null(areas)) stop("areas required for reassigning area level")
-  #   
-  #   # reassign area levels in out to `area_lev`
-  #   out <- reassign_survey_level(out, areas, area_lev)
-  #   
-  #   # aggregate num_cols (i.e. incidence, rate, coverage) in out by aggr_cols
-  #   out_cols <- names(out)[!names(out) %in% c("space", "population")]
-  #   aggr_cols <- out_cols[seq_len(which(out_cols == "age"))]
-  #   out <- dplyr::as_tibble(aggregate_sample(
-  #     .data     = out,
-  #     aggr_cols = aggr_cols,
-  #     num_cols = out_cols[!out_cols %in% c(aggr_cols)]
-  #   ))
-  # }
-  # # filter for desired area_lev only
-  # out <- dplyr::filter(out, .data$area_level == area_lev)
-
   # pull N "cum_inc" (only doing coverage) samples from fit
   samples <- fit$sample[
     grepl("cum_inc", names(fit$sample))
@@ -261,7 +241,7 @@ threemc_ppc <- function(fit,
       .groups = "drop"
     ) %>% 
     # relabel all type as type argument
-    mutate(type = paste(!!type, "coverage"))
+    dplyr::mutate(type = paste(!!type, "coverage"))
   gc()
   
   # give warning about missing age groups
