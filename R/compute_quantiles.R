@@ -27,9 +27,6 @@
 #'  @importFrom rlang .data
 #' @rdname compute_quantiles
 #' @export
-
-## function to calculate quantiles for rates and cumulative hazard
-## maybe add "textProgressBar" to for loop if it's too slow?
 compute_quantiles <- function(out,
                               fit,
                               area_lev = NULL,

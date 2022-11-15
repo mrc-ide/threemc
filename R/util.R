@@ -30,10 +30,10 @@
 #' @importFrom rlang .data
 read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
 
-  ## maybe add a warning for missing "circ" columns for surveys?? And add
-  ## in NAs in this situation (look at KEN for this)
+  # maybe add a warning for missing "circ" columns for surveys?? And add
+  # in NAs in this situation (look at KEN for this)
 
-  ## read in data, depending on file type
+  # read in data, depending on file type
   cond <- tools::file_ext(path) %chin% c("geojson", "shp", "shx")
   if (cond) {
     .data <- sf::read_sf(path, ...)
@@ -42,13 +42,13 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
     .data <- as.data.frame(data.table::fread(path, select = c(selected), ...))
   }
 
-  ## if desired, recursively filter data with provided `filters` vector
+  # if desired, recursively filter data with provided `filters` vector
   if (!is.null(filters)) {
     cols <- names(filters)
     vals <- as.vector(filters[seq_along(filters)])
     for (i in seq_along(filters)) {
       if (!cols[i] %chin% names(.data)) next
-      ## change col i to symbol (if present), evaluate corresponding filter
+      # change col i to symbol (if present), evaluate corresponding filter
       .data <- dplyr::filter(.data, !!rlang::sym(cols[i]) == vals[i])
     }
   }
@@ -59,7 +59,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
       dplyr::select(dplyr::all_of(selected[selected %chin% names(.data)]))
   }
 
-  ## for areas, add unique identifier within Admin code and merge to boundaries
+  # for areas, add unique identifier within Admin code and merge to boundaries
   if (inherits(.data, "sf")) {
     .data <- .data %>%
       dplyr::group_by(.data$area_level) %>%
