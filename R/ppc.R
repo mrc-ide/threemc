@@ -48,7 +48,16 @@ threemc_oos_ppc <- function(fit,
                             N = 1000,
                             compare_stats = TRUE) {
 
-
+  # filter results to specified or modelled area level
+  max_area_lev <- max(out$area_level)
+  if (area_lev > max_area_lev) {
+    message(
+      "Specified area level more granular than data provided, area_lev set to ",
+      max_area_lev
+    )
+    area_lev <- max_area_lev
+  }
+  
   # remove unneeded columns from survey_circumcision_test
   unneeded_cols <- c(
       "individual_id", "cluster_id", "household",
@@ -66,20 +75,27 @@ threemc_oos_ppc <- function(fit,
   }
 
 
-  #### Join Samples with Results ####
+  #### Preprocess survey data and samples ####
 
-  # filter results to specified or modelled area level
-  max_area_lev <- max(out$area_level)
-  if (area_lev > max_area_lev) {
-    message(
-      "Specified area lev more granular than data provided, set to ",
-      max_area_lev
-    )
-    area_lev <- max_area_lev
-  }
-
-  # filter to area_lev
-  out <- dplyr::filter(out, .data$area_level == area_lev)
+  # reassign to desired `area_lev`
+  # if (!all(out$area_level == area_lev)) {
+  #   # must provide areas for this
+  #   if (is.null(areas)) stop("areas required for reassigning area level")
+  #   
+  #   # reassign area levels in out to `area_lev`
+  #   out <- reassign_survey_level(out, areas, area_lev)
+  #   
+  #   # aggregate num_cols (i.e. incidence, rate, coverage) in out by aggr_cols
+  #   out_cols <- names(out)[!names(out) %in% c("space", "population")]
+  #   aggr_cols <- out_cols[seq_len(which(out_cols == "age"))]
+  #   out <- dplyr::as_tibble(aggregate_sample(
+  #     .data     = out,
+  #     aggr_cols = aggr_cols,
+  #     num_cols = out_cols[!out_cols %in% c(aggr_cols)]
+  #   ))
+  # }
+  # # filter for desired area_lev only
+  # out <- dplyr::filter(out, .data$area_level == area_lev)
 
   # pull N "cum_inc" (only doing coverage) samples from fit
   samples <- fit$sample[
@@ -93,7 +109,7 @@ threemc_oos_ppc <- function(fit,
     "coverage"
   )
 
-  # TEMP: take only medical
+  # TEMP: take only medical (include parameter for choice)
   samples <- samples[names(samples) == "MMC coverage"]
   survey_circumcision_test <- find_circ_type(survey_circumcision_test) %>%
       # Any non-medical circumcision is treated as a "competing risk"
@@ -101,40 +117,55 @@ threemc_oos_ppc <- function(fit,
         type = ifelse(.data$type == "MMC", "MMC Coverage", "Missing")
       )
 
-  #### Split out between types ####
+  #### Join Samples with Out and Aggregate to area_lev ####
 
   # join coverage col of interest with samples
-  # NOTE: Only doing for medical now, need to expand for other types
-  out_types <- lapply(names(samples), function(x) {
-    out_spec <- dplyr::select(out, .data$area_id:.data$population)
-    n <- length(out_spec)
-    out_spec[, (n + 1):(n + N)] <- samples[[x]]
-    out_spec <- dplyr::mutate(out_spec, indicator = x)
-  }) %>%
-    dplyr::bind_rows() %>%
-    # filter for test year(s) and modelled area level
-    dplyr::filter(
-      .data$year %in% survey_circumcision_test$year,
-      .data$area_level == area_lev
-    )
-
+  out_types <- dplyr::select(out, .data$area_id:.data$population)
+  n <- length(out_types)
+  # much faster than dplyr::bind_cols
+  out_types[, (n + 1):(n + N)] <- samples[["MMC coverage"]]
+  out_types <- dplyr::mutate(out_types, indicator = "MMC coverage")
+  
   # change col names to work in aggregate_sample_age_group
   names(out_types)[grepl("V", names(out_types))] <- paste0("samp_", 1:N)
   out_types <- out_types %>%
     dplyr::relocate(type = .data$indicator, .before = dplyr::contains("samp"))
+  
+  # reassign to desired `area_lev` (uses `<=` as we can't disaggregate!)
+  if (!all(out_types$area_level <= area_lev)) {
+    # must provide areas for this
+    if (is.null(areas)) stop("areas required for reassigning area level")
+
+    # reassign area levels in out to `area_lev`
+    out_types <- reassign_survey_level(out_types, areas, area_lev)
+
+    # aggregate num_cols (i.e. incidence, rate, coverage) in out by aggr_cols
+    out_cols <- names(out_types)
+    out_cols <- out_cols[!out_cols %in% c("space", "population")]
+    aggr_cols <- out_cols[seq_len(which(out_cols == "type"))]
+    out_types <- dplyr::as_tibble(aggregate_sample(
+      .data     = out_types,
+      aggr_cols = aggr_cols,
+      num_cols = out_cols[!out_cols %in% c(aggr_cols)]
+    ))
+  }
+  # filter for test year(s) and modelled area level
+  out_types <- out_types %>% 
+    dplyr::filter(
+      .data$year %in% survey_circumcision_test$year,
+      .data$area_level == area_lev
+    )
 
 
   #### Prepare Survey Points & Join with Samples ####
 
   # reassign test data area level to area_lev, if any are more granular
   if (any(survey_circumcision_test$area_level > area_lev)) {
-    # must provide areas for this
     if (is.null(areas)) stop("areas required for reassigning area level")
-    # remove unwanted geometry information, if present
-    if (inherits(areas, "sf")) areas <- sf::st_drop_geometry(areas)
+    
     survey_circumcision_test <- reassign_survey_level(
         survey_circumcision = survey_circumcision_test,
-        areas               = dplyr::select(areas, dplyr::contains("area")),
+        areas               = areas,
         area_lev            = area_lev
     )
   }
@@ -144,7 +175,7 @@ threemc_oos_ppc <- function(fit,
     dplyr::filter(
       .data$area_level == area_lev, 
       .data$age < max(out_types$age)
-    )
+    )  
 
   # join with samples
   survey_estimate_ppd <- survey_estimate_prep %>%
@@ -183,6 +214,7 @@ threemc_oos_ppc <- function(fit,
       values_to = "predicted"
     ) %>%
     # sample at individual level from binomial dist with success prob from PPD
+    # TODO: Try do this with an apply instead
     dplyr::mutate(
       simulated = stats::rbinom(dplyr::n(), 1, prob = .data$predicted)
     )
