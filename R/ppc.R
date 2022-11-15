@@ -17,6 +17,8 @@
 #' `parent_area_id` at `area_lev`, Default = NULL. 
 #' @param area_lev Area level you wish to aggregate to when performing posterior
 #' predictive comparisons with survey estimates.
+#' @param type Decides type of circumcision coverage to perform PPC on, must 
+#' be one of "MC", "MMC", or "TMC", Default = "MMC"
 #' @param age_groups Age groups to aggregate by, Default:
 #' c("0-4",   "5-9",   "10-14", "15-19", "20-24", "25-29",
 #' "30-34", "35-39", "40-44", "45-49", "50-54", "54-59")
@@ -38,6 +40,7 @@ threemc_oos_ppc <- function(fit,
                             survey_circumcision_test, 
                             areas = NULL,
                             area_lev = 1,
+                            type = "MMC",
                             age_groups = c(
                               # five-year age groups
                               "0-4", "5-9", "10-14", "15-19",
@@ -47,6 +50,8 @@ threemc_oos_ppc <- function(fit,
                             CI_range = c(0.5, 0.8, 0.95),
                             N = 1000,
                             compare_stats = TRUE) {
+  
+  stopifnot(type %in% c("MC", "MMC", "TMC"))
 
   # filter results to specified or modelled area level
   max_area_lev <- max(out$area_level)
@@ -109,12 +114,21 @@ threemc_oos_ppc <- function(fit,
     "coverage"
   )
 
-  # TEMP: take only medical (include parameter for choice)
-  samples <- samples[names(samples) == "MMC coverage"]
+  # take samples of the correct "type"
+  samples <- samples[names(samples) == paste(type, "coverage")]
+  
+  # if type == "MC", take both MMC and TMC as "non-missing" circumcision
+  check_types <- switch(
+    type, 
+    "MC"  = c("MMC", "TMC"),
+    type
+  )
   survey_circumcision_test <- find_circ_type(survey_circumcision_test) %>%
-      # Any non-medical circumcision is treated as a "competing risk"
+      # Any non-"type" circumcision is treated as a "competing risk"
       dplyr::mutate(
-        type = ifelse(.data$type == "MMC", "MMC Coverage", "Missing")
+        type = ifelse(.data$type %in% check_types, 
+                      paste(type, "coverage"),
+                      "Missing")
       )
 
   #### Join Samples with Out and Aggregate to area_lev ####
@@ -123,15 +137,15 @@ threemc_oos_ppc <- function(fit,
   out_types <- dplyr::select(out, .data$area_id:.data$population)
   n <- length(out_types)
   # much faster than dplyr::bind_cols
-  out_types[, (n + 1):(n + N)] <- samples[["MMC coverage"]]
-  out_types <- dplyr::mutate(out_types, indicator = "MMC coverage")
+  out_types[, (n + 1):(n + N)] <- samples[[paste(type, "coverage")]]
+  out_types <- dplyr::mutate(out_types, type = paste(!!type, "coverage"))
   
   # change col names to work in aggregate_sample_age_group
   names(out_types)[grepl("V", names(out_types))] <- 
     sprintf("samp_%0*d", nchar(N), seq_len(N))
   
   out_types <- out_types %>%
-    dplyr::relocate(type = .data$indicator, .before = dplyr::contains("samp"))
+    dplyr::relocate(type, .before = dplyr::contains("samp"))
   
   # reassign to desired `area_lev` (uses `<=` as we can't disaggregate!)
   if (!all(out_types$area_level <= area_lev)) {
@@ -245,7 +259,9 @@ threemc_oos_ppc <- function(fit,
       mean     = stats::weighted.mean(.data$circ_status, .data$indweight), 
       sim_prop = stats::weighted.mean(.data$simulated, .data$indweight),
       .groups = "drop"
-    )
+    ) %>% 
+    # relabel all type as type argument
+    mutate(type = paste(!!type, "coverage"))
   gc()
   
   # give warning about missing age groups
@@ -263,7 +279,7 @@ threemc_oos_ppc <- function(fit,
   # TODO: Can do a better across here!
   ppd_quantiles <- survey_estimate_age_group %>%
     # survey_estimate_age_group %>%
-    dplyr::group_by(.data$area_id, .data$year, .data$age_group) %>%
+    dplyr::group_by(.data$area_id, .data$year, .data$age_group, .data$type) %>%
     dplyr::summarise(
       ppd_mean   = mean(.data$sim_prop),
       ppd_0.025  = stats::quantile(.data$sim_prop, 0.025),
@@ -286,7 +302,7 @@ threemc_oos_ppc <- function(fit,
     tidyr::pivot_wider(names_from = "sample", values_from = "sim_prop")
 
   survey_estimate_ppd_dist <- survey_estimate_ppd_wide %>%
-    dplyr::group_by(dplyr::across(.data$area_id:.data$age_group)) %>%
+    dplyr::group_by(.data$area_id, .data$year, .data$age_group, .data$type) %>% 
     dplyr::summarise(
       # find position of mean estimate from surveys amongst predictions
       quant_pos = sum(
@@ -302,7 +318,7 @@ threemc_oos_ppc <- function(fit,
   survey_estimate_ppd <- survey_estimate_ppd_dist %>%
     dplyr::left_join(
       survey_estimate_ppd_wide, 
-      by = c("area_id", "year", "age_group")
+      by = c("area_id", "year", "age_group", "type")
     )
 
   # calculate position of oos obs within ordered PPD (i.e. estimate of hist)
