@@ -502,13 +502,33 @@ find_circ_type <- function(survey_circumcision) {
 #' desired area level. This distributes granular surveys to desired area_level 
 #' using parent_ids.
 #' @inheritParams prepare_survey_data
+#' @param remove_add_cols Only keep columns originally present in 
+#' `survey_circumcision`, Default = TRUE.
 #' @return Surveys with records reassigned to `area_lev`.
 #' @export
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @rdname reassign_surey_level
 #' @keywords internal
-reassign_survey_level <- function(survey_circumcision, areas, area_lev) {
+# change the name of survey_circumcision to .data, as this fun is v general
+reassign_survey_level <- function(survey_circumcision, 
+                                  areas, 
+                                  area_lev, 
+                                  remove_add_cols = TRUE) {
+  
+  # original column names to return data with (also preserves order)
+  orig_names <- names(survey_circumcision)
+  
+  # remove unwanted geometry information, if present
+  if (inherits(areas, "sf")) areas <- sf::st_drop_geometry(areas)
+  
+  # keep only desired columns in areas
+  areas <- areas %>% 
+    dplyr::select(
+      .data$area_id, .data$area_name, .data$area_level,
+      .data$parent_area_id
+    )
+  
   for (i in seq_len(max(areas$area_level))) {
     survey_circumcision <- survey_circumcision %>%
       # remove cols also in areas, except area_id, which is used to join
@@ -525,7 +545,20 @@ reassign_survey_level <- function(survey_circumcision, areas, area_lev) {
           as.character(.data$parent_area_id)
         )
       )
-  }  
+  }
+  
+  # replace old area_levels
+  survey_circumcision <- survey_circumcision %>% 
+    mutate(
+      area_level = substr(area_id, 5, 5),
+      area_level = ifelse(area_level == "", 0, as.numeric(area_level))
+    )
+  
+  # remove columns not originally present, if desired
+  if (remove_add_cols == TRUE) {
+    survey_circumcision <- survey_circumcision %>% 
+      dplyr::select(dplyr::all_of(orig_names))
+  }
   return(survey_circumcision)
 }
 
