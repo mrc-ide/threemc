@@ -199,7 +199,7 @@ prepare_survey_data <- function(areas,
   )
 
 
-  # Merging circumcision and individuals survey datasets ---------------------
+  # Merge circumcision and individuals survey datasets ---------------------
 
   # pull original surveys
   orig_surveys <- unique(survey_circumcision$survey_id)
@@ -213,9 +213,9 @@ prepare_survey_data <- function(areas,
         dplyr::rename(area_id = .data$geoloc_area_id)
     }
 
-    # Merging datasets, if required
+    # Merge datasets, if required
     survey_circumcision <- survey_circumcision %>%
-      # Merging on individual information to  the circumcision dataset
+      # Merge on individual information to  the circumcision dataset
       dplyr::left_join(
         survey_individuals %>%
           dplyr::select(
@@ -224,7 +224,7 @@ prepare_survey_data <- function(areas,
           ),
         by = c("survey_id", "individual_id")
       ) %>%
-      # Merging on cluster information to the circumcision dataset
+      # Merge on cluster information to the circumcision dataset
       dplyr::left_join(
         (survey_clusters %>%
            dplyr::mutate(area_id = as.character(.data$area_id)) %>%
@@ -240,7 +240,7 @@ prepare_survey_data <- function(areas,
     survey_circumcision[, missing_age_cols] <- NA
   }
 
-  # Remove those with missing circumcison status
+  # Remove those with missing circumcision status
   survey_circumcision <- survey_circumcision %>%
     dplyr::filter(
       !is.na(.data$circ_status),
@@ -258,22 +258,22 @@ prepare_survey_data <- function(areas,
       circ_age = ifelse(.data$circ_age > .data$age, NA_real_, .data$circ_age)
     )
 
-  # Censoring if necessary ---------------------------------------------------
+  # Censor if necessary ---------------------------------------------------
 
-  # Censoring at cens_year if assumed no circumcisions after a certain year
+  # Censor at cens_year if assumed no circumcisions after a certain year
   if (!is.null(cens_age)) {
     survey_circumcision <- survey_circumcision %>%
-      # Censoring individuals from analysis at cens_age
+      # Censor individuals from analysis at cens_age
       dplyr::mutate(
         # No circumcision after cens_age
         circ_status = ifelse(.data$circ_status == 1 &
                                !is.na(.data$circ_age) &
                                .data$circ_age > cens_age, 0, .data$circ_status),
-        # Resetting age at circumcision
+        # Reset age at circumcision
         circ_age = ifelse(.data$circ_age > cens_age, NA,
                           .data$circ_age
         ),
-        # Resetting age for everyone else
+        # Reset age for everyone else
         age = ifelse(.data$age > cens_age, cens_age,
                      .data$age
         ),
@@ -284,15 +284,15 @@ prepare_survey_data <- function(areas,
       )
   }
 
-  # Censoring at cens_year if assumed no circumcisions after a certain year
+  # Censor at cens_year if assumed no circumcisions after a certain year
   if (!is.null(cens_year)) {
     survey_circumcision <- survey_circumcision %>%
-      # Censoring at cens_year
+      # Censor at cens_year
       dplyr::filter(.data$yob < cens_year) %>%
       # Final variables for modelling
       dplyr::mutate(
-        # Censoring circumcision status for those circumcised in cens_year,
-        # Assuming interval censored people were circumcised before cens_year
+        # Censor circumcision status for those circumcised in cens_year,
+        # assuming interval censored people were circumcised before cens_year
         circ_status = ifelse(.data$yoc >= cens_year &
                                .data$circ_status == 1 & !is.na(.data$circ_age),
                              0.0, .data$circ_status
@@ -302,7 +302,7 @@ prepare_survey_data <- function(areas,
       )
   }
 
-  # Setting desired level aggregation ----------------------------------------
+  # Set desired level aggregation ----------------------------------------
 
   if (inherits(areas, "sf")) areas <- sf::st_drop_geometry(areas)
   areas <- dplyr::select(
@@ -310,7 +310,7 @@ prepare_survey_data <- function(areas,
     .data$parent_area_id, .data$area_level
   )
 
-  # Getting the area level id to province
+  # Get the area level id to province
   area_lev <- select_area_lev(
     area_lev,
     cntry = survey_circumcision$iso3[1],
@@ -343,9 +343,9 @@ prepare_survey_data <- function(areas,
 
   # Final preparation of circumcision variables ------------------------------
 
-  # Preparing circumcision variables for the model
+  # Prepare circumcision variables for the model
   survey_circumcision <- survey_circumcision %>%
-    # Merging on the region index
+    # Merge on the region index
     # Note: inner_join will remove observations that don't
     #       corresponding to a location in "areas"
     dplyr::inner_join(
@@ -414,7 +414,7 @@ prepare_survey_data <- function(areas,
         )
       }
     }
-    # Removing surveys and individuals without any type information
+    # Remove surveys and individuals without any type information
     survey_circumcision <- survey_circumcision %>%
       dplyr::filter(
         !(.data$survey_id %chin% !!as.character(tmp$survey_id)),
@@ -458,7 +458,6 @@ prepare_survey_data <- function(areas,
     }))
   }
 
-  # Returning prepped circumcision datasets
   return(survey_circumcision)
 }
 
@@ -568,12 +567,7 @@ reassign_survey_level <- function(survey_circumcision,
 
 #' @title Normalise Survey Weights and apply Kish Coefficients
 #' @description Normalise survey weights and apply Kish coefficients.
-#' @param survey_circumcision Information on male circumcision status from
-#' surveys containing survey weights.
-#' @param strata.norm Stratification variables for normalising survey weights,
-#' Default: c("survey_id", "area_id")
-#' @param strata.kish Stratification variables for estimating and applying the
-#' Kish coefficients, Default: "survey_id"
+#' @inheritParams prepare_survey_data
 #' @return Survey data with normalised survey weights and required variables to
 #' run circumcision model.
 #' @export
@@ -585,15 +579,15 @@ normalise_weights_kish <- function(survey_circumcision,
                                    strata.norm = c("survey_id", "area_id"),
                                    strata.kish = c("survey_id")) {
 
-  # Preparing survey weights for the model
+  # Prepare survey weights for the model
   survey_circumcision %>%
-    # Standardising survey weights
+    # Standardise survey weights
     dplyr::group_by(dplyr::across(dplyr::all_of(strata.norm))) %>%
     dplyr::mutate(
       indweight_st = .data$indweight / mean(.data$indweight, na.rm = TRUE)
     ) %>%
     dplyr::ungroup() %>%
-    # Applying Kish coefficient to the survey weights
+    # Apply Kish coefficient to the survey weights
     dplyr::left_join(
       (survey_circumcision %>%
         dplyr::group_by(dplyr::across(dplyr::all_of(strata.kish))) %>%

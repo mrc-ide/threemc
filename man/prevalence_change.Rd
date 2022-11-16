@@ -2,12 +2,12 @@
 % Please edit documentation in R/aggregation.R
 \name{prevalence_change}
 \alias{prevalence_change}
-\title{Calculate Change in Prevalence/Coverage from a given year.}
+\title{Calculate Change in Prevalence/Coverage From a Given Year}
 \usage{
 prevalence_change(results, spec_year)
 }
 \arguments{
-\item{results}{\code{results} results for several years.}
+\item{results}{results for several years.}
 
 \item{spec_year}{Year to calculate change in prevalence/coverage from within
 \code{results}.}

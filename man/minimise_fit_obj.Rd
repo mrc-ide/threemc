@@ -7,12 +7,25 @@
 minimise_fit_obj(fit, dat_tmb, parameters)
 }
 \arguments{
-\item{fit}{Fit object returned by \link[naomi]{sample_tmb}, which includes,
-among other things, the optimised parameters and subsequent sample for our
-TMB model.}
+\item{fit}{Optional "small" fit object with no \code{sample}. Specifying \code{fit}
+means you do not need to specify \code{dat_tmb} or \code{parameters}, as argument
+specifications will be overridden by those stored in \code{fit}.}
 
 \item{dat_tmb}{\code{list} of data required for model fitting, outputted
-by \link[threemc]{threemc_prepare_model_data}.}
+by \link[threemc]{threemc_prepare_model_data}, which includes:
+\itemize{
+\item{design_matrices}{Includes\code{X_fixed_mmc}, \code{X_fixed_tmc}, \code{X_time_mmc},
+\code{X_age_mmc}, \code{X_age_tmc}, \code{X_space_mmc}, \code{X_space_tmc}, \code{X_agetime_mmc},
+\code{X_agespace_mmc}, \code{X_agespace_tmc}, \code{X_spacetime_mmc}. Design
+Create design matrices for fixed effects and temporal, age, space and
+interaction random effects}
+\item{integration matrices}{Includes \code{IntMat1}, \code{IntMat2}. Integration
+matrices for selecting the instantaneous hazard rate.}
+\item{survival matrices}{Includes \code{A_mmc}, \code{A_tmc}, \code{A_mc}, \code{B}, \code{C}.
+Survival matrices for MMC, TMC, censored and left censored}
+\item{Q_space}{Precision/Adjacency matrix for the spatial random effects.
+}
+}}
 
 \item{parameters}{\code{list} of fixed and random model parameters.}
 }

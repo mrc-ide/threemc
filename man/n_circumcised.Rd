@@ -2,7 +2,7 @@
 % Please edit documentation in R/aggregation.R
 \name{n_circumcised}
 \alias{n_circumcised}
-\title{Calculate number of people circumcised}
+\title{Calculate Number of People Circumcised}
 \usage{
 n_circumcised(results)
 }

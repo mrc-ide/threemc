@@ -30,10 +30,10 @@
 #' @importFrom rlang .data
 read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
 
-  ## maybe add a warning for missing "circ" columns for surveys?? And add
-  ## in NAs in this situation (look at KEN for this)
+  # maybe add a warning for missing "circ" columns for surveys?? And add
+  # in NAs in this situation (look at KEN for this)
 
-  ## read in data, depending on file type
+  # read in data, depending on file type
   cond <- tools::file_ext(path) %chin% c("geojson", "shp", "shx")
   if (cond) {
     .data <- sf::read_sf(path, ...)
@@ -42,13 +42,13 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
     .data <- as.data.frame(data.table::fread(path, select = c(selected), ...))
   }
 
-  ## if desired, recursively filter data with provided `filters` vector
+  # if desired, recursively filter data with provided `filters` vector
   if (!is.null(filters)) {
     cols <- names(filters)
     vals <- as.vector(filters[seq_along(filters)])
     for (i in seq_along(filters)) {
       if (!cols[i] %chin% names(.data)) next
-      ## change col i to symbol (if present), evaluate corresponding filter
+      # change col i to symbol (if present), evaluate corresponding filter
       .data <- dplyr::filter(.data, !!rlang::sym(cols[i]) == vals[i])
     }
   }
@@ -59,7 +59,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
       dplyr::select(dplyr::all_of(selected[selected %chin% names(.data)]))
   }
 
-  ## for areas, add unique identifier within Admin code and merge to boundaries
+  # for areas, add unique identifier within Admin code and merge to boundaries
   if (inherits(.data, "sf")) {
     .data <- .data %>%
       dplyr::group_by(.data$area_level) %>%
@@ -132,7 +132,7 @@ add_area_id <- function(df,
                         par,
                         add_keep_cols = NULL) {
 
-  # Getting area_id's
+  # Get area_id's
   area_lev_current_id <- paste0("area_id", par$area_lev)
   # The level we want
   area_lev_select_id <- paste0("area_id", par$area_lev_select)
@@ -273,8 +273,7 @@ append_mc_name <- function(.data) {
 #' @description Create a list containing all the area dependencies and number
 #' of for each area in the hierarchy
 #'
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country.
+#' @inheritParams prepare_survey_data
 #' @returns A list of length 2 containing:
 #' \itemize{
 #'  \item{"sub_region_list"}{A list of the specific sub-regions contained
@@ -301,7 +300,7 @@ create_aggregate_structure <- function(areas,
     dplyr::pull()
   area_id_seq <- seq(1, max_space, 1)
   sub_region_list <- lapply(area_id_seq, function(i) {
-    # Getting areas lower in the hierarchy
+    # Get areas lower in the hierarchy
     areas_wide %>%
       dplyr::filter(dplyr::if_any(dplyr::starts_with("space"), ~ . == i)) %>%
       dplyr::pull(paste0("space", area_lev))
@@ -311,8 +310,9 @@ create_aggregate_structure <- function(areas,
     dplyr::distinct(.data$area_id) %>%
     dplyr::mutate(sp_dep = vapply(sub_region_list, length, numeric(1)))
 
-  # Returning list
-  list(sub_region_list = sub_region_list, n_sub_region_df = n_sub_region_df)
+  return(
+    list(sub_region_list = sub_region_list, n_sub_region_df = n_sub_region_df)
+  )
 }
 
 
@@ -320,7 +320,7 @@ create_aggregate_structure <- function(areas,
 
 #' Spread area hierarchy to wide format
 #'
-#' @param areas area hierarchy data.frame
+#' @inheritParams prepare_survey_data
 #' @param min_level integer specifying the minimum level wanted
 #' @param max_level integer specifying the maximum level wanted
 #' @param space whether to include "space" columns. Excluding these returns the
@@ -385,7 +385,7 @@ spread_areas <- function(areas,
     )
   }
 
-  # removing "space" columns returns same object as naomi::spread_areas
+  # remove "space" columns returns same object as naomi::spread_areas
   if (space == FALSE) {
     areas_wide <- areas_wide %>%
       dplyr::select(-dplyr::contains("space"))

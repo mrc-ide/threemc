@@ -12,16 +12,19 @@ split_mmc_design_matrices_paed(
 )
 }
 \arguments{
-\item{out}{Shell dataset used for modelling}
+\item{out}{Shell dataset (outputted by \link[threemc]{create_shell_dataset}
+with a row for every unique record in circumcision survey data for a given
+area. Also includes empirical estimates for circumcision estimates for each
+unique record.}
 
-\item{area_lev}{PSNU area level for specific country. Defaults to the
-Defaults to the maximum area level found in \code{dat} if not supplied.}
+\item{area_lev}{PSNU area level for specific country.}
 
 \item{design_matrices}{Design matrices for fixed effects and temporal, age,
 spatial and random effects, for both medical and traditional circumcision.}
 
-\item{paed_age_cutoff}{Age at which to no longer consider an individual as
-part of the "paediatric" population of a country, Default: 10}
+\item{paed_age_cutoff}{Age at which to split MMC design matrices between
+paediatric and non-paediatric populations, the former of which are constant
+over time. Set to NULL if not desired, Default: NULL}
 }
 \description{
 Take MMC-related design matrices and effectively "split"

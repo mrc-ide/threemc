@@ -11,8 +11,11 @@ normalise_weights_kish(
 )
 }
 \arguments{
-\item{survey_circumcision}{Information on male circumcision status from
-surveys containing survey weights.}
+\item{survey_circumcision}{\itemize{
+\item Information on male circumcision status from
+surveys. If this is a list or contains more than one country, the function
+is performed for each country present, returning a list.
+}}
 
 \item{strata.norm}{Stratification variables for normalising survey weights,
 Default: c("survey_id", "area_id")}

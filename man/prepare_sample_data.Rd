@@ -2,7 +2,7 @@
 % Please edit documentation in R/aggregation.R
 \name{prepare_sample_data}
 \alias{prepare_sample_data}
-\title{Pull N circumcision samples from TMB fit}
+\title{Pull N Circumcision Samples From TMB Fit}
 \usage{
 prepare_sample_data(
   N = 100,
@@ -35,7 +35,7 @@ only.}
 VMMC programme data.}
 
 \item{type}{Determines which aspect of MC in the regions in question you wish
-to sample for. Can be one of "probability", "incidence" or "prevalence".}
+to aggregate for. Can be one of "probability", "incidence" or "prevalence".}
 }
 \description{
 Function to pull samples for various summaries inferred about
