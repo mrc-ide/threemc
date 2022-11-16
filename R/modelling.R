@@ -65,7 +65,7 @@ threemc_fit_model <- function(fit = NULL,
   
   # If model is not specified, allow function to choose based on dat_tmb
   # This also abstracts esoteric model specification from the user
-  if (is.null(mod)) {
+  if (is.null(mod)) { # should be it's own function! Can test more easily then
     
     if (!is.null(parameters)) {
       param_names <- names(parameters)
@@ -81,7 +81,7 @@ threemc_fit_model <- function(fit = NULL,
     mod <- "Surv_SpaceAgeTime"
     
     # determine whether there was information on circumcision type in `out`
-    if (dat_tmb$type_info == TRUE) {
+    if ("type_info" %in% names(dat_tmb) && dat_tmb$type_info == TRUE) {
       mod <- paste0(mod, "_ByType_withUnknownType")
     }
     
@@ -300,7 +300,7 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
   return(fit_small)
 }
 
-#### Initialise parameters ####
+#### threemc_initial_pars ####
 
 #' @title Initialise `thremec` (hyper)parameters.
 #' @description Return minimised fit object. Often useful when saving the fit
@@ -324,11 +324,23 @@ threemc_initial_pars <- function(dat_tmb,
 
   # dummy paediatric MMC matrices
   if (is.null(paed_age_cutoff)) {
+    if ("X_fixed_mmc_paed" %in% names(dat_tmb)) {
+      stop(
+        "paed_age_cutoff = NULL but dat_tmb$X_fixed_mmc_paed exists, ",
+        " please recheck threemc_prepare_model_data arguments"
+      )
+    }
     X_fixed_mmc_paed <- X_age_mmc_paed <- X_space_mmc_paed <- data.frame(0)
   }
 
   # dummy time TMC matrices
   if (inc_time_tmc == FALSE) {
+    if ("X_time_tmc" %in% names(dat_tmb)) {
+      stop(
+        "inc_time_tmc = FALSE but dat_tmb$X_time_tmc exists, ",
+        " please recheck threemc_prepare_model_data arguments"
+      )
+    }
     X_time_tmc <- data.frame(0)
   }
 
@@ -399,7 +411,14 @@ threemc_initial_pars <- function(dat_tmb,
   }
 
   # remove mmc time correlation parameters, if fitting with RW precision matrix
-  if ("Q_time" %in% names(dat_tmb)) {
+  # if ("Q_time" %in% names(dat_tmb)) {
+  if (!is.null(rw_order)) {
+    if (!"Q_time" %in% names(dat_tmb)) {
+      stop(
+        "rw_order != NULL but dat_tmb$Q_time does not exist, ",
+        " please recheck threemc_prepare_model_data arguments"
+      )
+    }
     parameters <- parameters[!grepl("logitrho_mmc_time", names(parameters))]
   }
 
