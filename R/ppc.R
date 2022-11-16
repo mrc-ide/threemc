@@ -26,9 +26,6 @@
 #' posterior predictive estimates for left out surveys, 
 #' Default = c(0.5, 0.8, 0.95)
 #' @param N Number of samples to generate, Default: 1000
-#' @param compare_stats Set to TRUE if you wish to compute comparative
-#' statistics (specifically, ELPD and CRPS) to compare with alternative models,
-#' Default: TRUE
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
@@ -36,20 +33,20 @@
 #' @rdname threemc_ppc
 #' @export
 threemc_ppc <- function(fit,
-                            out,
-                            survey_circumcision_test, 
-                            areas = NULL,
-                            area_lev = 1,
-                            type = "MMC",
-                            age_groups = c(
-                              # five-year age groups
-                              "0-4", "5-9", "10-14", "15-19",
-                              "20-24", "25-29", "30-34", "35-39",
-                              "40-44", "45-49", "50-54", "54-59" 
-                            ),
-                            CI_range = c(0.5, 0.8, 0.95),
-                            N = 1000,
-                            compare_stats = TRUE) {
+                        out,
+                        survey_circumcision_test, 
+                        areas = NULL,
+                        area_lev = 1,
+                        type = "MMC",
+                        age_groups = c(
+                          # five-year age groups
+                          "0-4", "5-9", "10-14", "15-19",
+                          "20-24", "25-29", "30-34", "35-39",
+                          "40-44", "45-49", "50-54", "54-59" 
+                        ),
+                        CI_range = c(0.5, 0.8, 0.95),
+                        N = 1000,
+                        seed = 123) {
   
   stopifnot(type %in% c("MC", "MMC", "TMC"))
 
@@ -201,7 +198,7 @@ threemc_ppc <- function(fit,
   #### Binomial Sample from PPD ####
 
   # switch samp columns to long "predicted" column 
-  set.seed(123)
+  set.seed(seed)
   survey_estimate_ppd_long <- survey_estimate_ppd %>%
     tidyr::pivot_longer(
       dplyr::starts_with("samp"),
