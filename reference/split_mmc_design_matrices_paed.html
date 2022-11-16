@@ -68,12 +68,14 @@ include any time-related components, and one non-paediatric set.</p>
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>out</dt>
-<dd><p>Shell dataset used for modelling</p></dd>
+<dd><p>Shell dataset (outputted by <a href="create_shell_dataset.html">create_shell_dataset</a>
+with a row for every unique record in circumcision survey data for a given
+area. Also includes empirical estimates for circumcision estimates for each
+unique record.</p></dd>
 
 
 <dt>area_lev</dt>
-<dd><p>PSNU area level for specific country. Defaults to the
-Defaults to the maximum area level found in <code>dat</code> if not supplied.</p></dd>
+<dd><p>PSNU area level for specific country.</p></dd>
 
 
 <dt>design_matrices</dt>
@@ -82,8 +84,9 @@ spatial and random effects, for both medical and traditional circumcision.</p></
 
 
 <dt>paed_age_cutoff</dt>
-<dd><p>Age at which to no longer consider an individual as
-part of the "paediatric" population of a country, Default: 10</p></dd>
+<dd><p>Age at which to split MMC design matrices between
+paediatric and non-paediatric populations, the former of which are constant
+over time. Set to NULL if not desired, Default: NULL</p></dd>
 
 </dl></div>
 

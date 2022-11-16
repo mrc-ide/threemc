@@ -84,12 +84,15 @@ survey entries (i.e. where circumcision occurred at an unknown age).</p>
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>survey_circumcision</dt>
-<dd><p>Information on male circumcision status from
-surveys.</p></dd>
+<dd><ul><li><p>Information on male circumcision status from
+surveys. If this is a list or contains more than one country, the function
+is performed for each country present, returning a list.</p></li>
+</ul></dd>
 
 
 <dt>populations</dt>
-<dd><p>Single age male population counts by space and time.</p></dd>
+<dd><p><code>data.frame</code> containing populations for each
+region in tmb fits.</p></dd>
 
 
 <dt>areas</dt>
@@ -97,8 +100,8 @@ surveys.</p></dd>
 
 
 <dt>area_lev</dt>
-<dd><p>PSNU area level for specific country. Defaults to the
-maximum area level found in <code>areas</code> if not supplied.</p></dd>
+<dd><ul><li><p>Desired admin boundary level to perform the analysis on.</p></li>
+</ul></dd>
 
 
 <dt>start_year</dt>
@@ -121,7 +124,7 @@ Default: "time2"</p></dd>
 
 <dt>strat</dt>
 <dd><p>Variable to stratify by in using a 3D hazard function,
-Default: "space"</p></dd>
+Default: NULL</p></dd>
 
 
 <dt>age</dt>
