@@ -15,7 +15,7 @@ threemc_ppc(
     "40-44", "45-49", "50-54", "54-59"),
   CI_range = c(0.5, 0.8, 0.95),
   N = 1000,
-  compare_stats = TRUE
+  seed = 123
 )
 }
 \arguments{
@@ -52,10 +52,6 @@ posterior predictive estimates for left out surveys,
 Default = c(0.5, 0.8, 0.95)}
 
 \item{N}{Number of samples to generate, Default: 1000}
-
-\item{compare_stats}{Set to TRUE if you wish to compute comparative
-statistics (specifically, ELPD and CRPS) to compare with alternative models,
-Default: TRUE}
 }
 \value{
 \code{data.frame} with samples aggregated by \code{aggr_cols} and

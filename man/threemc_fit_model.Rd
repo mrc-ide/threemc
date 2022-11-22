@@ -17,6 +17,7 @@ threemc_fit_model(
   smaller_fit_obj = FALSE,
   sdreport = FALSE,
   N = 1000,
+  verbose = TRUE,
   ...
 )
 }
@@ -64,6 +65,9 @@ fit object for later aggregations.}
 the model, Default: FALSE}
 
 \item{N}{Number of samples to be generated, Default: 1000}
+
+\item{verbose}{Boolean specifying whether you want detailed updates on
+function operations and progress, default = TRUE}
 
 \item{...}{Further arguments passed to internal functions.}
 }
