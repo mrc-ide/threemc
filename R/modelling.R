@@ -81,10 +81,14 @@ threemc_fit_model <- function(fit = NULL,
     mod <- "Surv_SpaceAgeTime"
     
     # determine whether there was information on circumcision type in `out`
-    if ("type_info" %in% names(dat_tmb) && dat_tmb$type_info == TRUE) {
+    cond <- "type_info" %in% names(dat_tmb) && dat_tmb$type_info == TRUE ||
+      # if we don't define dat_tmb, and instead have fit to be re-sampled from
+      (!is.null(fit) && any(grepl("mmc", param_names)))
+    
+    if (cond) {
       mod <- paste0(mod, "_ByType_withUnknownType")
     }
-    
+      
     if (any(grepl("paed", param_names))) {
       mod <- paste0(mod, "_Const_Paed_MMC")
     }
