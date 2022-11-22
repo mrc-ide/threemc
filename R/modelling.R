@@ -40,6 +40,8 @@
 #' @param sdreport If set to TRUE, produces the standard deviation report for
 #' the model, Default: FALSE
 #' @param N Number of samples to be generated, Default: 1000
+#' @param verbose Boolean specifying whether you want detailed updates on 
+#' function operations and progress, default = TRUE
 #' @param ... Further arguments passed to internal functions.
 #' @return TMB model fit, including optimised parameters, hessian matrix,
 #' samples and standard deviation report (if desired).
@@ -60,6 +62,7 @@ threemc_fit_model <- function(fit = NULL,
                               smaller_fit_obj = FALSE,
                               sdreport = FALSE,
                               N = 1000,
+                              verbose = TRUE,
                               ...) {
 
   
@@ -184,6 +187,7 @@ threemc_fit_model <- function(fit = NULL,
   randoms <- randoms[randoms %chin% names(parameters)]
   if (length(randoms) == 0) randoms <- NULL
 
+  if (verbose) message("Creating TMB object with `TMB::MakeADFun`...")
   # Create TMB object
   obj <- TMB::MakeADFun(
     dat_tmb,
@@ -197,6 +201,8 @@ threemc_fit_model <- function(fit = NULL,
   )
   # for specified fit, simply resample and return
   if (!is.null(fit)) {
+
+    if (verbose) message("Resampling from `fit`...")
     fit$obj <- obj
     fit$obj$fn()
     fit <- circ_sample_tmb(
@@ -207,6 +213,7 @@ threemc_fit_model <- function(fit = NULL,
   }
 
   # Run optimiser (use optim if all pars are fixed, nlminb otherwise)
+  if (verbose) message("Optimising...")
   if (length(obj$par) == 0) {
     opt <- do.call(stats::optim, obj, ...)
   } else {
@@ -221,11 +228,13 @@ threemc_fit_model <- function(fit = NULL,
 
   # sample from TMB fit
   if (sample == TRUE) {
+    if (verbose) message("Sampling...")
     fit <- circ_sample_tmb(
       obj = obj, opt = opt, nsample = N, sdreport = sdreport
     )
     # return smaller fit object
     if (smaller_fit_obj == TRUE) {
+      if (verbose) message("Minimising fit object...")
       fit <- minimise_fit_obj(fit, dat_tmb, parameters)
     }
     return(fit)
