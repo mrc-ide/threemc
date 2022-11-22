@@ -66,7 +66,7 @@ age groups (rather than single year ages), split by specified categories.</p>
 <span>    <span class="st">"40-44"</span>, <span class="st">"45-49"</span>, <span class="st">"50-54"</span>, <span class="st">"54-59"</span><span class="op">)</span>,</span>
 <span>  CI_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.8</span>, <span class="fl">0.95</span><span class="op">)</span>,</span>
 <span>  N <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  compare_stats <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  seed <span class="op">=</span> <span class="fl">123</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -122,12 +122,6 @@ Default = c(0.5, 0.8, 0.95)</p></dd>
 
 <dt>N</dt>
 <dd><p>Number of samples to generate, Default: 1000</p></dd>
-
-
-<dt>compare_stats</dt>
-<dd><p>Set to TRUE if you wish to compute comparative
-statistics (specifically, ELPD and CRPS) to compare with alternative models,
-Default: TRUE</p></dd>
 
 </dl></div>
     <div id="value">
