@@ -10,6 +10,7 @@
 #' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC
 #' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW
 #' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC2
+#' @useDynLib Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2
 #' @noRd
 #' @keywords internal
 NULL
