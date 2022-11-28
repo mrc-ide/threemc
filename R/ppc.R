@@ -51,6 +51,16 @@ threemc_ppc <- function(fit,
   stopifnot(type %in% c("MC", "MMC", "TMC"))
 
   # filter results to specified or modelled area level
+  if (!"area_level" %in% names(out)) {
+    out <- out %>% 
+      dplyr::mutate(
+        area_level = ifelse(
+          nchar(.data$area_id) == 3, 
+          0, 
+          substr(.data$area_id, 4, 4)
+      )
+    )
+  }
   max_area_lev <- max(out$area_level)
   if (area_lev > max_area_lev) {
     message(
