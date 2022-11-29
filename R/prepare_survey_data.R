@@ -199,7 +199,7 @@ prepare_survey_data <- function(areas,
   )
 
 
-  # Merging circumcision and individuals survey datasets ---------------------
+  # Merge circumcision and individuals survey datasets ---------------------
 
   # pull original surveys
   orig_surveys <- unique(survey_circumcision$survey_id)
@@ -213,9 +213,9 @@ prepare_survey_data <- function(areas,
         dplyr::rename(area_id = .data$geoloc_area_id)
     }
 
-    # Merging datasets, if required
+    # Merge datasets, if required
     survey_circumcision <- survey_circumcision %>%
-      # Merging on individual information to  the circumcision dataset
+      # Merge on individual information to  the circumcision dataset
       dplyr::left_join(
         survey_individuals %>%
           dplyr::select(
@@ -224,7 +224,7 @@ prepare_survey_data <- function(areas,
           ),
         by = c("survey_id", "individual_id")
       ) %>%
-      # Merging on cluster information to the circumcision dataset
+      # Merge on cluster information to the circumcision dataset
       dplyr::left_join(
         (survey_clusters %>%
            dplyr::mutate(area_id = as.character(.data$area_id)) %>%
@@ -240,7 +240,7 @@ prepare_survey_data <- function(areas,
     survey_circumcision[, missing_age_cols] <- NA
   }
 
-  # Remove those with missing circumcison status
+  # Remove those with missing circumcision status
   survey_circumcision <- survey_circumcision %>%
     dplyr::filter(
       !is.na(.data$circ_status),
@@ -258,22 +258,22 @@ prepare_survey_data <- function(areas,
       circ_age = ifelse(.data$circ_age > .data$age, NA_real_, .data$circ_age)
     )
 
-  # Censoring if necessary ---------------------------------------------------
+  # Censor if necessary ---------------------------------------------------
 
-  # Censoring at cens_year if assumed no circumcisions after a certain year
+  # Censor at cens_year if assumed no circumcisions after a certain year
   if (!is.null(cens_age)) {
     survey_circumcision <- survey_circumcision %>%
-      # Censoring individuals from analysis at cens_age
+      # Censor individuals from analysis at cens_age
       dplyr::mutate(
         # No circumcision after cens_age
         circ_status = ifelse(.data$circ_status == 1 &
                                !is.na(.data$circ_age) &
                                .data$circ_age > cens_age, 0, .data$circ_status),
-        # Resetting age at circumcision
+        # Reset age at circumcision
         circ_age = ifelse(.data$circ_age > cens_age, NA,
                           .data$circ_age
         ),
-        # Resetting age for everyone else
+        # Reset age for everyone else
         age = ifelse(.data$age > cens_age, cens_age,
                      .data$age
         ),
@@ -284,15 +284,15 @@ prepare_survey_data <- function(areas,
       )
   }
 
-  # Censoring at cens_year if assumed no circumcisions after a certain year
+  # Censor at cens_year if assumed no circumcisions after a certain year
   if (!is.null(cens_year)) {
     survey_circumcision <- survey_circumcision %>%
-      # Censoring at cens_year
+      # Censor at cens_year
       dplyr::filter(.data$yob < cens_year) %>%
       # Final variables for modelling
       dplyr::mutate(
-        # Censoring circumcision status for those circumcised in cens_year,
-        # Assuming interval censored people were circumcised before cens_year
+        # Censor circumcision status for those circumcised in cens_year,
+        # assuming interval censored people were circumcised before cens_year
         circ_status = ifelse(.data$yoc >= cens_year &
                                .data$circ_status == 1 & !is.na(.data$circ_age),
                              0.0, .data$circ_status
@@ -302,7 +302,7 @@ prepare_survey_data <- function(areas,
       )
   }
 
-  # Setting desired level aggregation ----------------------------------------
+  # Set desired level aggregation ----------------------------------------
 
   if (inherits(areas, "sf")) areas <- sf::st_drop_geometry(areas)
   areas <- dplyr::select(
@@ -310,33 +310,22 @@ prepare_survey_data <- function(areas,
     .data$parent_area_id, .data$area_level
   )
 
-  # Getting the area level id to province
+  # Get the area level id to province
   area_lev <- select_area_lev(
     area_lev,
     cntry = survey_circumcision$iso3[1],
     is_add_data_present
   )
 
-  # Join surveys with areas for each level leading up to the desired area level
-  # This distributes granular surveys to desired area_level using parent_ids
-  for (i in seq_len(max(areas$area_level))) {
-    survey_circumcision <- survey_circumcision %>%
-      # merge on boundary information
-      dplyr::select(-dplyr::matches("area_name")) %>%
-      dplyr::left_join(areas, by = "area_id") %>%
-      # take area_id to be parent_area_id, unless (at least) at area_lev
-      dplyr::mutate(
-        area_id = ifelse(
-          .data$area_level <= area_lev, # cannot reassign less granular surveys
-          as.character(.data$area_id),
-          as.character(.data$parent_area_id)
-        )
-      ) %>%
-      # remove parent_area_id etc, to join in next least granular equivalents
-      dplyr::select(
-        -c(.data$parent_area_id, .data$area_name, .data$area_level)
-      )
-  }
+  # reassign surveys which are more granular than area_lev to area_lev
+  survey_circumcision <- reassign_survey_level(
+    survey_circumcision, areas, area_lev
+  ) %>% 
+    # remove cols which will be joined in from areas below
+    dplyr::select(-c(
+      dplyr::any_of(c("parent_area_id", "area_name", "area_level"))
+    ))
+  
 
   # check for introduction of NAs in area_id
   na_area_survey_ids <- survey_circumcision %>%
@@ -354,9 +343,9 @@ prepare_survey_data <- function(areas,
 
   # Final preparation of circumcision variables ------------------------------
 
-  # Preparing circumcision variables for the model
+  # Prepare circumcision variables for the model
   survey_circumcision <- survey_circumcision %>%
-    # Merging on the region index
+    # Merge on the region index
     # Note: inner_join will remove observations that don't
     #       corresponding to a location in "areas"
     dplyr::inner_join(
@@ -390,25 +379,8 @@ prepare_survey_data <- function(areas,
     paste0(utils::capture.output(event_tbl), collapse = "\n")
   )
 
-  # Adding circumcision type to dataset
-  survey_circumcision <- survey_circumcision %>%
-    # Type of circumcision
-    dplyr::mutate(
-      circ_who = ifelse(.data$circ_who == "other",
-                        NA_character_,
-                        .data$circ_who
-      ),
-      circ_where = ifelse(.data$circ_where == "other",
-                          NA_character_,
-                          .data$circ_where
-      ),
-      type = dplyr::case_when(
-        .data$circ_who == "medical" | .data$circ_where == "medical" ~ "MMC",
-        .data$circ_who == "traditional" |
-          .data$circ_where == "traditional" ~ "TMC",
-        TRUE ~ "Missing"
-      )
-    )
+  # Add circumcision type to dataset
+  survey_circumcision <- find_circ_type(survey_circumcision)
 
   # Get surveys without any type information
   if (rm_missing_type == TRUE) {
@@ -442,7 +414,7 @@ prepare_survey_data <- function(areas,
         )
       }
     }
-    # Removing surveys and individuals without any type information
+    # Remove surveys and individuals without any type information
     survey_circumcision <- survey_circumcision %>%
       dplyr::filter(
         !(.data$survey_id %chin% !!as.character(tmp$survey_id)),
@@ -486,7 +458,108 @@ prepare_survey_data <- function(areas,
     }))
   }
 
-  # Returning prepped circumcision datasets
+  return(survey_circumcision)
+}
+
+
+#' @title Define circumcision type
+#' @description Using `circ_who` and `circ_where`, determines survey 
+#' type. 
+#' @inheritParams prepare_survey_data
+#' @return Surveys with circumcision type labelled by the column `type`.
+#' @export
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+#' @rdname reassign_surey_level
+#' @keywords internal
+find_circ_type <- function(survey_circumcision) {
+  survey_circumcision %>%
+    dplyr::mutate(
+      circ_who = ifelse(.data$circ_who == "other",
+                        NA_character_,
+                        .data$circ_who
+      ),
+      circ_where = ifelse(.data$circ_where == "other",
+                          NA_character_,
+                          .data$circ_where
+      ),
+      # medical circ_who or circ_where supersedes traditional circumcision
+      type = dplyr::case_when(
+        .data$circ_who == "medical" | .data$circ_where == "medical" ~ "MMC",
+        .data$circ_who == "traditional" |
+          .data$circ_where == "traditional" ~ "TMC",
+        TRUE ~ "Missing"
+      )
+    )  
+}
+
+
+#### reassign_survey_level ####
+
+#' @title Reassign survey area levels
+#' @description Join surveys with areas for each level leading up to the 
+#' desired area level. This distributes granular surveys to desired area_level 
+#' using parent_ids.
+#' @inheritParams prepare_survey_data
+#' @param remove_add_cols Only keep columns originally present in 
+#' `survey_circumcision`, Default = TRUE.
+#' @return Surveys with records reassigned to `area_lev`.
+#' @export
+#' @importFrom dplyr %>%
+#' @importFrom rlang .data
+#' @rdname reassign_surey_level
+#' @keywords internal
+# change the name of survey_circumcision to .data, as this fun is v general
+reassign_survey_level <- function(survey_circumcision, 
+                                  areas, 
+                                  area_lev, 
+                                  remove_add_cols = TRUE) {
+  
+  # original column names to return data with (also preserves order)
+  orig_names <- names(survey_circumcision)
+  
+  # remove unwanted geometry information, if present
+  if (inherits(areas, "sf")) areas <- sf::st_drop_geometry(areas)
+  
+  # keep only desired columns in areas
+  areas <- areas %>% 
+    dplyr::select(
+      .data$area_id, .data$area_name, .data$area_level,
+      .data$parent_area_id
+    )
+  
+  for (i in seq_len(max(areas$area_level))) {
+    survey_circumcision <- survey_circumcision %>%
+      # remove cols also in areas, except area_id, which is used to join
+      dplyr::select(
+        -dplyr::any_of(names(areas)[names(areas) != "area_id"])
+      ) %>% 
+      # merge on boundary information
+      dplyr::left_join(areas, by = "area_id") %>%
+      # take area_id to be parent_area_id, unless (at least) at area_lev
+      dplyr::mutate(
+        area_id = ifelse(
+          .data$area_level <= area_lev, # can't reassign less granular areas 
+          as.character(.data$area_id),
+          as.character(.data$parent_area_id)
+        )
+      )
+  }
+  
+  # replace old area_levels
+  survey_circumcision <- survey_circumcision %>% 
+    dplyr::mutate(
+      area_level = substr(.data$area_id, 5, 5),
+      area_level = ifelse(
+        .data$area_level == "", 0, as.numeric(.data$area_level)
+      )
+    )
+  
+  # remove columns not originally present, if desired
+  if (remove_add_cols == TRUE) {
+    survey_circumcision <- survey_circumcision %>% 
+      dplyr::select(dplyr::all_of(orig_names))
+  }
   return(survey_circumcision)
 }
 
@@ -494,12 +567,7 @@ prepare_survey_data <- function(areas,
 
 #' @title Normalise Survey Weights and apply Kish Coefficients
 #' @description Normalise survey weights and apply Kish coefficients.
-#' @param survey_circumcision Information on male circumcision status from
-#' surveys containing survey weights.
-#' @param strata.norm Stratification variables for normalising survey weights,
-#' Default: c("survey_id", "area_id")
-#' @param strata.kish Stratification variables for estimating and applying the
-#' Kish coefficients, Default: "survey_id"
+#' @inheritParams prepare_survey_data
 #' @return Survey data with normalised survey weights and required variables to
 #' run circumcision model.
 #' @export
@@ -511,15 +579,15 @@ normalise_weights_kish <- function(survey_circumcision,
                                    strata.norm = c("survey_id", "area_id"),
                                    strata.kish = c("survey_id")) {
 
-  # Preparing survey weights for the model
+  # Prepare survey weights for the model
   survey_circumcision %>%
-    # Standardising survey weights
+    # Standardise survey weights
     dplyr::group_by(dplyr::across(dplyr::all_of(strata.norm))) %>%
     dplyr::mutate(
       indweight_st = .data$indweight / mean(.data$indweight, na.rm = TRUE)
     ) %>%
     dplyr::ungroup() %>%
-    # Applying Kish coefficient to the survey weights
+    # Apply Kish coefficient to the survey weights
     dplyr::left_join(
       (survey_circumcision %>%
         dplyr::group_by(dplyr::across(dplyr::all_of(strata.kish))) %>%

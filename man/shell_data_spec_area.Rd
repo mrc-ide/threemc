@@ -9,8 +9,7 @@ shell_data_spec_area(dat, area_lev = NULL)
 \arguments{
 \item{dat}{Shell dataset used for modelling}
 
-\item{area_lev}{PSNU area level for specific country. Defaults to the
-Defaults to the maximum area level found in \code{dat} if not supplied.}
+\item{area_lev}{PSNU area level for specific country.}
 }
 \description{
 Subset the shell dataset to a specific area of interest and

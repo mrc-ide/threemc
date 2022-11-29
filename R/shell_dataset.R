@@ -6,21 +6,12 @@
 #' circumcisions, known traditional circumcisions, censored survey entries
 #' (i.e. where surveyed individuals had not been circumcised) and left-censored
 #'  survey entries (i.e. where circumcision occurred at an unknown age).
-#' @param survey_circumcision Information on male circumcision status from
-#' surveys.
-#' @param populations Single age male population counts by space and time.
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' maximum area level found in `areas` if not supplied.
+#' @inheritParams prepare_survey_data
+#' @inheritParams create_integration_matrices
+#' @inheritParams threemc_aggregate
 #' @param start_year First year in shell dataset.
 #' @param end_year Last year in shell dataset, which is also the year to
 #' forecast/model until, Default: 2021
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored,
-#' Default: "time2"
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: "space"
-#' @param age - Variable with age circumcised or censored. Default: "age"
 #' @param circ Variables with circumcision matrix, Default: "indweight_st"
 #' @param ...  Further arguments passed to or from other methods.
 #' @seealso
@@ -197,11 +188,8 @@ create_shell_dataset <- function(survey_circumcision,
 #' \link[threemc]{create_shell_dataset} and returns the empirical circumcision
 #' rates for each row, aggregated to age groups from single ages. Also converts
 #' from wide format to long format.
+#' @inheritParams create_shell_dataset
 #' @param out Shell dataset outputted by \link[threemc]{create_shell_dataset}
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' maximum area level found in `areas` if not supplied.
-#' @param populations Single age male population counts by space and time.
 #' @param age_groups Age groups to aggregate by, Default:
 #' c("0-4",   "5-9",   "10-14", "15-19",
 #'   "20-24", "25-29", "30-34", "35-39",

@@ -18,10 +18,11 @@ compute_quantiles(
 circumcision survey data for a given area. Also includes empirical estimates
 for circumcision estimates for each unique record.}
 
-\item{fit}{Object containing \code{samples} list for the (cumulative) incidence
-and hazard rate of circumcision for the region(s) in question.}
+\item{fit}{Optional "small" fit object with no \code{sample}. Specifying \code{fit}
+means you do not need to specify \code{dat_tmb} or \code{parameters}, as argument
+specifications will be overridden by those stored in \code{fit}.}
 
-\item{area_lev}{PSNU area level for specific country}
+\item{area_lev}{PSNU area level for specific country.}
 
 \item{probs}{Specific quantiles to be calculated,
 Default: c(0.025, 0.5, 0.975)}

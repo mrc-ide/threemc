@@ -1,3 +1,7 @@
+# threemc 0.1.30
+
+* Have verbose output on function progress from `threemc_fit_model` as default.
+
 # threemc 0.1.29
 
 * Can have `threemc_fit_model` choose `mod` itself based on parameters in 

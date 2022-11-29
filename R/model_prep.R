@@ -42,8 +42,7 @@
 #' @rdname threemc_prepare_model_data
 #' @importFrom R.utils Arguments
 #' @export
-threemc_prepare_model_data <- function( # data
-                                       out,
+threemc_prepare_model_data <- function(out,
                                        areas,
                                        # options
                                        area_lev = NULL,
@@ -59,6 +58,12 @@ threemc_prepare_model_data <- function( # data
       "area_lev arg missing, taken as maximum area level in shell dataset"
     )
     area_lev <- max(out$area_level, na.rm = TRUE)
+  }
+  
+  type_info <- TRUE
+  if (all(out$obs_mmc == 0) && all(out$obs_tmc == 0)) {
+    message("No circumcision type information present in `out`")
+    type_info <- FALSE
   }
 
   # Create design matrices for fixed effects and temporal, age, space and
@@ -127,8 +132,8 @@ threemc_prepare_model_data <- function( # data
     message("rw_order = NULL, AR 1 temporal prior specified")
   }
 
-  # Combine Data for TMB model
-  return(dat_tmb)
+  # Combine Data for TMB model (also add whether type info is present in out)
+  return(c(dat_tmb, "type_info" = type_info))
 }
 
 #### create_design_matrices ####
@@ -136,15 +141,11 @@ threemc_prepare_model_data <- function( # data
 #' @title Create Design Matrices
 #' @description Create design matrices for fixed effects and temporal, age,
 #' spatial and random effects, for both medical and traditional circumcision.
-#'
+#' @inheritParams threemc_prepare_model_data
 #' @param dat Shell dataset (datputted by \link[threemc]{create_shell_dataset}
 #' with a row for every unique record in circumcision survey data for a given
 #' area. Also includes empirical estimates for circumcision estimates for each
 #' unique record.
-#' @param area_lev Desired admin boundary level to perform the analysis on.
-#' @param k_dt Age knot spacing in spline definitions, Default: 5
-#' @param inc_time_tmc Indicator variable which decides whether to include
-#' temporal random effects for TMC as well as MMC, Default: FALSE
 #' @return List of design matrices for fixed and random effects for medical
 #' and traditional circumcision.
 #'
@@ -231,13 +232,9 @@ create_design_matrices <- function(dat,
 #' them into two parts; one paediatric set of design matrices which does not
 #' include any time-related components, and one non-paediatric set.
 #'
-#' @param out Shell dataset used for modelling
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' Defaults to the maximum area level found in `dat` if not supplied.
+#' @inheritParams threemc_prepare_model_data
 #' @param design_matrices Design matrices for fixed effects and temporal, age,
 #' spatial and random effects, for both medical and traditional circumcision.
-#' @param paed_age_cutoff Age at which to no longer consider an individual as
-#' part of the "paediatric" population of a country, Default: 10
 #' @importFrom rlang .data
 #' @rdname split_mmc_design_matrices_paed
 #' @keywords internal
@@ -296,8 +293,7 @@ split_mmc_design_matrices_paed <- function(out,
 #' components on the specified administrative boundaries.
 #'
 #' @param dat Shell dataset used for modelling
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' Defaults to the maximum area level found in `dat` if not supplied.
+#' @inheritParams threemc_prepare_model_data
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @rdname shell_data_spec_area
@@ -313,10 +309,10 @@ shell_data_spec_area <- function(dat, area_lev = NULL) {
   # Only doing the matrices on the specified aggregation
   dat <- dat %>%
     dplyr::filter(.data$area_level == area_lev) %>%
-    # Resetting counter on space
+    # Reset counter on space
     dplyr::mutate(space = .data$space - min(.data$space) + 1)
 
-  # Returning matrix
+  # Return matrix
   return(dat)
 }
 
@@ -326,13 +322,7 @@ shell_data_spec_area <- function(dat, area_lev = NULL) {
 #' @title Create Integration Matrices for Selecting Instantaneous Hazard
 #' @description Create (unlagged and lagged) integration matrices for selecting
 #' instantaneous hazard rate, required for fitting TMB model.
-#'
-#' @param out Shell dataset (outputted by \link[threemc]{create_shell_dataset}
-#' with a row for every unique record in circumcision survey data for a given
-#' area. Also includes empirical estimates for circumcision estimates for each
-#' unique record.
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' Defaults to the maximum area level found in `dat` if not supplied.
+#' @inheritParams threemc_prepare_model_data
 #' @param time1 Variable name for time of birth, Default: "time1"
 #' @param time2 Variable name for time circumcised or censored,
 #' Default: "time2"
@@ -366,7 +356,7 @@ create_integration_matrices <- function(out,
   # Only doing the matrices on the specified aggregation
   out <- shell_data_spec_area(out, area_lev)
 
-  # Preparing age and time variables
+  # Prepare age and time variables
   out$time1 <- out$time - out$circ_age
   out$time2 <- out$time
   out$age <- out$circ_age + 1
@@ -410,22 +400,8 @@ create_integration_matrices <- function(out,
 #' for survival analysis by age and time. The option to include an additional
 #' stratification variable is also available, creating a 3D hazard function.
 #'
-#' @param dat Dataset used for modelling.
-#' @param subset Subset for dataset, Default: NULL
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored, Default: "time2"
-#' @param timecaps Window to fix temporal dimension before and after,
-#' Default: c(1, Inf)
-#' @param Ntime Number of time points (if NULL, function will calculate),
-#' Default: NULL
-#' @param age - Variable with age circumcised or censored, Default: "age"
-#' @param Nage Number of age groups (if NULL, function will calculate),
-#' Default: NULL
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: NULL
-#' @param Nstrat Number of stratification groups (if NULL, function will
-#' calculate), Default: NULL
-#
+#' @inheritParams create_integration_matrices
+#' @inheritParams create_integration_matrix_agetime
 #' @return Matrix for selecting instantaneous hazard rate.
 #' @seealso
 #'   \code{\link[Matrix]{sparseMatrix}}
@@ -459,7 +435,7 @@ create_integration_matrix_agetime <- function(dat,
     pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1)
   )
 
-  # Shifting time points by the time caps
+  # Shift time points by the time caps
   dat$time1_cap2 <- dat[[time1]] - timecaps[1] + 1
   dat$time2_cap2 <- dat[[time2]] - timecaps[1] + 1
 
@@ -474,11 +450,11 @@ create_integration_matrix_agetime <- function(dat,
   if (is.null(Nage)) Nage <- max(dat[age])
   if (is.null(strat) == FALSE && is.null(Nstrat)) Nstrat <- max(dat[strat])
 
-  # Subsetting data if necessary
+  # Subset data if necessary
   if (is.null(subset) == FALSE) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
-  # Adding dummy variable for the rows of the matrix
+  # Add dummy variable for the rows of the matrix
   dat$row <- seq_len(nrow(dat))
 
   # column entries for integration matrix
@@ -514,14 +490,14 @@ create_integration_matrix_agetime <- function(dat,
     rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]) + 1)
   }, simplify = FALSE))
 
-  # Outputting sparse matrix
+  # Output sparse matrix
   A <- Matrix::sparseMatrix(
     i = rows,
     j = cols,
     x = 1,
     dims = c(nrow(dat), ncol)
   )
-  # Returning matrix
+  # Return matrix
   return(A)
 }
 
@@ -534,21 +510,8 @@ create_integration_matrix_agetime <- function(dat,
 #' additional stratification variable is also available, creating a 3D hazard
 #' function.
 #'
-#' @param dat Dataset used for modelling.
-#' @param subset Subset for dataset, Default: NULL
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored, Default: "time2"
-#' @param timecaps Window to fix temporal dimension before and after,
-#' Default: c(1, Inf)
-#' @param Ntime Number of time points (if NULL, function will calculate),
-#' Default: NULL
-#' @param age - Variable with age circumcised or censored, Default: "age"
-#' @param Nage Number of age groups (if NULL, function will calculate),
-#' Default: NULL
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: NULL
-#' @param Nstrat Number of stratification groups (if NULL, function will
-#' calculate), Default: NULL
+#' @inheritParams create_integration_matrices
+#' @inheritParams create_integration_matrix_agetime
 #' @return Matrix for selecting instantaneous hazard rate.
 #'
 #' @seealso
@@ -576,7 +539,7 @@ create_integration_matrix_agetime_lag <- function(dat,
     pmax(1, as.numeric(dat[[time2]]) - timecaps[1] + 1)
   )
 
-  # Shifting time points by the time caps
+  # Shift time points by the time caps
   dat$time1_cap2 <- dat[[time1]] - timecaps[1] + 1
   dat$time2_cap2 <- dat[[time2]] - timecaps[1] + 1
 
@@ -590,14 +553,14 @@ create_integration_matrix_agetime_lag <- function(dat,
   if (is.null(Ntime)) Ntime <- max(dat[, "time1_cap", drop = TRUE])
   if (is.null(Nage)) Nage <- max(dat[age])
   if (!is.null(strat) && is.null(Nstrat)) Nstrat <- max(dat[strat])
-  # Subsetting data if necessary
+  # Subset data if necessary
   if (!is.null(subset)) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
   # Number of rows in the resulting matrix
   nrow <- nrow(dat)
 
-  # Adding dummy variable for the rows of the matrix
+  # Add dummy variable for the rows of the matrix
   dat$row <- seq_len(nrow(dat))
 
   # column entries for integration matrix
@@ -635,14 +598,14 @@ create_integration_matrix_agetime_lag <- function(dat,
     rep(as.numeric(x["row"]), as.numeric(x[time2]) - as.numeric(x[time1]))
   }, simplify = FALSE))
 
-  # Outputting sparse matrix
+  # Output sparse matrix
   A <- Matrix::sparseMatrix(
     i = rows,
     j = cols,
     x = 1,
     dims = c(nrow, ncol)
   )
-  # Returning matrix
+  # Return matrix
   return(A)
 }
 
@@ -653,19 +616,8 @@ create_integration_matrix_agetime_lag <- function(dat,
 #' traditional circumcision, as well as for censored (i.e. non-circumcised) and
 #' left-censored (i.e. age of circumcision unknown) individuals.
 #'
-#' @param out Shell dataset (outputted by \link[threemc]{create_shell_dataset}
-#' with a row for every unique record in circumcision survey data for a given
-#' area. Also includes empirical estimates for circumcision estimates for each
-#' unique record.
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' maximum area level found in `areas` if not supplied.
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored,
-#' Default: "time2"
-#' @param age - Variable with age circumcised or censored. Default: "age"
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: "space"
+#' @inheritParams threemc_prepare_model_data
+#' @inheritParams create_integration_matrices
 #' @param aggregated `agggregated = FALSE` treats every area_id as its own
 #' object, allowing for the use of surveys for lower area hierarchies.
 #' `aggregated = TRUE` means we only look at area level of interest.
@@ -771,27 +723,9 @@ create_survival_matrices <- function(out,
 #' for survival analysis by age and time. The option to include an additional
 #' stratification variable is also available, creating a 3D hazard function.
 #'
-#' @param dat Shell dataset (outputted by \link[threemc]{create_shell_dataset}
-#' with a row for every unique record in circumcision survey data for a given
-#' area. Also includes empirical estimates for circumcision estimates for each
-#' unique record.
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country.
-#' @param subset Subset for dataset, Default: NULL
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored,
-#' Default: "time2"
-#' @param timecaps Window to fix temporal dimension before and after,
-#' Default: c(1, Inf)
-#' @param Ntime Number of time points (if NULL, function will calculate),
-#' Default: NULL
-#' @param age - Variable with age circumcised or censored. Default: "age"
-#' @param Nage Number of age groups (if NULL, function will calculate),
-#' Default: NULL
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: NULL
-#' @param Nstrat Number of stratification groups (if NULL, function will
-#' calculate), Default: NULL
+#' @inheritParams threemc_prepare_model_data 
+#' @inheritParams create_design_matrices
+#' @inheritParams create_integration_matrix_agetime
 #' @param circ Variables with circumcision matrix, Default: "circ"
 #' @param aggregated `agggregated = FALSE` treats every area_id as its own
 #' object, allowing for the use of surveys for lower area hierarchies.
@@ -845,7 +779,7 @@ create_hazard_matrix_agetime <- function(dat,
   if (is.null(Nage)) Nage <- max(dat[age])
   if (is.null(Nstrat)) Nstrat <- max(dat[strat])
 
-  # Subsetting data if necessary
+  # Subsett data if necessary
   if (!is.null(subset)) {
     dat <- subset(dat, eval(parse(text = subset)))
   }
@@ -853,19 +787,19 @@ create_hazard_matrix_agetime <- function(dat,
   # If the selection matrices need to be taken from one reference aggregation
   # then we get a list of the hierarchical structure to that level
   if (aggregated == TRUE) {
-    # If no weighting variable create a dummy variable
+    # If no weight variable create a dummy variable
     if (is.null(weight)) {
       weight <- "weight"
       dat$weight <- 1
     }
 
-    # Getting aggregation structure
+    # Get aggregation structure
     areas_agg <- create_aggregate_structure(
       areas = areas,
       area_lev = area_lev
     )
 
-    # Merging on number of times to
+    # Merge on number of times to
     # replicate to the main dataset
     dat <- dat %>%
       dplyr::left_join(
@@ -885,22 +819,22 @@ create_hazard_matrix_agetime <- function(dat,
       dplyr::pull() %>%
       length()
 
-    # Only keeping strata where we have data
+    # Only keep strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = "")))) %>%
       dplyr::mutate(row = seq_len(dplyr::n()))
 
     # Aggregation for each row in the dataframe
     entries <- apply(dat2, 1, function(x) {
-      # Getting areas in reference administrative
+      # Get areas in reference administrative
       # boundaries to aggregate over
       tmp_space <- areas_agg$sub_region_list[[as.numeric(x[strat])]]
-      # Getting columns with non-zero entries for sparse matrix
+      # Get columns with non-zero entries for sparse matrix
       cols <- Ntime * Nage * (tmp_space - min_ref_space) +
         Ntime * (as.numeric(x[age]) - 1) +
         as.numeric(x["time2_cap"])
-      # Getting rows for sparse matrix
+      # Get rows for sparse matrix
       rows <- rep(as.numeric(x["row"]), length(cols))
-      # Getting weights
+      # Get weights
       vals <-
         as.numeric(x[circ]) *
           dat[cols, weight, drop = TRUE] / sum(dat[cols, weight, drop = TRUE])
@@ -910,14 +844,14 @@ create_hazard_matrix_agetime <- function(dat,
       return(tmp)
     })
 
-    # Extracting entries for sparse matrix
+    # Extract entries for sparse matrix
     cols <- as.numeric(unlist(lapply(entries, "[", "cols")))
     rows <- as.numeric(unlist(lapply(entries, "[", "rows")))
     vals <- as.numeric(unlist(lapply(entries, "[", "vals")))
 
     # Else the selection matrices will be taken from the aggregation they are on
   } else {
-    # Only keeping strata where we have data
+    # Only keep strata where we have data
     dat2 <- subset(dat, eval(parse(text = paste(circ, " != 0", sep = ""))))
 
     # Column entries for hazard matrix
@@ -929,8 +863,7 @@ create_hazard_matrix_agetime <- function(dat,
     vals <- dat2[[circ]]
   }
 
-  # Outputting sparse hazard matrix which selects the
-  # corresponding incidence rates for the likelihood.
+  # sparse haz matrix which selects corresponding incidence rates for lik.
   A <- Matrix::sparseMatrix(
     i = rows,
     j = cols,
@@ -938,7 +871,7 @@ create_hazard_matrix_agetime <- function(dat,
     dims = c(nrow(dat2), Ntime * Nage * Nstrat)
   )
 
-  # Returning matrix
+  # Return matrix
   return(A)
 }
 
@@ -977,9 +910,9 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
 
   # if area_lev == 0, adjacency matrix will be a 1x1 matrix with single entry 0
   if (area_lev > 0) {
-    # Creating neighbourhood structure
+    # Create neighbourhood structure
     Q_space <- spdep::poly2nb(sf_obj, row.names = sf_obj[, row.names])
-    # Converting to adjacency matrix
+    # Convert to adjacency matrix
     Q_space <- spdep::nb2mat(Q_space, style = "B", zero.policy = TRUE)
 
     # for precision matrix
@@ -989,10 +922,10 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
     Q <- as.matrix(0)
   }
 
-  # Converting to sparse matrix
+  # Convert to sparse matrix
   Q_space <- methods::as(Q_space, "sparseMatrix")
 
-  # Creating precision matrix from adjacency
+  # Create precision matrix from adjacency
   Q_space <- naomi::scale_gmrf_precision(
     Q   = Q,
     A   = matrix(1, 1, nrow(Q_space)),
@@ -1022,15 +955,15 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
 create_rw_prec_matrix <- function(dim,
                                   order = 1,
                                   offset.diag = TRUE) {
-  # Creating structure matrix
+  # Create structure matrix
   Q <- diff(diag(dim), differences = order)
   Q <- t(Q) %*% Q
-  # Adding offset to diagonal if required
+  # Add offset to diagonal if required
   if (offset.diag) {
     diag(Q) <- diag(Q) + 1E-6
   }
-  # Converting to sparse matrix
+  # Convert to sparse matrix
   Q <- methods::as(Q, "sparseMatrix")
-  # Returning matrix
+  # Return matrix
   return(Q)
 }

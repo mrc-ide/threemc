@@ -1,6 +1,6 @@
 #### Main Function ####
 
-#' @title Produce Population weighted Aggregated Samples
+#' @title Produce Population Weighted Aggregated Samples for All Area Levels
 #' @description Aggregate by area, year, age and type (weighted by population),
 #' and convert to a percentage/probability.
 #' @param .data \code{data.frame} of unaggregated modelling results.
@@ -41,7 +41,7 @@ threemc_aggregate <- function(
   # global bindings for data.table non-standard evaluation
   space <- NULL
 
-  #### Preparing location/shapefile information ####
+  #### Prepare location/shapefile information ####
   if (inherits(areas, "sf")) {
     areas <- sf::st_drop_geometry(areas)
   }
@@ -93,7 +93,7 @@ threemc_aggregate <- function(
       spec_year = prev_year
     )
 
-    # Getting number of people circumcised
+    # Get number of people circumcised
     data_n <- n_circumcised(.data)
 
     # add "change from prev_year" and "n_circumcised" .data to .data
@@ -110,13 +110,11 @@ threemc_aggregate <- function(
 
 #### prepare_sample_data ####
 
-#' @title Pull N circumcision samples from TMB fit
+#' @title Pull N Circumcision Samples From TMB Fit
 #' @description Function to pull samples for various summaries inferred about
 #' circumcision in a given area (prevalence, probability or incidence,
 #' respectively).
-#' @param N Number of samples to be generated, Default: 100
-#' @param populations \code{data.frame} containing populations for each
-#' region in tmb fits.
+#' @inheritParams threemc_aggregate
 #' @param no_prog_results Quantiles of different summaries for different types
 #' (Medical, traditional or total) circumcision, for survey data only,
 #' Default: NULL
@@ -127,8 +125,6 @@ threemc_aggregate <- function(
 #' only.
 #' @param prog_tmb_fit TMB model for Male Circumcision (MC), for survey data and
 #' VMMC programme data.
-#' @param type Determines which aspect of MC in the regions in question you wish
-#' to sample for. Can be one of "probability", "incidence" or "prevalence".
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @rdname prepare_sample_data
@@ -155,9 +151,7 @@ prepare_sample_data <- function(N = 100,
   # global bindings for data.table non-standard evaluation
   model <- NULL
 
-  #########################################
-  ### Loading rates from survival model ###
-  #########################################
+  #### Load rates from survival model ####
 
   # append samples from different circumcision models together (and pops)
   append_fun <- function(tmp, fit, populations, type) {
@@ -250,7 +244,8 @@ prepare_sample_data <- function(N = 100,
 
     # Append together
     tmp <- as.list(mget(paste0("tmpx_", 1:12))) %>%
-      data.table::rbindlist(use.names = TRUE) %>%
+      # fill needed for no type models as tmpx_i may have all NAs
+      data.table::rbindlist(use.names = TRUE, fill = TRUE) %>%
       # only keep relevant columns
       dplyr::select(
         .data$area_id, .data$area_name,
@@ -316,7 +311,7 @@ prepare_sample_data <- function(N = 100,
 
 #### aggregate sample ####
 
-#' @title Produce Population weighted Aggregated Samples
+#' @title Produce Population Weighted Aggregated Samples
 #' @description Aggregate by area, year, age and type (weighted by population),
 #' and convert to a percentage/probability.
 #' @param .data \code{data.frame} including area populations, with
@@ -351,8 +346,11 @@ aggregate_sample <- function(.data,
       ...
     )
   }
+  
+  # remove population from num_cols, if present 
+  num_cols <- num_cols[!num_cols == "population"]
 
-  # Multiplying by population to population weight
+  # Multiply by population to population weight
   .data <- data.table::setDT(.data)[,
     (num_cols) := lapply(.SD, function(x) x * population),
     .SDcols = num_cols
@@ -376,11 +374,12 @@ aggregate_sample <- function(.data,
                  (num_cols) := lapply(.SD, function(x) x / population),
                  .SDcols = num_cols
   ]
+  return(.data)
 }
 
 #### aggregate_sample_age_group ####
 
-#' @title Produce Population weighted Aggregations for Age Groups
+#' @title Produce Population Weighted Aggregations for Age Groups
 #' @description Aggregate specified `numeric` columns by population-weighted
 #' age groups (rather than single year ages), split by specified categories.
 #' @param results_list list of \code{data.frame}s outputted by
@@ -492,11 +491,10 @@ aggregate_sample_age_group <- function(
 
 #### prevalence_change ####
 
-# function to get change in prevalence/coverage from a given year
-#' @title Calculate Change in Prevalence/Coverage from a given year.
+#' @title Calculate Change in Prevalence/Coverage From a Given Year
 #' @description Function to calculate change in prevalence/coverage from a
 #' given year for all other years.
-#' @param results \code{results} results for several years.
+#' @param results results for several years.
 #' @param spec_year Year to calculate change in prevalence/coverage from within
 #' \code{results}.
 #' @importFrom dplyr %>%
@@ -549,7 +547,7 @@ prevalence_change <- function(results, spec_year) {
 
 #### n_circumcised ####
 
-#' @title Calculate number of people circumcised
+#' @title Calculate Number of People Circumcised
 #' @description Calculate number of people circumcised (as well as unmet need).
 #' @param results Results with samples for number of circumcisions performed
 #' in each region.
@@ -562,7 +560,7 @@ n_circumcised <- function(results) {
   # global bindings for `data.table` non-standard evaluation
   type <- population <- NULL
 
-  # Getting number of circumcised men
+  # Get number of circumcised men
   results <- data.table::copy(data.table::setDT(results))[,
                                type := paste0(
                                  "Number circumcised (",
@@ -610,8 +608,7 @@ n_circumcised <- function(results) {
 
 #### posterior_summary_fun ####
 
-# Getting summary statistics
-#' @title Calculate summary statistics from Samples
+#' @title Calculate Summary Statistics From Samples
 #' @description Takes samples and calculates summary statistics (mean, standard
 #' deviation, and quantiles (if desired)).
 #' @param .data \code{data.frame} with samples to be summarised.
@@ -682,11 +679,11 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 
 #### merge_area_info ####
 
-#' @title Merge Regional Informatoin on Dataset
+#' @title Merge Regional Information On Dataset
 #' @description Merge regional information on the dataset
 #' (i.e. parent area info).
 #' @param results \code{data.frame} you wish to merge shapefiles with.
-#' @param areas \code{sf} shapefiles for specific country/region.
+#' @inheritParams threemc_aggregate 
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @rdname merge_area_info
