@@ -1,3 +1,12 @@
+# threemc 0.1.31
+
+* Add TMB model for every iteration of: 
+  - Including a time effect for TMC or not, 
+  - Including a constant peadiatric MMC rate or not, and 
+  - Using a random walk, rather than AR 1 prior
+Urgent need to functionalise all of this to greatly decrease code complexity 
+and package compilation time. 
+
 # threemc 0.1.30
 
 * Have verbose output on function progress from `threemc_fit_model` as default.
