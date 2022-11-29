@@ -1,4 +1,4 @@
-all: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC.so Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW.so Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC2.so  Surv_SpaceAgeTime_ByType_withUnknownType.so Surv_SpaceAgeTime_ByType_withUnknownType_RW.so Surv_SpaceAgeTime_ByType_withUnknownType2.so Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2.so Surv_SpaceAgeTime.so Surv_SpaceAgeTime_RW.so
+all: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC.so Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW.so Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC2.so  Surv_SpaceAgeTime_ByType_withUnknownType.so Surv_SpaceAgeTime_ByType_withUnknownType_RW.so Surv_SpaceAgeTime_ByType_withUnknownType_RW2.so Surv_SpaceAgeTime_ByType_withUnknownType2.so Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2.so Surv_SpaceAgeTime.so Surv_SpaceAgeTime_RW.so
 
 	# Comment here preserves the prior tab
 Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC.so: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC.cpp
@@ -15,6 +15,9 @@ Surv_SpaceAgeTime_ByType_withUnknownType.so: Surv_SpaceAgeTime_ByType_withUnknow
 
 Surv_SpaceAgeTime_ByType_withUnknownType_RW.so: Surv_SpaceAgeTime_ByType_withUnknownType_RW.cpp
 	"$(R_HOME)/bin/Rscript" --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_RW.cpp','-O0 -g', safeunload = FALSE, safebounds = FALSE)"
+
+Surv_SpaceAgeTime_ByType_withUnknownType_RW2.so: Surv_SpaceAgeTime_ByType_withUnknownType_RW2.cpp
+	"$(R_HOME)/bin/Rscript" --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_RW2.cpp','-O0 -g', safeunload = FALSE, safebounds = FALSE)"
 
 Surv_SpaceAgeTime_ByType_withUnknownType2.so: Surv_SpaceAgeTime_ByType_withUnknownType2.cpp
 	"$(R_HOME)/bin/Rscript" --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType2.cpp','-O0 -g', safeunload = FALSE, safebounds = FALSE)"
