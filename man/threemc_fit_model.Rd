@@ -8,7 +8,7 @@ optimised model fit.}
 threemc_fit_model(
   fit = NULL,
   dat_tmb = NULL,
-  mod,
+  mod = NULL,
   parameters = NULL,
   maps = NULL,
   randoms = c("u_time_mmc", "u_age_mmc", "u_space_mmc", "u_agetime_mmc",
