@@ -1,3 +1,7 @@
+# threemc 0.1.32 
+
+- Add initial introductory vignette.
+
 # threemc 0.1.31
 
 * Add TMB model for every iteration of: 
