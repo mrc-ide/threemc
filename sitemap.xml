@@ -7,6 +7,12 @@
     <loc>/LICENSE-text.html</loc>
   </url>
   <url>
+    <loc>/articles/01_intro.html</loc>
+  </url>
+  <url>
+    <loc>/articles/index.html</loc>
+  </url>
+  <url>
     <loc>/authors.html</loc>
   </url>
   <url>
@@ -77,6 +83,15 @@
   </url>
   <url>
     <loc>/reference/datapack_psnu_area_level.html</loc>
+  </url>
+  <url>
+    <loc>/reference/demo_areas.html</loc>
+  </url>
+  <url>
+    <loc>/reference/demo_populations.html</loc>
+  </url>
+  <url>
+    <loc>/reference/demo_survey_circumcision.html</loc>
   </url>
   <url>
     <loc>/reference/esa_wca_regions.html</loc>
