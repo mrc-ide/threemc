@@ -13,6 +13,7 @@ To install `threemc`:
 remotes::install_github("mrc-ide/threemc", upgrade = FALSE)
 ```
 
+To see how `threemc` works for a simple example, please see the relevant vignette.
 
 ## License
 
