@@ -42,10 +42,10 @@ Type threemc_type(
 
     Type logitrho_mmc_time1, Type logitrho_mmc_time2, Type logitrho_mmc_time3,
     Type logitrho_mmc_age1, Type logitrho_mmc_age2, Type logitrho_mmc_age3, 
-    Type logitrho_tmc_age1, Type logitrho_tmc_age2,
+    Type logitrho_tmc_age1, Type logitrho_tmc_age2 //,
     
     // reference to struct with report values; function can only return nll
-    report_values<Type>& report_vals
+    // report_values<Type>& report_vals
   ){
   
   Type sigma_age_mmc       = exp(logsigma_age_mmc);
@@ -240,16 +240,16 @@ Type threemc_type(
   ///////////////////////////
   
   /// Assign report values to struct ///
-  report_vals.haz_mmc = haz_mmc;
-  report_vals.haz_tmc = haz_tmc;         // Traditional hazard rate
-  report_vals.haz = haz;                 // Total hazard rate
-  report_vals.inc_tmc = inc_tmc;         // Traditional circumcision incidence rate
-  report_vals.inc_mmc = inc_mmc;         // Medical circumcision incidence rate
-  report_vals.inc = inc;                 // Total circumcision incidence rate
-  report_vals.cum_inc_tmc = cum_inc_tmc; // Traditional circumcision cumulative incidence rate
-  report_vals.cum_inc_mmc = cum_inc_mmc; // Medical circumcision cumulative incidence rate
-  report_vals.cum_inc = cum_inc;         // Total circumcision cumulative incidence rate
-  report_vals.surv = surv;               // Survival probabilities
+  // report_vals.haz_mmc = haz_mmc;
+  // report_vals.haz_tmc = haz_tmc;         // Traditional hazard rate
+  // report_vals.haz = haz;                 // Total hazard rate
+  // report_vals.inc_tmc = inc_tmc;         // Traditional circumcision incidence rate
+  // report_vals.inc_mmc = inc_mmc;         // Medical circumcision incidence rate
+  // report_vals.inc = inc;                 // Total circumcision incidence rate
+  // report_vals.cum_inc_tmc = cum_inc_tmc; // Traditional circumcision cumulative incidence rate
+  // report_vals.cum_inc_mmc = cum_inc_mmc; // Medical circumcision cumulative incidence rate
+  // report_vals.cum_inc = cum_inc;         // Total circumcision cumulative incidence rate
+  // report_vals.surv = surv;               // Survival probabilities
   
   /////////////////////////////////////////
   /// Returning negative log likelihood ///

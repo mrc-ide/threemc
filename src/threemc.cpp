@@ -24,6 +24,33 @@ Type geninvlogit(Type x, Type a, Type b){
   return y;
 }
 
+/*******************************************************************/
+/* Struct to contain items to Report                               */
+/*******************************************************************/
+template <class Type>
+struct report_values {
+
+  // Report vectors
+  vector<Type> a;
+  vector<Type> haz_mmc;
+  // vector<Type> haz_tmc;
+  // vector<Type> haz;
+  // vector<Type> inc_mmc;
+  // vector<Type> inc_tmc;
+  // vector<Type> inc;
+  // vector<Type> cum_inc_mmc;
+  // vector<Type> cum_inc_tmc;
+  // vector<Type> cum_inc;
+  // vector<Type> surv;
+
+  // Dummy Constructor (should change to be a model indicator or something)
+  report_values(SEXP x){
+    // a = asVector<Type>(getListElement(x,"a"));
+    a = asVector<Type>(0);
+  }
+};
+
+
 
 /************************************************************************/
 /* Objective function to specify model and to optimize model parameters */
@@ -68,10 +95,10 @@ Type threemc_type(
 
     Type logitrho_mmc_time1, Type logitrho_mmc_time2, Type logitrho_mmc_time3,
     Type logitrho_mmc_age1, Type logitrho_mmc_age2, Type logitrho_mmc_age3, 
-    Type logitrho_tmc_age1, Type logitrho_tmc_age2 //,
+    Type logitrho_tmc_age1, Type logitrho_tmc_age2,
     
     // reference to struct with report values; function can only return nll
-    // report_values<Type>& report_vals
+    report_values<Type>& report_vals
   ){
   
   Type sigma_age_mmc       = exp(logsigma_age_mmc);
@@ -266,7 +293,7 @@ Type threemc_type(
   ///////////////////////////
   
   /// Assign report values to struct ///
-  // report_vals.haz_mmc = haz_mmc;
+  report_vals.haz_mmc = haz_mmc;
   // report_vals.haz_tmc = haz_tmc;         // Traditional hazard rate
   // report_vals.haz = haz;                 // Total hazard rate
   // report_vals.inc_tmc = inc_tmc;         // Traditional circumcision incidence rate
@@ -369,7 +396,8 @@ Type objective_function<Type>::operator() ()
   Type nll = Type(0);
   
   // Define covariance structure for the conditional model
-  // DATA_STRUCT(report_vals, report_values);
+  DATA_STRUCT(report_vals, report_values);
+
   
   nll = threemc_type(
     
@@ -395,9 +423,9 @@ Type objective_function<Type>::operator() ()
     
     logitrho_mmc_time1, logitrho_mmc_time2, logitrho_mmc_time3,
     logitrho_mmc_age1, logitrho_mmc_age2, logitrho_mmc_age3, logitrho_tmc_age1,
-    logitrho_tmc_age2 // ,
+    logitrho_tmc_age2,
     
-    // report_vals
+    report_vals
   );
   
   ///////////////////////////
