@@ -142,7 +142,7 @@ threemc_fit_model <- function(fit = NULL,
       parameters <- parameters[names(fit$par_init)]
       
       if (any(is.na(names(parameters)))) {
-        message("Removing NA parameters, may want to check specifications..")
+        message("Removing NA parameters, may want to check specifications...")
         parameters <- parameters[!is.na(names(parameters))]
       }
     } else {
@@ -205,7 +205,7 @@ threemc_fit_model <- function(fit = NULL,
   # remove null parameters
   null_pars <- vapply(parameters, is.null, FUN.VALUE = logical(1))
   if (any(null_pars)) {
-    message("Removing NULL parameters, check specification..")
+    message("Removing NULL parameters, check specification...")
     parameters <- parameters[!null_pars]
   }
 
