@@ -102,7 +102,11 @@ threemc_fit_model <- function(fit = NULL,
     }
 
     # if there is a time term for TMC, use the model with non-constant TMC
-    if (dat_tmb$type_info == TRUE && "u_time_tmc" %in% param_names) {
+    # if (dat_tmb$type_info == TRUE && "u_time_tmc" %in% param_names) {
+    cond <- dat_tmb$type_info == TRUE
+    if (length(cond) == 0) cond <- "u_time_tmc" %in% param_names
+    cond <- cond && "u_time_tmc" %in% param_names
+    if (cond) {
       mod <- paste0(mod, "2")
     }
     
