@@ -133,7 +133,18 @@ threemc_fit_model <- function(fit = NULL,
     init_params <- fit$par_init
     # pull different pars depending on whether the model has mmc/tmc split
     if (mod != "Surv_SpaceAgeTime") {
+      # init_par_names <- names(fit$par_init)
+      # missing_pars <- init_par_names[!init_par_names %in% names(parameters)]
+      # if (length(missing_pars) == 0) {
+      #   parameters <- c(parameters, fit$par_init[missing_pars])
+      # }
+      fit$par_init <- fit$par_init[names(fit$par_init) %in% names(parameters)]
       parameters <- parameters[names(fit$par_init)]
+      
+      if (any(is.na(names(parameters)))) {
+        message("Removing NA parameters, may want to check specifications..")
+        parameters <- parameters[!is.na(names(parameters))]
+      }
     } else {
       # only need names and lengths, not values
       names(init_params) <- stringr::str_remove_all(
@@ -190,6 +201,13 @@ threemc_fit_model <- function(fit = NULL,
   # Only have named random parameters
   randoms <- randoms[randoms %chin% names(parameters)]
   if (length(randoms) == 0) randoms <- NULL
+  
+  # remove null parameters
+  null_pars <- vapply(parameters, is.null, FUN.VALUE = logical(1))
+  if (any(null_pars)) {
+    message("Removing NULL parameters, check specification..")
+    parameters <- parameters[!null_pars]
+  }
 
   if (verbose) message("Creating TMB object with `TMB::MakeADFun`...")
   # Create TMB object
