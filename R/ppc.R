@@ -102,7 +102,7 @@ threemc_ppc <- function(fit,
   )
 
   # take samples of the correct "type"
-  samples <- samples[names(samples) == paste(type, "coverage")]
+  samples <- samples[[which(names(samples) == paste(type, "coverage"))]]
   
   # if type == "MC", take both MMC and TMC as "non-missing" circumcision
   check_types <- switch(
@@ -119,12 +119,20 @@ threemc_ppc <- function(fit,
       )
 
   #### Join Samples with Out and Aggregate to area_lev ####
+  
+  # take random sample of cols in samples if required
+  if (N != ncol(samples)) {
+    set.seed(seed)
+    choose_cols <- sample(seq_len(ncol(samples)), size = N)
+    samples <- samples[, choose_cols]
+  }
 
   # join coverage col of interest with samples
   out_types <- dplyr::select(out, .data$area_id:.data$population)
   n <- length(out_types)
   # much faster than dplyr::bind_cols
-  out_types[, (n + 1):(n + N)] <- samples[[paste(type, "coverage")]]
+  # out_types[, (n + 1):(n + N)] <- samples[[paste(type, "coverage")]]
+  out_types[, (n + 1):(n + N)] <- samples
   out_types <- dplyr::mutate(out_types, type = paste(!!type, "coverage"))
   
   # change col names to work in aggregate_sample_age_group
@@ -260,6 +268,19 @@ threemc_ppc <- function(fit,
       "The following `age_groups` are missing in `survey_estimate`:\n",
       paste(missing_age_groups, collapse = ", ")
     ))
+  }
+  
+  # remove any NAs (usually present as age groups are missing for some areas)
+  if (any(is.na(survey_estimate_age_group$mean))) {
+    na_surveys <- survey_estimate_age_group %>% 
+      filter(is.na(mean)) %>% 
+      distinct(area_id, year, age_group, type)
+    message("The following have had NAs removed:")
+    message(
+      paste0(utils::capture.output(data.frame(na_surveys)), collapse = "\n")
+    )
+    survey_estimate_age_group <- survey_estimate_age_group %>% 
+      filter(!is.na(mean))
   }
   
   # find quantiles for age group PPDs
