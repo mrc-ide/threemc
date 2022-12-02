@@ -270,7 +270,7 @@ threemc_ppc <- function(fit,
     ))
   }
   
-  # remove any NAs (usually present as age groups are missing for some areas)
+  # remove any NAs (because age groups and/or years missing for some areas)
   if (any(is.na(survey_estimate_age_group$mean))) {
     na_surveys <- survey_estimate_age_group %>% 
       filter(is.na(mean)) %>% 
