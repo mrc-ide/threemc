@@ -273,8 +273,12 @@ threemc_ppc <- function(fit,
   # remove any NAs (because age groups and/or years missing for some areas)
   if (any(is.na(survey_estimate_age_group$mean))) {
     na_surveys <- survey_estimate_age_group %>% 
-      filter(is.na(mean)) %>% 
-      distinct(area_id, year, age_group, type)
+      dplyr::filter(is.na(.data$mean)) %>% 
+      dplyr::distinct(
+        .data$area_id, .data$year, .data$age_group, .data$type
+      ) %>%
+      dplyr::arrange(.data$year, .data$age_group, .data$area_id)
+    
     message("The following have had NAs removed:")
     message(
       paste0(utils::capture.output(data.frame(na_surveys)), collapse = "\n")
