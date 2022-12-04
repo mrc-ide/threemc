@@ -227,7 +227,28 @@ threemc_ppc <- function(fit,
     dplyr::mutate(
       simulated = stats::rbinom(dplyr::n(), 1, prob = .data$predicted)
     )
-  gc()
+  
+  # give message about NAs
+  if (any(is.na(survey_estimate_ppd_long$simulated))) {
+
+    na_sims <- survey_estimate_ppd_long %>% 
+      dplyr::filter(is.na(.data$simulated)) %>% 
+      dplyr::group_by(
+        .data$survey_id, .data$area_id, .data$year, .data$type
+      ) %>%
+      dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+      dplyr::arrange(.data$year, .data$area_id, .data$type)
+
+    message("The following have had NAs removed:")
+    message(
+      paste0(utils::capture.output(data.frame(na_sims)), collapse = "\n")
+    )
+    rm(na_sims)
+    gc()
+   
+    survey_estimate_ppd_long <- survey_estimate_ppd_long %>% 
+      dplyr::filter(!is.na(.data$simulated))
+  }
   
   
   #### Group by Age Group ####
@@ -283,6 +304,9 @@ threemc_ppc <- function(fit,
     message(
       paste0(utils::capture.output(data.frame(na_surveys)), collapse = "\n")
     )
+    rm(na_surveys)
+    gc()
+    
     survey_estimate_age_group <- survey_estimate_age_group %>% 
       filter(!is.na(mean))
   }
