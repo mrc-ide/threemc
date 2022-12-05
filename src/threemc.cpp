@@ -5,13 +5,9 @@
 #include "utils.h"
 #include "threemc_type.h"
 
-/************************************************************************/
-/* Objective function to specify model and to optimize model parameters */
-/************************************************************************/
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
-  
   
   using namespace density;
   
@@ -68,32 +64,41 @@ Type objective_function<Type>::operator() ()
   PARAMETER_ARRAY(u_agespace_tmc);
   
   // Standard deviations 
-  PARAMETER(logsigma_age_mmc);       // Type sigma_age_mmc       = exp(logsigma_age_mmc);
-  PARAMETER(logsigma_time_mmc);      // Type sigma_time_mmc      = exp(logsigma_time_mmc);
-  PARAMETER(logsigma_space_mmc);     // Type sigma_space_mmc     = exp(logsigma_space_mmc);
-  PARAMETER(logsigma_agetime_mmc);   // Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
-  PARAMETER(logsigma_agespace_mmc);  // Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
-  PARAMETER(logsigma_spacetime_mmc); // Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
-  PARAMETER(logsigma_age_tmc);       // Type sigma_age_tmc       = exp(logsigma_age_tmc);
-  PARAMETER(logsigma_space_tmc);     // Type sigma_space_tmc     = exp(logsigma_space_tmc);
-  PARAMETER(logsigma_agespace_tmc);  // Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
+  PARAMETER(logsigma_age_mmc);
+  PARAMETER(logsigma_time_mmc);
+  PARAMETER(logsigma_space_mmc);
+  PARAMETER(logsigma_agetime_mmc);
+  PARAMETER(logsigma_agespace_mmc);
+  PARAMETER(logsigma_spacetime_mmc);
+  PARAMETER(logsigma_age_tmc);
+  PARAMETER(logsigma_space_tmc); 
+  PARAMETER(logsigma_agespace_tmc);
   
   // Autocorrelation parameters 
-  PARAMETER(logitrho_mmc_time1);  // Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_time2);  // Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_time3);  // Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_age1);   // Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_age2);   // Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_age3);   // Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_tmc_age1);   // Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_tmc_age2);   // Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_time1);
+  PARAMETER(logitrho_mmc_time2);
+  PARAMETER(logitrho_mmc_time3);
+  PARAMETER(logitrho_mmc_age1);
+  PARAMETER(logitrho_mmc_age2);
+  PARAMETER(logitrho_mmc_age3);
+  PARAMETER(logitrho_tmc_age1);
+  PARAMETER(logitrho_tmc_age2);
  
   // Negative log likelihood definition
   Type nll = Type(0);
   
-  // Define covariance structure for the conditional model
-  DATA_STRUCT(report_vals, report_values);
-  
+  // Report values, to be passed by reference to function
+  vector<Type> haz_mmc;
+  vector<Type> haz_tmc;
+  vector<Type> haz;
+  vector<Type> inc_mmc;
+  vector<Type> inc_tmc;
+  vector<Type> inc;
+  vector<Type> cum_inc_mmc;
+  vector<Type> cum_inc_tmc;
+  vector<Type> cum_inc;
+  vector<Type> surv;
+
   nll = threemc_type(
     
     A_mmc, A_tmc, A_mc, B, C, IntMat1, IntMat2, 
@@ -120,23 +125,25 @@ Type objective_function<Type>::operator() ()
     logitrho_mmc_age1, logitrho_mmc_age2, logitrho_mmc_age3, logitrho_tmc_age1,
     logitrho_tmc_age2,
     
-    report_vals
+    // report vals
+    haz_mmc, haz_tmc, haz, inc_mmc, inc_tmc, inc,
+    cum_inc_mmc, cum_inc_tmc, cum_inc, surv
   );
   
   ///////////////////////////
   /// Reporting variables ///
   ///////////////////////////
-  
-  REPORT(report_vals.haz_mmc);     // Medical hazard rate
-  REPORT(report_vals.haz_tmc);     // Traditional hazard rate
-  REPORT(report_vals.haz);         // Total hazard rate
-  REPORT(report_vals.inc_tmc);     // Traditional circumcision incidence rate
-  REPORT(report_vals.inc_mmc);     // Medical circumcision incidence rate
-  REPORT(report_vals.inc);         // Total circumcision incidence rate
-  REPORT(report_vals.cum_inc_tmc); // Traditional circumcision cumulative incidence rate
-  REPORT(report_vals.cum_inc_mmc); // Medical circumcision cumulative incidence rate
-  REPORT(report_vals.cum_inc);     // Total circumcision cumulative incidence rate
-  REPORT(report_vals.surv);        // Survival probabilities
+
+  REPORT(haz_mmc);     // Medical hazard rate
+  REPORT(haz_tmc);     // Traditional hazard rate
+  REPORT(haz);         // Total hazard rate
+  REPORT(inc_tmc);     // Traditional circumcision incidence rate
+  REPORT(inc_mmc);     // Medical circumcision incidence rate
+  REPORT(inc);         // Total circumcision incidence rate
+  REPORT(cum_inc_tmc); // Traditional circumcision cumulative incidence rate
+  REPORT(cum_inc_mmc); // Medical circumcision cumulative incidence rate
+  REPORT(cum_inc);     // Total circumcision cumulative incidence rate
+  REPORT(surv);        // Survival probabilities
     
   /////////////////////////////////////////
   /// Returning negative log likelihood ///
