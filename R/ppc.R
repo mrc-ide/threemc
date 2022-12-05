@@ -223,10 +223,13 @@ threemc_ppc <- function(fit,
       names_to  = "sample",
       values_to = "predicted"
     ) %>%
-    # sample at individual level from binomial dist with success prob from PPD
     dplyr::mutate(
-      simulated = stats::rbinom(dplyr::n(), 1, prob = .data$predicted)
+      # fix for NAs in predictions 
+      predicted = ifelse(predicted > 1, 1, predicted),
+      # binomial sample at individual level with success prob from PPD
+      simulated = stats::rbinom(dplyr::n(), 1L, prob = .data$predicted)
     )
+  gc()
   
   # give message about NAs
   if (any(is.na(survey_estimate_ppd_long$simulated))) {
@@ -324,7 +327,8 @@ threemc_ppc <- function(fit,
       ppd_median = stats::quantile(.data$sim_prop, 0.5),
       ppd_0.75   = stats::quantile(.data$sim_prop, 0.75),
       ppd_0.90   = stats::quantile(.data$sim_prop, 0.9),
-      ppd_0.975  = stats::quantile(.data$sim_prop, 0.975)
+      ppd_0.975  = stats::quantile(.data$sim_prop, 0.975),
+      .groups    = "drop"
     )
   
   
