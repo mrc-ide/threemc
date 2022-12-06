@@ -216,7 +216,7 @@ threemc_ppc <- function(fit,
       "that ages and years match in both"
     )
   }
-  rm(survey_circumcision_test, survey_estimate_prep)
+  rm(survey_circumcision_test, survey_estimate_prep, out_types)
   
   
   #### Binomial Sample from PPD ####
@@ -253,7 +253,6 @@ threemc_ppc <- function(fit,
       paste0(utils::capture.output(data.frame(na_sims)), collapse = "\n")
     )
     rm(na_sims)
-    gc()
    
     survey_estimate_ppd_long <- survey_estimate_ppd_long %>% 
       dplyr::filter(!is.na(.data$simulated))
@@ -299,7 +298,7 @@ threemc_ppc <- function(fit,
     ) %>% 
     relocate(type, .before = "sim_prop")
   
-  gc()
+  rm(age_group_df, survey_estimate_age_group_mean)
   
   # give warning about missing age groups
   missing_age_groups <- age_groups[
@@ -326,7 +325,6 @@ threemc_ppc <- function(fit,
       paste0(utils::capture.output(data.frame(na_surveys)), collapse = "\n")
     )
     rm(na_surveys)
-    gc()
     
     survey_estimate_age_group <- survey_estimate_age_group %>% 
       filter(!is.na(mean))
@@ -348,6 +346,8 @@ threemc_ppc <- function(fit,
       ppd_0.975  = stats::quantile(.data$sim_prop, 0.975),
       .groups    = "drop"
     )
+  
+  rm(survey_estimate_ppd_long)
   
   
   #### Posterior Predictive Check for Prevalence Estimations ####
@@ -412,6 +412,14 @@ threemc_ppc <- function(fit,
   # join PPD quantiles with quant_pos and samples
   survey_estimate_ppd <- survey_estimate_ppd %>%
     dplyr::left_join(ppd_quantiles) 
+  
+  rm(
+    survey_estimate_age_group,
+    survey_estimate_ppd_wide,
+    survey_estimate_ppd_dist,
+    ppd_quantiles
+  )
+  gc()
   
 
   #### Calculate ELPD, CRPS & Error Stats ####
