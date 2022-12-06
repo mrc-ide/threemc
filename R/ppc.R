@@ -100,6 +100,7 @@ threemc_ppc <- function(fit,
     toupper(stringr::str_replace_all(names(samples), "cum_inc_", "")),
     "coverage"
   )
+  rm(fit)
 
   # take samples of the correct "type"
   samples <- samples[[which(names(samples) == paste(type, "coverage"))]]
@@ -137,6 +138,7 @@ threemc_ppc <- function(fit,
   # much faster than dplyr::bind_cols
   out_types[, (n + 1):(n + N)] <- samples
   out_types$type = paste(type, "coverage")
+  rm(out)
   
   # change col names to work in aggregate_sample_age_group
   names(out_types)[grepl("V", names(out_types))] <- 
@@ -192,8 +194,14 @@ threemc_ppc <- function(fit,
     )  
 
   # join with samples
-  survey_estimate_ppd <- left_join(survey_estimate_ppd, survey_estimate_prep)
-
+  survey_estimate_ppd <- survey_estimate_prep %>%
+    dplyr::left_join(
+      out_types %>%
+        dplyr::select(
+          .data$area_id, .data$year, .data$age, dplyr::starts_with("samp")
+        )
+    ) 
+  
   # stop (or give message) for unusable survey_estimate_ppd/NAs in sample cols
   if (nrow(survey_estimate_ppd) == 0) {
     stop(
@@ -208,8 +216,9 @@ threemc_ppc <- function(fit,
       "that ages and years match in both"
     )
   }
-
-
+  rm(survey_circumcision_test, survey_estimate_prep)
+  
+  
   #### Binomial Sample from PPD ####
 
   # switch samp columns to long "predicted" column 
