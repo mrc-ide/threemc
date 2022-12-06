@@ -267,20 +267,32 @@ threemc_ppc <- function(fit,
     # join in age groups matching each single age
     dplyr::left_join(age_group_df, by = "age") %>%
     # remove missing age groups and unknown circ_status
-    dplyr::filter(!is.na(.data$circ_status), !is.na(.data$age_group)) %>%
-    # aggregate single ages to age groups
-    dplyr::group_by(
-      .data$area_id, .data$year, .data$age_group, .data$sample
-    ) %>%
-    # calculate weighted means for observed and simulated proportions
+    dplyr::filter(!is.na(.data$circ_status), !is.na(.data$age_group))
+  
+  # calc survey mean separately (will be repeated for each survey otherwise)
+  survey_estimate_age_group_mean <- survey_estimate_age_group %>% 
+    group_by(.data$area_id, .data$year, .data$age_group) %>% 
     dplyr::summarise(
-      # could be a better way to do this, repeated computation happening here
-      mean     = stats::weighted.mean(.data$circ_status, .data$indweight), 
+      mean = stats::weighted.mean(.data$circ_status, .data$indweight),
+      .groups = "drop"
+    )
+  
+  survey_estimate_age_group <- survey_estimate_age_group %>% 
+    # calculate simulated proportions
+    group_by(.data$area_id, .data$year, .data$age_group, .data$sample) %>% 
+    dplyr::summarise(
       sim_prop = stats::weighted.mean(.data$simulated, .data$indweight),
       .groups = "drop"
     ) %>% 
     # relabel all type as type argument
-    dplyr::mutate(type = paste(!!type, "coverage"))
+    dplyr::mutate(type = paste(!!type, "coverage")) %>% 
+    # join in survey mean
+    left_join(
+      survey_estimate_age_group_mean, 
+      by = c("area_id", "year", "age_group")
+    ) %>% 
+    relocate(type, .before = "sim_prop")
+  
   gc()
   
   # give warning about missing age groups
