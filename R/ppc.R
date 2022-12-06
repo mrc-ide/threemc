@@ -128,12 +128,15 @@ threemc_ppc <- function(fit,
   }
 
   # join coverage col of interest with samples
-  out_types <- dplyr::select(out, .data$area_id:.data$population)
+  # out_types <- dplyr::select(out, .data$area_id:.data$population)
+  out_types <- out %>%
+    dplyr::select(
+      .data$area_id, .data$area_level, .data$year, .data$age, .data$population
+    )
   n <- length(out_types)
   # much faster than dplyr::bind_cols
-  # out_types[, (n + 1):(n + N)] <- samples[[paste(type, "coverage")]]
   out_types[, (n + 1):(n + N)] <- samples
-  out_types <- dplyr::mutate(out_types, type = paste(!!type, "coverage"))
+  out_types$type = paste(type, "coverage")
   
   # change col names to work in aggregate_sample_age_group
   names(out_types)[grepl("V", names(out_types))] <- 
@@ -189,13 +192,7 @@ threemc_ppc <- function(fit,
     )  
 
   # join with samples
-  survey_estimate_ppd <- survey_estimate_prep %>%
-    dplyr::left_join(
-      out_types %>%
-        dplyr::select(
-          .data$area_id, .data$year, .data$age, dplyr::starts_with("samp")
-        )
-    )
+  survey_estimate_ppd <- left_join(survey_estimate_ppd, survey_estimate_prep)
 
   # stop (or give message) for unusable survey_estimate_ppd/NAs in sample cols
   if (nrow(survey_estimate_ppd) == 0) {
