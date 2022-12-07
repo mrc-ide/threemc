@@ -149,9 +149,8 @@ threemc_ppc <- function(fit,
   
   n <- length(out_types)
   # much faster than dplyr::bind_cols
-  # out_types[, (n + 1):(n + N)] <- samples
   out_types <- cbind(out_types, samples)
-  out_types$type = paste(type, "coverage")
+  out_types$type <- paste(type, "coverage")
   rm(out)
   
   samp_colnames <- sprintf("samp_%0*d", nchar(N), seq_len(N))
@@ -315,7 +314,7 @@ threemc_ppc <- function(fit,
     by = c("area_id", "year", "age_group", "sample")
   ][
     ,
-    type := paste(type, "coverage")# paste(!!type, "coverage")
+    type := paste(type, "coverage")
   ]
   # add sample mean to simulated proportions
   survey_estimate_age_group <- data.table::merge.data.table(
@@ -357,11 +356,7 @@ threemc_ppc <- function(fit,
     )
     rm(na_surveys)
     
-    # survey_estimate_age_group <- survey_estimate_age_group %>% 
-    #   filter(!is.na(mean))
-    survey_estimate_age_group <- survey_estimate_age_group[
-      !is.na(mean)
-    ]
+    survey_estimate_age_group <- survey_estimate_age_group[!is.na(mean)]
   }
   
   # find quantiles for age group PPDs
