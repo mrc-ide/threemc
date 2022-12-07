@@ -48,18 +48,29 @@ threemc_ppc <- function(fit,
                         N = 1000,
                         seed = 123) {
   
-  stopifnot(type %in% c("MC", "MMC", "TMC"))
+  stopifnot(type %chin% c("MC", "MMC", "TMC"))
+  
+  # initialise data.table objects 
+  out <- data.table::copy(data.table::setDT(out))
+  survey_circumcision_test <- data.table::copy(
+    data.table::setDT(survey_circumcision_test)
+  )
 
   # filter results to specified or modelled area level
-  if (!"area_level" %in% names(out)) {
-    out <- out %>% 
-      dplyr::mutate(
-        area_level = ifelse(
-          nchar(.data$area_id) == 3, 
-          0, 
-          substr(.data$area_id, 4, 4)
-      )
-    )
+  if (!"area_level" %chin% names(out)) {
+    # out <- out %>% 
+    #   dplyr::mutate(
+    #     area_level = ifelse(
+    #       nchar(.data$area_id) == 3, 
+    #       0, 
+    #       substr(.data$area_id, 4, 4)
+    #   )
+    # )
+    out$area_level <- ifelse(
+      nchar(out$area_id) == 3, 
+      0, 
+      substr(out$area_id, 4, 4)
+    ) 
   }
   max_area_lev <- max(out$area_level)
   if (area_lev > max_area_lev) {
@@ -75,15 +86,23 @@ threemc_ppc <- function(fit,
       "individual_id", "cluster_id", "household",
       "line", "sex", "dob_cmc", "interview_cmc"
   )
-  survey_circumcision_test <- survey_circumcision_test %>%
-      dplyr::select(-dplyr::any_of(unneeded_cols))
+  unneeded_cols <- unneeded_cols[
+    unneeded_cols %chin% names(survey_circumcision_test)
+  ]
+  # survey_circumcision_test <- survey_circumcision_test %>%
+  #     dplyr::select(-dplyr::any_of(unneeded_cols))
+  
+  survey_circumcision_test[, c(unneeded_cols) := NULL]
   
   # add year (i.e. survey_year) if not present
-  if ("survey_year" %in% names(survey_circumcision_test)) {
+  if ("survey_year" %chin% names(survey_circumcision_test)) {
     survey_circumcision_test$year <- survey_circumcision_test$survey_year
-  } else if (!"year" %in% names(survey_circumcision_test)) {
-    survey_circumcision_test <- survey_circumcision_test %>% 
-      dplyr::mutate(year = as.numeric(substr(.data$survey_id, 4, 7)))
+  } else if (!"year" %chin% names(survey_circumcision_test)) {
+    # survey_circumcision_test <- survey_circumcision_test %>% 
+    #   dplyr::mutate(year = as.numeric(substr(.data$survey_id, 4, 7)))
+    survey_circumcision_test$year <- as.numeric(
+      substr(survey_circumcision_test$survey_id, 4, 7)
+    )
   }
 
 
@@ -111,13 +130,23 @@ threemc_ppc <- function(fit,
     "MC"  = c("MMC", "TMC"),
     type
   )
-  survey_circumcision_test <- find_circ_type(survey_circumcision_test) %>%
-      # Any non-"type" circumcision is treated as a "competing risk"
-      dplyr::mutate(
-        type = ifelse(.data$type %in% check_types, 
-                      paste(type, "coverage"),
-                      "Missing")
-      )
+  # survey_circumcision_test <- find_circ_type(survey_circumcision_test) %>%
+  #     # Any non-"type" circumcision is treated as a "competing risk"
+  #     dplyr::mutate(
+  #       type = ifelse(.data$type %chin% check_types, 
+  #                     paste(type, "coverage"),
+  #                     "Missing")
+  #     )
+  # first remove records with missing circ_status
+  survey_circumcision_test <- survey_circumcision_test[!is.na(circ_status)]
+  # next, parse circumcision type from circ_who and circ_where
+  survey_circumcision_test <- find_circ_type(survey_circumcision_test)
+  # change type not matching the specified argument type to Missing
+  survey_circumcision_test$type <- ifelse(
+    survey_circumcision_test$type %chin% check_types,
+    paste(survey_circumcision_test$type, "coverage"), 
+    "Missing"
+  )
 
   #### Join Samples with Out and Aggregate to area_lev ####
   
@@ -130,22 +159,27 @@ threemc_ppc <- function(fit,
 
   # join coverage col of interest with samples
   # out_types <- dplyr::select(out, .data$area_id:.data$population)
-  out_types <- out %>%
-    dplyr::select(
-      .data$area_id, .data$area_level, .data$year, .data$age, .data$population
-    )
+  # out_types <- out %>%
+  #   dplyr::select(
+  #     .data$area_id, .data$area_level, .data$year, .data$age, .data$population
+  #   )
+  out_types <- out[, c("area_id", "area_level", "year", "age", "population")]
+  
   n <- length(out_types)
   # much faster than dplyr::bind_cols
-  out_types[, (n + 1):(n + N)] <- samples
+  # out_types[, (n + 1):(n + N)] <- samples
+  out_types <- cbind(out_types, samples)
   out_types$type = paste(type, "coverage")
   rm(out)
   
-  # change col names to work in aggregate_sample_age_group
-  names(out_types)[grepl("V", names(out_types))] <- 
-    sprintf("samp_%0*d", nchar(N), seq_len(N))
+  samp_colnames <- sprintf("samp_%0*d", nchar(N), seq_len(N))
   
-  out_types <- out_types %>%
-    dplyr::relocate(type, .before = dplyr::contains("samp"))
+  # change col names to work in aggregate_sample_age_group
+  names(out_types)[grepl("V", names(out_types))] <- samp_colnames
+  
+  out_types <- dplyr::relocate(
+    out_types, type, .before = dplyr::contains("samp")
+  )
   
   # reassign to desired `area_lev` (uses `<=` as we can't disaggregate!)
   if (!all(out_types$area_level <= area_lev)) {
@@ -157,22 +191,26 @@ threemc_ppc <- function(fit,
 
     # aggregate num_cols (i.e. incidence, rate, coverage) in out by aggr_cols
     out_cols <- names(out_types)
-    out_cols <- out_cols[!out_cols %in% c("space", "population")]
+    out_cols <- out_cols[!out_cols %chin% c("space", "population")]
     aggr_cols <- out_cols[seq_len(which(out_cols == "type"))]
-    out_types <- dplyr::as_tibble(aggregate_sample(
+    # out_types <- dplyr::as_tibble(aggregate_sample(
+    out_types <- aggregate_sample(
       .data     = out_types,
       aggr_cols = aggr_cols,
-      num_cols = out_cols[!out_cols %in% c(aggr_cols)]
-    ))
+      num_cols = out_cols[!out_cols %chin% c(aggr_cols)]
+    )
   }
   # filter for test year(s) and modelled area level
-  out_types <- out_types %>% 
-    dplyr::filter(
-      .data$year %in% survey_circumcision_test$year,
-      .data$area_level == area_lev
-    )
+  # out_types <- out_types %>% 
+  #   dplyr::filter(
+  #     .data$year %in% survey_circumcision_test$year,
+  #     .data$area_level == area_lev
+  #   )
+  out_types <- out_types[
+    year %in% survey_circumcision_test$year & area_level == area_lev
+  ]
 
-
+  
   #### Prepare Survey Points & Join with Samples ####
 
   # reassign test data area level to area_lev, if any are more granular
@@ -187,20 +225,31 @@ threemc_ppc <- function(fit,
   }
 
   # filter to modelled area_lev and ages
-  survey_estimate_prep <- survey_circumcision_test %>%
-    dplyr::filter(
-      .data$area_level == area_lev, 
-      .data$age < max(out_types$age)
-    )  
+  # survey_estimate_prep <- survey_circumcision_test %>%
+  #   dplyr::filter(
+  #     .data$area_level == area_lev, 
+  #     .data$age < max(out_types$age)
+  #   )  
+  survey_estimate_prep <- survey_circumcision_test[
+    area_level == area_lev & age < max(out_types$age)
+  ]
 
   # join with samples
-  survey_estimate_ppd <- survey_estimate_prep %>%
-    dplyr::left_join(
-      out_types %>%
-        dplyr::select(
-          .data$area_id, .data$year, .data$age, dplyr::starts_with("samp")
-        )
-    ) 
+  # survey_estimate_ppd <- survey_estimate_prep %>%
+  #   dplyr::left_join(
+  #     out_types %>%
+  #       dplyr::select(
+  #         .data$area_id, .data$year, .data$age, dplyr::starts_with("samp")
+  #       )
+  #   ) 
+  out_types <- out_types[
+    , 
+    c("area_id", "year", "age", samp_colnames), 
+    with = FALSE
+  ]
+  survey_estimate_ppd <- data.table::merge.data.table(
+    survey_estimate_prep, out_types, all.x = TRUE
+  )
   
   # stop (or give message) for unusable survey_estimate_ppd/NAs in sample cols
   if (nrow(survey_estimate_ppd) == 0) {
@@ -210,7 +259,8 @@ threemc_ppc <- function(fit,
     )
   }
   samp_cols <- grepl("samp_", names(survey_estimate_ppd))
-  if (any(is.na(survey_estimate_ppd[, samp_cols]))) {
+  # if (any(is.na(survey_estimate_ppd[, samp_cols]))) {
+  if (any(is.na(survey_estimate_ppd[, samp_cols, with = FALSE]))) {
     message(
       "Some NAs when matching PPD samples and test survey data, check ",
       "that ages and years match in both"
@@ -223,30 +273,54 @@ threemc_ppc <- function(fit,
 
   # switch samp columns to long "predicted" column 
   set.seed(seed)
-  survey_estimate_ppd_long <- survey_estimate_ppd %>%
-    tidyr::pivot_longer(
-      dplyr::starts_with("samp"),
-      names_to  = "sample",
-      values_to = "predicted"
-    ) %>%
-    dplyr::mutate(
+  # survey_estimate_ppd_long <- survey_estimate_ppd %>%
+  #   tidyr::pivot_longer(
+  #     dplyr::starts_with("samp"),
+  #     names_to  = "sample",
+  #     values_to = "predicted"
+  #   ) %>%
+  #   dplyr::mutate(
+  #     # fix for NAs in predictions 
+  #     predicted = ifelse(predicted > 1, 1, predicted),
+  #     # binomial sample at individual level with success prob from PPD
+  #     simulated = stats::rbinom(dplyr::n(), 1L, prob = .data$predicted)
+  #   )
+  survey_estimate_ppd_long <- data.table::melt(
+    survey_estimate_ppd, 
+    measure       = patterns("^samp"), 
+    variable.name = "sample",
+    value.name    = "predicted"
+  )
+  
+  survey_estimate_ppd_long[
+    ,
+    ":="(
       # fix for NAs in predictions 
-      predicted = ifelse(predicted > 1, 1, predicted),
+      predicted = ifelse(predicted > 1, 1, predicted), 
       # binomial sample at individual level with success prob from PPD
-      simulated = stats::rbinom(dplyr::n(), 1L, prob = .data$predicted)
+      simulated = stats::rbinom(nrow(survey_estimate_ppd_long), 1L, prob = predicted)
     )
+  ]
   gc()
   
   # give message about NAs
   if (any(is.na(survey_estimate_ppd_long$simulated))) {
 
-    na_sims <- survey_estimate_ppd_long %>% 
-      dplyr::filter(is.na(.data$simulated)) %>% 
-      dplyr::group_by(
-        .data$survey_id, .data$area_id, .data$year, .data$type
-      ) %>%
-      dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-      dplyr::arrange(.data$year, .data$area_id, .data$type)
+    # na_sims <- survey_estimate_ppd_long %>%
+    #   dplyr::filter(is.na(.data$simulated)) %>%
+    #   dplyr::group_by(
+    #     .data$survey_id, .data$area_id, .data$year, .data$type
+    #   ) %>%
+    #   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+    #   dplyr::arrange(.data$year, .data$area_id, .data$type)
+    na_sims <- survey_estimate_ppd_long[
+      is.na(simulated)
+    ][, 
+      .N, 
+      by = c("survey_id", "area_id", "year", "type")
+    ][
+      order(year, area_id, type)
+    ]
 
     message("The following have had NAs removed:")
     message(
@@ -254,49 +328,82 @@ threemc_ppc <- function(fit,
     )
     rm(na_sims)
    
-    survey_estimate_ppd_long <- survey_estimate_ppd_long %>% 
-      dplyr::filter(!is.na(.data$simulated))
+    # survey_estimate_ppd_long <- survey_estimate_ppd_long %>% 
+    #   dplyr::filter(!is.na(.data$simulated))
+    survey_estimate_ppd_long <- survey_estimate_ppd_long[!is.na(simulated)]
   }
   
   
   #### Group by Age Group ####
-
+  
   # create df to match five year age groups to single ages
-  age_group_df <- dplyr::bind_rows(lapply(
+  # age_group_df <- dplyr::bind_rows(lapply(
+  age_group_df <- data.table::rbindlist(lapply(
     age_groups,
     match_age_group_to_ages,
     max_age = max(survey_estimate_ppd_long$age)
   ))
 
-  survey_estimate_age_group <- survey_estimate_ppd_long %>%
-    # join in age groups matching each single age
-    dplyr::left_join(age_group_df, by = "age") %>%
+  # survey_estimate_age_group <- survey_estimate_ppd_long %>%
+  #   # join in age groups matching each single age
+  #   dplyr::left_join(age_group_df, by = "age") %>%
+  #   # remove missing age groups and unknown circ_status
+  #   dplyr::filter(!is.na(.data$circ_status), !is.na(.data$age_group))
+  # join in age groups matching each single age
+  survey_estimate_age_group <- data.table::merge.data.table(
+    survey_estimate_ppd_long, 
+    age_group_df, 
+    all.x = TRUE, 
+    allow.cartesian = TRUE
+  )[
     # remove missing age groups and unknown circ_status
-    dplyr::filter(!is.na(.data$circ_status), !is.na(.data$age_group))
+    !is.na(circ_status) & !is.na(age_group)
+  ]
   
   # calc survey mean separately (will be repeated for each survey otherwise)
-  survey_estimate_age_group_mean <- survey_estimate_age_group %>% 
-    group_by(.data$area_id, .data$year, .data$age_group) %>% 
-    dplyr::summarise(
-      mean = stats::weighted.mean(.data$circ_status, .data$indweight),
-      .groups = "drop"
-    )
+  # survey_estimate_age_group_mean <- survey_estimate_age_group %>%
+  #   group_by(.data$area_id, .data$year, .data$age_group) %>%
+  #   dplyr::summarise(
+  #     mean = stats::weighted.mean(.data$circ_status, .data$indweight),
+  #     .groups = "drop"
+  #   )
+  survey_estimate_age_group_mean <- survey_estimate_age_group[
+    ,
+    .(mean = stats::weighted.mean(x = circ_status, w = indweight)),
+    by = c("area_id", "year", "age_group")
+  ]
   
-  survey_estimate_age_group <- survey_estimate_age_group %>% 
-    # calculate simulated proportions
-    group_by(.data$area_id, .data$year, .data$age_group, .data$sample) %>% 
-    dplyr::summarise(
-      sim_prop = stats::weighted.mean(.data$simulated, .data$indweight),
-      .groups = "drop"
-    ) %>% 
-    # relabel all type as type argument
-    dplyr::mutate(type = paste(!!type, "coverage")) %>% 
-    # join in survey mean
-    left_join(
-      survey_estimate_age_group_mean, 
-      by = c("area_id", "year", "age_group")
-    ) %>% 
-    relocate(type, .before = "sim_prop")
+  # survey_estimate_age_group <- survey_estimate_age_group %>% 
+  #   # calculate simulated proportions
+  #   group_by(.data$area_id, .data$year, .data$age_group, .data$sample) %>% 
+  #   dplyr::summarise(
+  #     sim_prop = stats::weighted.mean(.data$simulated, .data$indweight),
+  #     .groups = "drop"
+  #   ) %>% 
+  #   # relabel all type as type argument
+  #   dplyr::mutate(type = paste(!!type, "coverage")) %>% 
+  #   # join in survey mean
+  #   left_join(
+  #     survey_estimate_age_group_mean, 
+  #     by = c("area_id", "year", "age_group")
+  #   ) %>% 
+  #   relocate(type, .before = "sim_prop")
+  survey_estimate_age_group <- survey_estimate_age_group[
+    ,
+    .(sim_prop = stats::weighted.mean(simulated, indweight)),
+    by = c("area_id", "year", "age_group", "sample")
+  ][
+    ,
+    type := paste(type, "coverage")# paste(!!type, "coverage")
+  ]
+  survey_estimate_age_group <- data.table::merge.data.table(
+    survey_estimate_age_group,
+    survey_estimate_age_group_mean, 
+    all.x = TRUE
+  )
+  survey_estimate_age_group <- dplyr::relocate(
+    survey_estimate_age_group, type, .before = "sim_prop"
+  )
   
   rm(age_group_df, survey_estimate_age_group_mean)
   
@@ -313,12 +420,20 @@ threemc_ppc <- function(fit,
   
   # remove any NAs (because age groups and/or years missing for some areas)
   if (any(is.na(survey_estimate_age_group$mean))) {
-    na_surveys <- survey_estimate_age_group %>% 
-      dplyr::filter(is.na(.data$mean)) %>% 
-      dplyr::distinct(
-        .data$area_id, .data$year, .data$age_group, .data$type
-      ) %>%
-      dplyr::arrange(.data$year, .data$age_group, .data$area_id)
+    # na_surveys <- survey_estimate_age_group %>% 
+    #   dplyr::filter(is.na(.data$mean)) %>% 
+    #   dplyr::distinct(
+    #     .data$area_id, .data$year, .data$age_group, .data$type
+    #   ) %>%
+    #   dplyr::arrange(.data$year, .data$age_group, .data$area_id)
+    na_surveys <- survey_estimate_age_group[
+      is.na(mean)
+    ][, 
+      .N, 
+      by = c("area_id", "year", "age_group", "type")
+    ][
+      order(year, age_group, area_id)
+    ]
     
     message("The following have had NAs removed:")
     message(
@@ -326,26 +441,44 @@ threemc_ppc <- function(fit,
     )
     rm(na_surveys)
     
-    survey_estimate_age_group <- survey_estimate_age_group %>% 
-      filter(!is.na(mean))
+    # survey_estimate_age_group <- survey_estimate_age_group %>% 
+    #   filter(!is.na(mean))
+    survey_estimate_age_group <- survey_estimate_age_group[
+      !is.na(mean)
+    ]
   }
   
   # find quantiles for age group PPDs
   # TODO: Can do a better across here!
-  ppd_quantiles <- survey_estimate_age_group %>%
-    # survey_estimate_age_group %>%
-    dplyr::group_by(.data$area_id, .data$year, .data$age_group, .data$type) %>%
-    dplyr::summarise(
-      ppd_mean   = mean(.data$sim_prop),
-      ppd_0.025  = stats::quantile(.data$sim_prop, 0.025),
-      ppd_0.10   = stats::quantile(.data$sim_prop, 0.1),
-      ppd_0.25   = stats::quantile(.data$sim_prop, 0.25),
-      ppd_median = stats::quantile(.data$sim_prop, 0.5),
-      ppd_0.75   = stats::quantile(.data$sim_prop, 0.75),
-      ppd_0.90   = stats::quantile(.data$sim_prop, 0.9),
-      ppd_0.975  = stats::quantile(.data$sim_prop, 0.975),
-      .groups    = "drop"
-    )
+  # ppd_quantiles <- survey_estimate_age_group %>%
+  #   # survey_estimate_age_group %>%
+  #   dplyr::group_by(.data$area_id, .data$year, .data$age_group, .data$type) %>%
+  #   dplyr::summarise(
+  #     ppd_mean   = mean(.data$sim_prop),
+  #     ppd_0.025  = stats::quantile(.data$sim_prop, 0.025),
+  #     ppd_0.10   = stats::quantile(.data$sim_prop, 0.1),
+  #     ppd_0.25   = stats::quantile(.data$sim_prop, 0.25),
+  #     ppd_median = stats::quantile(.data$sim_prop, 0.5),
+  #     ppd_0.75   = stats::quantile(.data$sim_prop, 0.75),
+  #     ppd_0.90   = stats::quantile(.data$sim_prop, 0.9),
+  #     ppd_0.975  = stats::quantile(.data$sim_prop, 0.975),
+  #     .groups    = "drop"
+  #   )
+  
+  ppd_quantiles <- survey_estimate_age_group[
+    ,
+    .(ppd_mean = mean(sim_prop),
+      ppd_0.025  = stats::quantile(sim_prop, 0.025),
+      ppd_0.100  = stats::quantile(sim_prop, 0.100),
+      ppd_0.250  = stats::quantile(sim_prop, 0.250),
+      ppd_median = stats::quantile(sim_prop, 0.500),
+      ppd_0.750  = stats::quantile(sim_prop, 0.750),
+      ppd_0.900  = stats::quantile(sim_prop, 0.900),
+      ppd_0.975  = stats::quantile(sim_prop, 0.975)),
+    by = c("area_id", "year", "age_group", "type")
+  ]
+  
+  # browser()
   
   rm(survey_estimate_ppd_long)
   
@@ -355,30 +488,53 @@ threemc_ppc <- function(fit,
   # fun to calculate where in model sample distribution empirical values are
   quant_pos_sum <- function(y, x) if (y < x) 0 else 1
 
-  survey_estimate_ppd_wide <- survey_estimate_age_group %>%
+  # survey_estimate_ppd_wide <- survey_estimate_age_group %>%
     # convert back to wide format
-    tidyr::pivot_wider(names_from = "sample", values_from = "sim_prop")
+  #  tidyr::pivot_wider(names_from = "sample", values_from = "sim_prop")
+  # convert back to wide format
+  survey_estimate_ppd_wide <- data.table::dcast(
+    survey_estimate_age_group, ... ~ sample, value.var = "sim_prop"
+  )
 
-  survey_estimate_ppd_dist <- survey_estimate_ppd_wide %>%
-    dplyr::group_by(.data$area_id, .data$year, .data$age_group, .data$type) %>% 
-    dplyr::summarise(
-      # find position of mean estimate from surveys amongst predictions
-      quant_pos = sum(
-        dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
-          mean, .x
-        ))
-      ),
-      .groups = "rowwise"
-    ) %>%
-    dplyr::ungroup()
-
+  # survey_estimate_ppd_dist <- survey_estimate_ppd_wide %>%
+  #   dplyr::group_by(.data$area_id, .data$year, .data$age_group, .data$type) %>%
+  #   dplyr::summarise(
+  #     # find position of mean estimate from surveys among predictions
+  #     quant_pos = sum(
+  #       dplyr::across(dplyr::starts_with("samp_"), ~ quant_pos_sum(
+  #         mean, .x
+  #       ))
+  #     ),
+  #     .groups = "rowwise"
+  #   ) %>%
+  #   dplyr::ungroup()
+  
+  # find position of mean estimate from surveys amongst predictions
+  survey_estimate_ppd_dist <- survey_estimate_ppd_wide[
+    , 
+    lapply(.SD, function(x) quant_pos_sum(mean, x)),
+    by = c("area_id", "year", "age_group", "type"),
+    .SDcols = samp_colnames
+  ]
+  survey_estimate_ppd_dist$quant_pos <- apply(
+    survey_estimate_ppd_dist[, c(samp_colnames), with = FALSE], 1, sum
+  )
+  # remove sample columns
+  survey_estimate_ppd_dist <- survey_estimate_ppd_dist[
+    ,
+    c(samp_colnames) := NULL
+  ]
+  
   # add quant pos columns to dataframe with survey obs and PPD samples
-  survey_estimate_ppd <- survey_estimate_ppd_dist %>%
-    dplyr::left_join(
-      survey_estimate_ppd_wide, 
-      by = c("area_id", "year", "age_group", "type")
-    )
-
+  # survey_estimate_ppd <- survey_estimate_ppd_dist %>%
+  #   dplyr::left_join(
+  #     survey_estimate_ppd_wide, 
+  #     by = c("area_id", "year", "age_group", "type")
+  #   )
+  survey_estimate_ppd <- data.table::merge.data.table(
+    survey_estimate_ppd_dist, survey_estimate_ppd_wide, all.x = TRUE
+  )
+  
   # calculate position of oos obs within ordered PPD (i.e. estimate of hist)
   oos_within_ppd <- function(x, CI_range) {
     sum(
@@ -410,8 +566,11 @@ threemc_ppc <- function(fit,
   )
   
   # join PPD quantiles with quant_pos and samples
-  survey_estimate_ppd <- survey_estimate_ppd %>%
-    dplyr::left_join(ppd_quantiles) 
+  # survey_estimate_ppd <- survey_estimate_ppd %>%
+  #   dplyr::left_join(ppd_quantiles) 
+  survey_estimate_ppd <- data.table::merge.data.table(
+    survey_estimate_ppd, ppd_quantiles, all.x = TRUE
+  )
   
   rm(
     survey_estimate_age_group,
@@ -427,13 +586,17 @@ threemc_ppc <- function(fit,
   # compute summary stats for comparison with other models, if specified
   # Actual OOS survey obs vs posterior predictive distribution for each
   actual <- survey_estimate_ppd$mean
-  predictions <- dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
+  # predictions <- dplyr::select(survey_estimate_ppd, dplyr::contains("samp_"))
+  predictions <- survey_estimate_ppd[, ..samp_colnames]
   
   # calculate elpd, crps, mean error stats
   actual_pred_comparison <- compare_predictions(actual, predictions)
   
   # Add pointwise error stats to return df
-  survey_estimate_ppd <- dplyr::bind_cols(
+  # survey_estimate_ppd <- dplyr::bind_cols(
+  #   survey_estimate_ppd, actual_pred_comparison$summary_stats_df
+  # )
+  survey_estimate_ppd <- cbind(
     survey_estimate_ppd, actual_pred_comparison$summary_stats_df
   )
   
@@ -487,7 +650,7 @@ compare_predictions <- function(actual, predictions) {
   # errors for each sample from PPD for each observation
   errors <- actual - predictions # errors
   ae <- abs(errors) # absolute errors
-  se <- errors^2 # squared error
+  se <- errors ^ 2 # squared error
   
   # mean errors for each observations
   mae_vec <- apply(ae, 1, mean)
