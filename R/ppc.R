@@ -26,6 +26,8 @@
 #' posterior predictive estimates for left out surveys, 
 #' Default = c(0.5, 0.8, 0.95)
 #' @param N Number of samples to generate, Default: 1000
+#' @param seed Random seed used for taking binomial sample from posterior 
+#' predictive distribution.
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
 #' @importFrom dplyr %>%
@@ -49,6 +51,11 @@ threemc_ppc <- function(fit,
                         seed = 123) {
   
   stopifnot(type %chin% c("MC", "MMC", "TMC"))
+  
+  # global bindings for data.table non-standard evaluation
+  samp_colnames <- age <- age_group <- area_id <- area_level <- circ_status <- 
+    indweight <- predicted <- sim_prop <- simulated <- year <- . <- 
+    ..samp_colnames <- NULL
   
   # initialise data.table objects 
   out <- data.table::copy(data.table::setDT(out))
