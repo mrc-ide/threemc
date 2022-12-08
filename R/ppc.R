@@ -117,6 +117,12 @@ threemc_ppc <- function(fit,
 
   # take samples of the correct "type"
   samples <- samples[[which(names(samples) == paste(type, "coverage"))]]
+
+  # only take sample rows corresponding to subsetted out, if approporiate
+  if ("n" %chin% names(out)) {
+    samples <- samples[c(out$n), ]
+    out <- out[, c("n") := NULL]
+  }
   
   # if type == "MC", take both MMC and TMC as "non-missing" circumcision
   check_types <- switch(
@@ -398,8 +404,7 @@ threemc_ppc <- function(fit,
   )
   # remove sample columns
   survey_estimate_ppd_dist <- survey_estimate_ppd_dist[
-    ,
-    c(samp_colnames) := NULL
+    , c(samp_colnames) := NULL
   ]
   
   # add quant pos columns to dataframe with survey obs and PPD samples
