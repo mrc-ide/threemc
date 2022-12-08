@@ -58,6 +58,12 @@ threemc_aggregate <- function(
   # Model with Probability of MC
   .data$model <- "No program data"
   fit_no_prog <- fit # need to load model with programme data as well
+  
+  # Take sample matrix rows that are kept in .data from original skeleton data
+  if ("n" %in% names(.data)) {
+    fit_no_prog$sample <- lapply(fit_no_prog$sample, function(x) x[.data$n, ])
+    .data$n <- NULL
+  }
 
   #### Load rates from survival model ####
   .data <- prepare_sample_data(
