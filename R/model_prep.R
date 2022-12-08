@@ -113,6 +113,10 @@ threemc_prepare_model_data <- function( # data
     paed_age_cutoff = paed_age_cutoff,
     inc_time_tmc    = inc_time_tmc
   )
+  
+  # return indicators used
+  message("Indicators supplied: \n")
+  message(paste(names(indicators), indicators, sep = " = ", collapse = ", "))
 
   # returned list
   dat_tmb <- c(
