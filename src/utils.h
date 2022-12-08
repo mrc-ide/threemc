@@ -1,4 +1,5 @@
-/// @file utils.h
+/// @file util.h
+/* Odd Functions */
 
 /***************************************************/
 /* Function to inverse logit transform for vectors */
