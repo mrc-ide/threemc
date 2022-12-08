@@ -1,3 +1,8 @@
+# threemc 0.1.33
+
+- `threemc_ppc` rewritten in `data.table` for significant speed and memory 
+efficicency increase.
+
 # threemc 0.1.32 
 
 - Add initial introductory vignette.
