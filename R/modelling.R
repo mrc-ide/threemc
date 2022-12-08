@@ -28,10 +28,6 @@
 #' indicate parameters to be kept fixed at their initial value throughout the
 #' optimisation process.
 #' @param randoms \code{vector} of random effects.
-#' @param mod TMB model, one of either
-#' "Surv_SpaceAgeTime_ByType_withUnknownType" or "Surv_SpaceAgeTime" if the
-#' surveys for the country in question make no distinction between circumcision
-#' type (i.e whether they were performed in a medical or traditional setting).
 #' @param sample If set to TRUE, has function also return N samples for
 #' medical, traditional and total circumcisions, Default: TRUE
 #' @param smaller_fit_obj Returns a smaller fit object. Useful for saving the
@@ -48,7 +44,6 @@
 #' @export
 threemc_fit_model <- function(fit = NULL,
                               dat_tmb = NULL,
-                              mod = NULL,
                               parameters = NULL,
                               maps = NULL,
                               randoms = c(
@@ -63,56 +58,6 @@ threemc_fit_model <- function(fit = NULL,
                               N = 1000,
                               verbose = TRUE,
                               ...) {
-  
-  
-  # If model is not specified, allow function to choose based on dat_tmb
-  # This also abstracts esoteric model specification from the user
-  if (is.null(mod)) { # should be it's own function! Can test more easily then
-    
-    if (!is.null(parameters)) {
-      param_names <- names(parameters)
-    } else if (!is.null(fit)) {
-      param_names <- names(fit$par)
-      # add mapped parameters which won't be in fit$par, if appropriate
-      if (!is.null(maps)) param_names <- c(param_names, names(maps))
-    } else {
-      stop("Please provide one of `parameters` or `fit`")
-    }
-    
-    # Start with model with no type information
-    mod <- "Surv_SpaceAgeTime"
-    
-    # determine whether there was information on circumcision type in `out`
-    cond <- "type_info" %in% names(dat_tmb) && dat_tmb$type_info == TRUE ||
-      # if we don't define dat_tmb, and instead have fit to be re-sampled from
-      (!is.null(fit) && any(grepl("mmc", param_names)))
-    
-    if (cond) {
-      mod <- paste0(mod, "_ByType_withUnknownType")
-    }
-    
-    if (any(grepl("paed", param_names))) {
-      mod <- paste0(mod, "_Const_Paed_MMC")
-    }
-    
-    # if there are no correlation hyperparameters, use random walk model
-    if (!any(grepl("logitrho_mmc_time", param_names))) {
-      mod <- paste0(mod, "_RW")
-    }
-    
-    # if there is a time term for TMC, use the model with non-constant TMC
-    # if (dat_tmb$type_info == TRUE && "u_time_tmc" %in% param_names) {
-    cond <- dat_tmb$type_info == TRUE
-    if (length(cond) == 0) cond <- "u_time_tmc" %in% param_names
-    cond <- cond && "u_time_tmc" %in% param_names
-    if (cond) {
-      mod <- paste0(mod, "2")
-    }
-    
-    message("mod not supplied, mod used = ", mod)
-  }
-  
-  if (is.null(mod)) stop("Please provide one of `mod`, `parameters` or `fit`")
   
   # for specified "smaller fit" object (i.e. fit which requires resampling)
   if (!is.null(fit)) {
@@ -131,12 +76,7 @@ threemc_fit_model <- function(fit = NULL,
     parameters <- split(fit$par.full, names(fit$par.full))
     init_params <- fit$par_init
     # pull different pars depending on whether the model has mmc/tmc split
-    if (mod != "Surv_SpaceAgeTime") {
-      # init_par_names <- names(fit$par_init)
-      # missing_pars <- init_par_names[!init_par_names %in% names(parameters)]
-      # if (length(missing_pars) == 0) {
-      #   parameters <- c(parameters, fit$par_init[missing_pars])
-      # }
+    if (dat_tmb$is_type == FALSE) {
       fit$par_init <- fit$par_init[names(fit$par_init) %in% names(parameters)]
       parameters <- parameters[names(fit$par_init)]
       
@@ -182,7 +122,7 @@ threemc_fit_model <- function(fit = NULL,
   }
   
   # remove "mmc" from parameter & matrix names if required
-  if (mod %in% c("Surv_SpaceAgeTime", "Surv_SpaceAgeTime_RW")) {
+  if (dat_tmb$is_type == FALSE) {
     remove_type_distinction <- function(x) {
       names(x) <- stringr::str_remove(names(x), "_mmc")
       x <- x[!grepl("_tmc", names(x))]
@@ -217,7 +157,7 @@ threemc_fit_model <- function(fit = NULL,
     map = maps,
     method = "BFGS",
     hessian = TRUE,
-    DLL = mod,
+    DLL = "threemc",
     ...
   )
   # for specified fit, simply resample and return
