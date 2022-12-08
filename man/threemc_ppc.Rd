@@ -52,6 +52,9 @@ posterior predictive estimates for left out surveys,
 Default = c(0.5, 0.8, 0.95)}
 
 \item{N}{Number of samples to generate, Default: 1000}
+
+\item{seed}{Random seed used for taking binomial sample from posterior
+predictive distribution.}
 }
 \value{
 \code{data.frame} with samples aggregated by \code{aggr_cols} and
