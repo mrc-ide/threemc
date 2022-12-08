@@ -1,4 +1,4 @@
-/// @file threemc_type.h
+/// @file threemc_no_type.h
 
 /*******************************************************************/
 /* Function to calculate nll where we have NO type information     */
@@ -35,7 +35,10 @@ Type threemc_no_type(
     Type logitrho_age1, Type logitrho_age2, Type logitrho_age3, 
     
     // reference to struct with report values; function can only return nll
-    report_values<Type>& report_vals
+    // report_values<Type>& report_vals
+    vector<Type>& haz,    vector<Type>& inc,
+    vector<Type>& cum_inc, vector<Type>& surv
+
 ){
   
   // Standard deviations
@@ -144,7 +147,7 @@ Type threemc_no_type(
   /// Estimating hazard rate ///
   //////////////////////////////
   // Hazard Rate
-  vector<Type> haz = X_fixed * u_fixed +
+ haz = X_fixed * u_fixed +
     X_age * u_age * sigma_age +
     X_space * u_space * sigma_space +
     X_time * u_time * sigma_time +
@@ -157,15 +160,15 @@ Type threemc_no_type(
   
   // Survival probabilities
   vector<Type> logprob  = log(Type(1.0) - haz);
-  vector<Type> surv     = exp(IntMat1 * logprob);
+               surv     = exp(IntMat1 * logprob);
   vector<Type> surv_lag = exp(IntMat2 * logprob);
   vector<Type> leftcens = Type(1.0) - surv;
   
   // Incidence
-  vector<Type> inc = haz * surv_lag;
+  inc = haz * surv_lag;
   
   // Cumulative incidence
-  vector<Type> cum_inc = IntMat1 * inc;
+  cum_inc = IntMat1 * inc;
   
   //////////////////
   /// Likelihood ///
@@ -178,16 +181,6 @@ Type threemc_no_type(
   
   // Getting likelihood for those left censored
   nll -= (C * log(leftcens)).sum();
-  
-  ///////////////////////////
-  /// Reporting variables ///
-  ///////////////////////////
-  
-  /// Assign report values to struct ///
-  report_vals.haz = haz;                 // Total hazard rate
-  report_vals.inc = inc;                 // Total circumcision incidence rate
-  report_vals.cum_inc = cum_inc;         // Total circumcision cumulative incidence rate
-  report_vals.surv = surv;               // Survival probabilities
   
   /////////////////////////////////////////
   /// Returning negative log likelihood ///

@@ -1,8 +1,9 @@
 /// @file threemc_type.h
 
-/*******************************************************************/
-/* Function to calculate nll where we have type information        */
-/*******************************************************************/
+/************************************************************************/
+/* Objective function to specify model and to optimize model parameters */
+/* This model splits medical and traditional circumcision types         */
+/************************************************************************/
 template <class Type>
 Type threemc_type(
     // sparse model matrices
@@ -60,7 +61,11 @@ Type threemc_type(
     int paed_age_cutoff,
     
     // reference to struct with report values; function can only return nll
-    report_values<Type>& report_vals
+    // report_values<Type>& report_vals
+    vector<Type>& haz_mmc,     vector<Type>& haz_tmc,     vector<Type>& haz, 
+    vector<Type>& inc_mmc,     vector<Type>& inc_tmc,     vector<Type>& inc,
+    vector<Type>& cum_inc_mmc, vector<Type>& cum_inc_tmc, vector<Type>& cum_inc,
+    vector<Type>& surv
   ){
   
   Type sigma_age_mmc       = exp(logsigma_age_mmc);
@@ -243,7 +248,8 @@ Type threemc_type(
   /// Estimating hazard rate ///
   //////////////////////////////
   // Medical hazard rate
-  vector<Type> haz_mmc = X_fixed_mmc * u_fixed_mmc +
+  // vector<Type> haz_mmc = X_fixed_mmc * u_fixed_mmc +
+  haz_mmc = X_fixed_mmc * u_fixed_mmc +
     X_time_mmc * u_time_mmc * sigma_time_mmc +
     X_space_mmc * u_space_mmc * sigma_space_mmc +
     X_age_mmc * u_age_mmc * sigma_age_mmc +
@@ -260,7 +266,7 @@ Type threemc_type(
   }
 
   // Traditional hazard rate
-  vector<Type> haz_tmc = X_fixed_tmc * u_fixed_tmc +
+  haz_tmc = X_fixed_tmc * u_fixed_tmc +
     X_space_tmc * u_space_tmc * sigma_space_tmc +
     X_age_tmc * u_age_tmc * sigma_age_tmc +
     X_agespace_tmc * u_agespace_tmc_v * sigma_agespace_tmc;
@@ -275,23 +281,23 @@ Type threemc_type(
   haz_mmc = haz_mmc * (1 - haz_tmc);
 
   // Total hazard rate
-  vector<Type> haz = haz_mmc + haz_tmc;
+  haz = haz_mmc + haz_tmc;
 
   // Survival probabilities
   vector<Type> logprob  = log(Type(1.0) - haz);
-  vector<Type> surv     = exp(IntMat1 * logprob);
+  surv     = exp(IntMat1 * logprob);
   vector<Type> surv_lag = exp(IntMat2 * logprob);
   vector<Type> leftcens = Type(1.0) - surv;
 
   // Incidence
-  vector<Type> inc_tmc = haz_tmc * surv_lag;
-  vector<Type> inc_mmc = haz_mmc * surv_lag;
-  vector<Type> inc = haz * surv_lag;
+  inc_tmc = haz_tmc * surv_lag;
+  inc_mmc = haz_mmc * surv_lag;
+  inc = haz * surv_lag;
 
   // Cumulative incidence
-  vector<Type> cum_inc_tmc = IntMat1 * inc_tmc;
-  vector<Type> cum_inc_mmc = IntMat1 * inc_mmc;
-  vector<Type> cum_inc = cum_inc_tmc + cum_inc_mmc;
+  cum_inc_tmc = IntMat1 * inc_tmc;
+  cum_inc_mmc = IntMat1 * inc_mmc;
+  cum_inc = cum_inc_tmc + cum_inc_mmc;
   
   //////////////////
   /// Likelihood ///
@@ -311,22 +317,6 @@ Type threemc_type(
   // Getting likelihood for those left censored
   nll -= (C * log(leftcens)).sum();
 
-  ///////////////////////////
-  /// Reporting variables ///
-  ///////////////////////////
-  
-  /// Assign report values to struct ///
-  report_vals.haz_mmc = haz_mmc;
-  report_vals.haz_tmc = haz_tmc;         // Traditional hazard rate
-  report_vals.haz = haz;                 // Total hazard rate
-  report_vals.inc_tmc = inc_tmc;         // Traditional circumcision incidence rate
-  report_vals.inc_mmc = inc_mmc;         // Medical circumcision incidence rate
-  report_vals.inc = inc;                 // Total circumcision incidence rate
-  report_vals.cum_inc_tmc = cum_inc_tmc; // Traditional circumcision cumulative incidence rate
-  report_vals.cum_inc_mmc = cum_inc_mmc; // Medical circumcision cumulative incidence rate
-  report_vals.cum_inc = cum_inc;         // Total circumcision cumulative incidence rate
-  report_vals.surv = surv;               // Survival probabilities
-  
   /////////////////////////////////////////
   /// Returning negative log likelihood ///
   /////////////////////////////////////////
