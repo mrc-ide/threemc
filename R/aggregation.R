@@ -63,6 +63,9 @@ threemc_aggregate <- function(
   if ("n" %in% names(.data)) {
     fit_no_prog$sample <- lapply(fit_no_prog$sample, function(x) x[.data$n, ])
     .data$n <- NULL
+  # Else, throw error if number of rows in results does not equal sample number
+  } else {
+    stopifnot(nrow(.data) == nrow(fit_no_prog$sample$haz))
   }
 
   #### Load rates from survival model ####
