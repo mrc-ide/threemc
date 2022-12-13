@@ -56,6 +56,27 @@ create_shell_dataset <- function(survey_circumcision,
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }
 
+  # check for area_ids with duplicated area_names
+  pop_duplicates <- populations %>% 
+    dplyr::distinct(.data$area_id, .data$area_name) %>% 
+    dplyr::group_by(.data$area_id) %>% 
+    dplyr::summarise(n = dplyr::n()) %>% 
+    dplyr::arrange(dplyr::desc(.data$n)) %>% 
+    filter(.data$n > 1)
+  
+  if (nrow(pop_duplicates) > 0) {
+    
+    message("populations has multiple names for the following area_ids:")
+    message(paste0(utils::capture.output(
+      data.frame(pop_duplicates)), collapse = "\n"
+    ))
+    message("Removing area_name and treating these as single areas")
+    # remove area_name from populations and take unique vals to avoid duplication
+    populations <- populations %>% 
+      dplyr::select(-.data$area_name) %>% 
+      dplyr::distinct()
+  }
+  
   # check that there is a population for every year
   min_pop_year <- min(populations$year)
   if (start_year < min_pop_year) {
@@ -106,8 +127,11 @@ create_shell_dataset <- function(survey_circumcision,
       age = .data$circ_age + 1
     ) %>%
     # Sort dataset
-    dplyr::arrange(.data$space, .data$age, .data$time) %>%
-    # Add population data on to merge
+    dplyr::arrange(.data$space, .data$age, .data$time)
+  n <- nrow(out)
+  
+  # Add population data on to merge
+  out <- out %>% 
     dplyr::left_join(
       populations %>%
         dplyr::select(
@@ -116,6 +140,14 @@ create_shell_dataset <- function(survey_circumcision,
         ),
       by = c("area_id", "year", "circ_age")
     )
+  
+  # give warning about duplicated rows from left_join
+  if (n != nrow(out)) {
+    message(paste0(
+      "Some rows duplicated by left-joining in populations, function may ",
+      "fail below"
+    ))
+  }
 
   # Fail if still missing pops, as will lead to more obscure matrix errors
   stopifnot(!all(is.na(out$population)))
