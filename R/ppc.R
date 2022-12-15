@@ -249,17 +249,11 @@ threemc_ppc <- function(fit,
   )
   
   set.seed(seed)
-  survey_estimate_ppd_long[
-    ,
-    ":="(
-      # fix for NAs in predictions 
-      predicted = ifelse(predicted > 1, 1, predicted), 
-      # binomial sample at individual level with success prob from PPD
-      simulated = stats::rbinom(
-        nrow(survey_estimate_ppd_long), 
-        1L, 
-        prob = predicted
-      )
+  survey_estimate_ppd_long[,
+    predicted := ifelse(predicted > 1, 1, predicted)
+  ][, 
+    simulated := stats::rbinom(
+     nrow(survey_estimate_ppd_long), 1L, prob = predicted
     )
   ]
   gc()
