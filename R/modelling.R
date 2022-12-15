@@ -97,7 +97,8 @@ threemc_fit_model <- function(fit = NULL,
     }
     
     # if there are no correlation hyperparameters, use random walk model
-    if (!any(grepl("logitrho_mmc_time", param_names))) {
+    # if (!any(grepl("logitrho_mmc_time", param_names))) {
+    if (!any(grepl("logitrho", param_names) & grepl("time", param_names))) {
       mod <- paste0(mod, "_RW")
     }
 
@@ -132,12 +133,7 @@ threemc_fit_model <- function(fit = NULL,
     parameters <- split(fit$par.full, names(fit$par.full))
     init_params <- fit$par_init
     # pull different pars depending on whether the model has mmc/tmc split
-    if (mod != "Surv_SpaceAgeTime") {
-      # init_par_names <- names(fit$par_init)
-      # missing_pars <- init_par_names[!init_par_names %in% names(parameters)]
-      # if (length(missing_pars) == 0) {
-      #   parameters <- c(parameters, fit$par_init[missing_pars])
-      # }
+    if (!mod %in% c("Surv_SpaceAgeTime", "Surv_SpaceAgeTime_RW")) {
       fit$par_init <- fit$par_init[names(fit$par_init) %in% names(parameters)]
       parameters <- parameters[names(fit$par_init)]
       
