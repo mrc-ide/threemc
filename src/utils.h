@@ -1,4 +1,6 @@
-/// @file util.h
+/// @file utils.h
+#pragma once
+
 /* Odd Functions */
 
 /***************************************************/
