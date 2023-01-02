@@ -4,7 +4,7 @@
 /* Function to calculate nll where we have NO type information     */
 /*******************************************************************/
 template <class Type>
-Type threemc_no_type(
+Type threemc(
     // sparse model matrices
     const density::SparseMatrix<Type> A,
     const density::SparseMatrix<Type> B, 

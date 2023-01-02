@@ -58,6 +58,8 @@ threemc_fit_model <- function(fit = NULL,
                               N = 1000,
                               verbose = TRUE,
                               ...) {
+
+  mod <- "threemc"
   
   # for specified "smaller fit" object (i.e. fit which requires resampling)
   if (!is.null(fit)) {
@@ -383,7 +385,10 @@ threemc_initial_pars <- function(dat_tmb,
   if (is.null(paed_age_cutoff)) {
     parameters <- parameters[!grepl("paed", names(parameters))]
   }
-  
+  # Add paed_age_cutoff ~bool par, decides whether to fit paed TMB mod
+  paed_age_cutoff_par <- ifelse(is.null(paed_age_cutoff), 0, 1)
+  parameters <- c(parameters, "paed_age_cutoff" = paed_age_cutoff_par)
+
   # remove mmc time correlation parameters, if fitting with RW precision matrix
   # if ("Q_time" %in% names(dat_tmb)) {
   if (!is.null(rw_order)) {
