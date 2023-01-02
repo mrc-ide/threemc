@@ -1,5 +1,6 @@
 /// @file threemc.cpp
 
+
 #define TMB_LIB_INIT R_init_threemc
 #include <TMB.hpp>
 #include "utils.h"
@@ -29,7 +30,7 @@ Type objective_function<Type>::operator() ()
 
   // indicators
   DATA_INTEGER(is_type); // Does the data for the modelled country include type information
-  DATA_INTEGER(paed_age_cutoff); // Fit with fixed paediatric MMC rate?
+  // DATA_INTEGER(paed_age_cutoff); // Fit with fixed paediatric MMC rate?
 
   if (is_type == 1) {
 
@@ -68,20 +69,7 @@ Type objective_function<Type>::operator() ()
     //////////////////
     /// Parameters ///
     //////////////////
-    // Fixed Effects
-    PARAMETER_VECTOR(u_fixed_mmc);
-    PARAMETER_VECTOR(u_fixed_tmc);
-    
-    // Age random effect
-    PARAMETER_VECTOR(u_age_mmc); 
-    PARAMETER_VECTOR(u_age_tmc); 
-    
-    // Temporal random effects 
-    PARAMETER_VECTOR(u_time_mmc);
-       
-    //////////////////
-    /// Parameters ///
-    //////////////////
+
     // Fixed Effects
     PARAMETER_VECTOR(u_fixed_mmc);
     PARAMETER_VECTOR(u_fixed_mmc_paed);
@@ -120,19 +108,24 @@ Type objective_function<Type>::operator() ()
     PARAMETER(logsigma_age_tmc);       // Type sigma_age_tmc       = exp(logsigma_age_tmc);
     PARAMETER(logsigma_space_tmc);     // Type sigma_space_tmc     = exp(logsigma_space_tmc);
     PARAMETER(logsigma_agespace_tmc);  // Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
-  
-    // Autocorrelation parameters 
-    PARAMETER(logitrho_mmc_time1);  // Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
-    PARAMETER(logitrho_mmc_time2);  // Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
-    PARAMETER(logitrho_mmc_time3);  // Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
-    PARAMETER(logitrho_mmc_age1);   // Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
-    PARAMETER(logitrho_mmc_paed_age1);   // Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
-    PARAMETER(logitrho_mmc_age2);   // Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
-    PARAMETER(logitrho_mmc_paed_age2);   // Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
-    PARAMETER(logitrho_mmc_age3);   // Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
-    PARAMETER(logitrho_tmc_age1);   // Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
-    PARAMETER(logitrho_tmc_age2);   // Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
 
+  // Autocorrelation parameters 
+  PARAMETER(logitrho_mmc_time1);  // Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_time2);  // Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_time3);  // Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_age1);   // Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_paed_age1);   // Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_age2);   // Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_paed_age2);   // Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_age3);   // Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_tmc_age1);   // Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_tmc_age2);   // Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
+
+  // "Toggles" 
+  DATA_INTEGER(paed_age_cutoff); // Fit with fixed paediatric MMC rate?
+ 
+  // Negative log likelihood definition
+  // Type nll = Type(0);
   
     // calculate nll and report values 
     nll = threemc_type(
@@ -140,26 +133,36 @@ Type objective_function<Type>::operator() ()
       A_mmc, A_tmc, A_mc, B, C, IntMat1, IntMat2, 
       
       X_fixed_mmc, X_time_mmc, X_age_mmc, X_space_mmc, X_agetime_mmc,
-      X_agespace_mmc, X_spacetime_mmc, X_fixed_tmc, X_age_tmc, X_space_tmc,
+      X_agespace_mmc, X_spacetime_mmc,
+
+      X_fixed_mmc_paed, X_age_mmc_paed, X_space_mmc_paed, X_agespace_mmc_paed,
+      
+      X_fixed_tmc, X_age_tmc, X_space_tmc,
       X_agespace_tmc,
 
       Q_space,
 
-      u_fixed_mmc, 
-      u_fixed_tmc, u_age_mmc,
-      u_age_tmc, u_time_mmc, u_space_mmc, 
+      u_fixed_mmc, u_fixed_mmc_paed, u_fixed_tmc,
+      u_age_mmc, u_age_mmc_paed, u_age_tmc,
+      u_time_mmc,
+      u_space_mmc, u_space_mmc_paed,
       u_space_tmc, 
       
-      u_agetime_mmc, u_agespace_mmc,
+      u_agetime_mmc,
+      u_agespace_mmc, u_agespace_mmc_paed,
       u_spacetime_mmc, u_agespace_tmc,
-      
+
       logsigma_age_mmc, logsigma_time_mmc, logsigma_space_mmc,
+      logsigma_age_mmc_paed, logsigma_space_mmc_paed,
       logsigma_agetime_mmc, logsigma_agespace_mmc, logsigma_spacetime_mmc,
+      logsigma_agespace_mmc_paed,
       logsigma_age_tmc, logsigma_space_tmc, logsigma_agespace_tmc,
       
       logitrho_mmc_time1, logitrho_mmc_time2, logitrho_mmc_time3,
-      logitrho_mmc_age1, logitrho_mmc_age2, logitrho_mmc_age3, logitrho_tmc_age1,
-      logitrho_tmc_age2,
+      logitrho_mmc_age1,  logitrho_mmc_paed_age1,
+      logitrho_mmc_age2,  logitrho_mmc_paed_age2,
+      logitrho_mmc_age3,
+      logitrho_tmc_age1, logitrho_tmc_age2,
       
       // indicators 
       paed_age_cutoff,

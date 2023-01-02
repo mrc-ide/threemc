@@ -97,7 +97,7 @@ Type threemc_type(
   /////////////////////
   
   // int rw_order = 0;        // 1 if using RW temporal prior, 0 if using AR 1
-  // int paed_age_cutoff = 1; // 1 if including fixed paedatric MMC rate
+  // int paed_age_cutoff = 0; // 1 if including fixed paedatric MMC rate
   // int inc_time_tmc = 0;    // 1 if including time effect for TMC
 
 
