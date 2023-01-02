@@ -34,8 +34,6 @@ Type objective_function<Type>::operator() ()
 
   if (is_type == 1) {
 
-    
-
     ////////////////////////
     /// Data definitions ///
     ////////////////////////
