@@ -1,9 +1,9 @@
 /// @file threemc.cpp
 
-
 #define TMB_LIB_INIT R_init_threemc
 #include <TMB.hpp>
-#include "implementation.cpp"
+#include "utils.h"
+#include "threemc.h"
 
 template<class Type>
 Type objective_function<Type>::operator() ()
