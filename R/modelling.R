@@ -451,6 +451,11 @@ threemc_initial_pars <- function(dat_tmb,
       )
     }
     parameters <- parameters[!grepl("logitrho_mmc_time", names(parameters))]
+    parameters <- parameters[!grepl(
+      paste("logitrho_mmc_time", "logitrho_tmc_time", sep = "|"), 
+      names(parameters)
+    )]
+    
   }
 
   # remove time tmc terms, if not fitting model with non-constant tmc over time
