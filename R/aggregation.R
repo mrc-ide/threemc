@@ -37,6 +37,10 @@ threemc_aggregate <- function(
   prev_year = 2008,
   ...
   ) {
+  
+  # copy data.table datasets so destructive operations don't change global vars
+  .data <- data.table::copy(.data)
+  areas <- data.table::copy(areas)
 
   # global bindings for data.table non-standard evaluation
   space <- NULL
@@ -718,22 +722,28 @@ merge_area_info <- function(results, areas) {
   )
 
   # Merge regional information on the dataset (i.e. parent area info)
-  results <- data.table::merge.data.table(
-    results,
-    # use parent area names from areas
-    data.table::setnames(
-      areas[, .(area_id, area_name)],
-      old = c("area_id", "area_name"),
-      new = c("parent_area_id", "parent_area_name")
-    ),
-    by = "parent_area_id",
-    all.x = TRUE
+  # use parent area names from areas
+  parent_names <- c("parent_area_id", "parent_area_name")
+  areas <- data.table::setnames(
+    areas[, .(area_id, area_name)],
+    old = c("area_id", "area_name"),
+    new = parent_names
   )
+  if (sum(parent_names %in% names(results)) != 0) {
+    results <- data.table::merge.data.table(
+      results,
+      areas,
+      all.x = TRUE
+    )   
+  } else {
+    message("No regional (i.e. parent area) information available")
+  }
 
   # relocate area cols to the start of the dataframe
   area_cols <- c(
     "area_name", "area_id", "area_level", "parent_area_id", "parent_area_name"
   )
+  area_cols <- area_cols[area_cols %in% names(results)]
   data.table::setcolorder(
     results,
     c(area_cols, dplyr::setdiff(names(results), area_cols))
