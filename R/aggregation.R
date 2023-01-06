@@ -704,7 +704,7 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 merge_area_info <- function(results, areas) {
 
   # global bindings for `data.table` non-standard evaluation
-  . <- area_id <- area_name <- ..rm_cols <- NULL
+  . <- area_id <- area_name <- area_level <- ..rm_cols <- NULL
 
   if (!inherits(results, "data.table")) results <- data.table::setDT(results)
   if (!inherits(areas, "data.table")) areas <- data.table::setDT(areas)
@@ -716,28 +716,35 @@ merge_area_info <- function(results, areas) {
 
   # Add region information
   results <- data.table::merge.data.table(
-    results,
-    dplyr::select(areas, .data$area_id:.data$area_level),
-    by = "area_id"
+    x     = results,
+    y     = areas[, .(area_id, area_name, area_level)],
+    by    = "area_id", 
+    all.x = TRUE
   )
 
   # Merge regional information on the dataset (i.e. parent area info)
-  # use parent area names from areas
+  # use parent area names from areas, if one of parent_names is in results
   parent_names <- c("parent_area_id", "parent_area_name")
-  areas <- data.table::setnames(
-    areas[, .(area_id, area_name)],
-    old = c("area_id", "area_name"),
-    new = parent_names
-  )
-  if (sum(parent_names %in% names(results)) != 0) {
-    results <- data.table::merge.data.table(
-      results,
-      areas,
+  keep_cols <- c("area_id", parent_names)
+  keep_cols <- keep_cols[keep_cols %in% names(areas)]
+  areas_join <- areas[, ..keep_cols]
+  # add parent_area_name using area_name from areas, if missing
+  if (!"parent_area_name" %in% names(areas_join)) {
+    areas_join <- data.table::merge.data.table(
+      x = areas_join, 
+      y = data.table::setnames(
+        areas[, .(area_id, area_name)],
+        old = c("area_id", "area_name"),
+        new = parent_names
+      ),
       all.x = TRUE
-    )   
-  } else {
-    message("No regional (i.e. parent area) information available")
+    )
   }
+  results <- data.table::merge.data.table(
+    x     = results,
+    y     = areas_join,
+    all.x = TRUE
+  )   
 
   # relocate area cols to the start of the dataframe
   area_cols <- c(
