@@ -1,3 +1,10 @@
+# threemc 0.1.34 
+
+- Version 0.1.27 introduced filling in missing population data in 
+`create_shell_dataset`; this update decouples this behaviour from this function 
+into a separate internal function `fill_downup_populations`, and this 
+functionality has been added to `threemc_aggregate` as well. 
+
 # threemc 0.1.33
 
 - `threemc_ppc` rewritten in `data.table` for significant speed and memory 
