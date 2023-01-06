@@ -49,7 +49,18 @@ threemc_aggregate <- function(
   if (inherits(areas, "sf")) {
     areas <- sf::st_drop_geometry(areas)
   }
-
+  
+  # fill in missing populations for historical years not in data, if required
+  start_year <- min(.data$year)
+  min_pop_year <- min(populations$year)
+  if (start_year < min_pop_year) {
+    populations <- fill_downup_populations(
+      populations, 
+      start_year, 
+      min_pop_year
+    )
+  }
+  
   # Add a unique identifier within Admin code and merging to boundaries
   data.table::setDT(areas)[,  space := seq_len(.N), by = "area_level"]
 
