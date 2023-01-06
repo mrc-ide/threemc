@@ -80,22 +80,11 @@ create_shell_dataset <- function(survey_circumcision,
   # check that there is a population for every year
   min_pop_year <- min(populations$year)
   if (start_year < min_pop_year) {
-    message(paste0(
-      "`min(populations$year) > start_year`;\n",
-      "Filling missing populations with earliest known population",
-      " for each area_id and age"
-    ))
-    missing_years <- seq(start_year, min_pop_year - 1)
-    missing_rows <- tidyr::crossing(
-      dplyr::select(populations, -c(.data$year, .data$population)),
-      "year"       = missing_years,
-      "population" = NA
+    populations <- fill_downup_populations(
+      populations, 
+      start_year, 
+      min_pop_year
     )
-    populations <- dplyr::bind_rows(populations, missing_rows) %>%
-      dplyr::arrange(.data$area_id, .data$age, .data$year) %>%
-      dplyr::group_by(.data$area_id, .data$age) %>%
-      tidyr::fill(.data$population, .direction = "downup") %>%
-      dplyr::ungroup()
   }
 
   # remove spatial elements from areas, take only specified/highest area level

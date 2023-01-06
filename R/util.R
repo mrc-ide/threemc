@@ -516,3 +516,41 @@ patterns <- function(..., cols = character(0L)) {
     if (length(idx)) stop("Pattern(s) not found: [%s]", brackify(p[idx]))
     matched
 }
+
+#### fill_downup_populations ####
+
+
+#' @title Assume constant historical populations
+#' @description Fills populations for historical years not present in 
+#' populations dataset with earliest known population for each unique area_id - 
+#' age combination. 
+#' @rdname fill_downup_populations
+#' @keywords internal
+fill_downup_populations <- function(
+    populations, start_year, min_pop_year = NULL
+  ) {
+  message(paste0(
+      "Filling missing populations with earliest known population",
+      " for each area_id and age"
+  ))
+  
+  # calculate minimum year in populations if not provided
+  if (is.null(min_pop_year)) min_pop_year <- min(populations$year)
+  # find years from provided start_year and min_pop_year
+  missing_years <- seq(start_year, min_pop_year - 1)
+  # create df matching populations columns for missing_years
+  missing_rows <- tidyr::crossing(
+    dplyr::select(populations, -c(.data$year, .data$population)),
+    "year"       = missing_years,
+    "population" = NA
+  )
+  # join to end of populations, order appropriately 
+  populations <- dplyr::bind_rows(populations, missing_rows) %>%
+    dplyr::arrange(.data$area_id, .data$age, .data$year) %>%
+    # fill in with earliest known pop for each unique area_id & age combo
+    dplyr::group_by(.data$area_id, .data$age) %>%
+    tidyr::fill(.data$population, .direction = "downup") %>%
+    dplyr::ungroup()
+  
+  return(populations)
+}
