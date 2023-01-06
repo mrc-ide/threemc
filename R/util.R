@@ -519,7 +519,6 @@ patterns <- function(..., cols = character(0L)) {
 
 #### fill_downup_populations ####
 
-
 #' @title Assume constant historical populations
 #' @description Fills populations for historical years not present in 
 #' populations dataset with earliest known population for each unique area_id - 
