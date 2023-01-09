@@ -114,40 +114,37 @@ Type objective_function<Type>::operator() ()
     if (paed_age_cutoff == 1) {
 
       /////////////////////////////////
-      /// Paed MMC Data definitions ///
+      /// paed mmc data definitions ///
       /////////////////////////////////
     
-      // Design matrices 
-      DATA_SPARSE_MATRIX(X_fixed_mmc_paed); // Design matrix for the fixed effects in the medical circumcision hazard rate (under specified age)
-      DATA_SPARSE_MATRIX(X_age_mmc_paed); // Design matrix for the stratification random effects in "" "" ""
-      DATA_SPARSE_MATRIX(X_space_mmc_paed); // Design matrix for the stratification random effects in "" "" ""
-      DATA_SPARSE_MATRIX(X_agespace_mmc_paed); // Design matrix for the interaction random effects in "" "" ""
+      // design matrices 
+      DATA_SPARSE_MATRIX(X_fixed_mmc_paed); // design matrix for the fixed effects in the medical circumcision hazard rate (under specified age)
+      DATA_SPARSE_MATRIX(X_age_mmc_paed); // design matrix for the stratification random effects in "" "" ""
+      DATA_SPARSE_MATRIX(X_space_mmc_paed); // design matrix for the stratification random effects in "" "" ""
+      DATA_SPARSE_MATRIX(X_agespace_mmc_paed); // design matrix for the interaction random effects in "" "" ""
       
       ///////////////////////////
-      /// Paed MMC Parameters ///
+      /// paed mmc parameters ///
       ///////////////////////////
 
-      // Fixed Effects
+      // fixed effects
       PARAMETER_VECTOR(u_fixed_mmc_paed);
-
-      // Age random effect
+      // age random effect
       PARAMETER_VECTOR(u_age_mmc_paed); 
-    
-      // Spatial random effects
+      // spatial random effects
       PARAMETER_VECTOR(u_space_mmc_paed);
-    
-      // Interactions
+      // interactions
       PARAMETER_ARRAY(u_agespace_mmc_paed);
     
-      // Standard deviations 
+      // standard deviations 
       PARAMETER(logsigma_age_mmc_paed)   // Type sigma_age_mmc_paed  = exp(logsigma_age_mmc_paed);
       PARAMETER(logsigma_space_mmc_paed); // Type sigma_space_mmc_paed = exp(logsigma_space_mmc_paed);
       PARAMETER(logsigma_agespace_mmc_paed); // Type sigma_agespace_mmc_paed = exp(logsigma_agespace_mmc_paed);
 
-      // Autocorrelation parameters 
+      // autocorrelation parameters 
       PARAMETER(logitrho_mmc_paed_age1);   // Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
       PARAMETER(logitrho_mmc_paed_age2);   // Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
-      
+
       nll = threemc(
         
         A_mmc, A_tmc, A_mc, B, C, IntMat1, IntMat2, 
@@ -183,49 +180,94 @@ Type objective_function<Type>::operator() ()
         logitrho_mmc_age2,  logitrho_mmc_paed_age2,
         logitrho_mmc_age3,
         logitrho_tmc_age1, logitrho_tmc_age2,
+
+        // indicators
+        paed_age_cutoff, 
         
         // report vals
         haz_mmc, haz_tmc, haz, inc_mmc, inc_tmc, inc,
         cum_inc_mmc, cum_inc_tmc, cum_inc, surv
        );
+
     } else {
+
+      // dummy paediatric MMC design matrices + parameters
+    
+      /* DATA_SPARSE_MATRIX(X_fixed_mmc_paed); 
+         DATA_SPARSE_MATRIX(X_age_mmc_paed); 
+         DATA_SPARSE_MATRIX(X_space_mmc_paed); 
+         DATA_SPARSE_MATRIX(X_agespace_mmc_paed); */
+      Eigen::SparseMatrix<Type> X_fixed_mmc_paed;
+      Eigen::SparseMatrix<Type> X_age_mmc_paed;
+      Eigen::SparseMatrix<Type> X_space_mmc_paed;
+      Eigen::SparseMatrix<Type> X_agespace_mmc_paed;
+      
+      /* PARAMETER_VECTOR(u_fixed_mmc_paed);
+         PARAMETER_VECTOR(u_age_mmc_paed); 
+         PARAMETER_VECTOR(u_space_mmc_paed);
+         PARAMETER_ARRAY(u_agespace_mmc_paed); */
+      vector<Type> u_fixed_mmc_paed;
+      vector<Type> u_age_mmc_paed;
+      vector<Type> u_space_mmc_paed;
+      array<Type>  u_agespace_mmc_paed;
+      
+
+      /* PARAMETER(logsigma_age_mmc_paed)   
+         PARAMETER(logsigma_space_mmc_paed);
+         PARAMETER(logsigma_agespace_mmc_paed); */
+      Type logsigma_age_mmc_paed = Type(0);
+      Type logsigma_space_mmc_paed = Type(0);
+      Type logsigma_agespace_mmc_paed = Type(0);
+
+      /* PARAMETER(logitrho_mmc_paed_age1);   
+         PARAMETER(logitrho_mmc_paed_age2);  */
+      Type logitrho_mmc_paed_age1 = Type(0);
+      Type logitrho_mmc_paed_age2 = Type(0);
+ 
       // calculate nll when no paed_age_cutoff is specified
       nll = threemc(
+        
+        A_mmc, A_tmc, A_mc, B, C, IntMat1, IntMat2, 
+        
+        X_fixed_mmc, X_time_mmc, X_age_mmc, X_space_mmc, X_agetime_mmc,
+        X_agespace_mmc, X_spacetime_mmc,
 
-         A_mmc, A_tmc, A_mc, B, C, IntMat1, IntMat2, 
-         
-         X_fixed_mmc, X_time_mmc, X_age_mmc, X_space_mmc, X_agetime_mmc,
-         X_agespace_mmc, X_spacetime_mmc,
+        X_fixed_mmc_paed, X_age_mmc_paed, X_space_mmc_paed, X_agespace_mmc_paed,
+        
+        X_fixed_tmc, X_age_tmc, X_space_tmc,
+        X_agespace_tmc,
 
-         X_fixed_tmc, X_age_tmc, X_space_tmc,
-         X_agespace_tmc,
+        Q_space,
 
-         Q_space,
+        u_fixed_mmc, u_fixed_mmc_paed, u_fixed_tmc,
+        u_age_mmc, u_age_mmc_paed, u_age_tmc,
+        u_time_mmc,
+        u_space_mmc, u_space_mmc_paed,
+        u_space_tmc, 
+        
+        u_agetime_mmc,
+        u_agespace_mmc, u_agespace_mmc_paed,
+        u_spacetime_mmc, u_agespace_tmc,
 
-         u_fixed_mmc, u_fixed_tmc,
-         u_age_mmc, u_age_tmc,
-         u_time_mmc,
-         u_space_mmc, 
-         u_space_tmc, 
-         
-         u_agetime_mmc,
-         u_agespace_mmc, 
-         u_spacetime_mmc, u_agespace_tmc,
+        logsigma_age_mmc, logsigma_time_mmc, logsigma_space_mmc,
+        logsigma_age_mmc_paed, logsigma_space_mmc_paed,
+        logsigma_agetime_mmc, logsigma_agespace_mmc, logsigma_spacetime_mmc,
+        logsigma_agespace_mmc_paed,
+        logsigma_age_tmc, logsigma_space_tmc, logsigma_agespace_tmc,
+        
+        logitrho_mmc_time1, logitrho_mmc_time2, logitrho_mmc_time3,
+        logitrho_mmc_age1,  logitrho_mmc_paed_age1,
+        logitrho_mmc_age2,  logitrho_mmc_paed_age2,
+        logitrho_mmc_age3,
+        logitrho_tmc_age1, logitrho_tmc_age2,
 
-         logsigma_age_mmc, logsigma_time_mmc, logsigma_space_mmc,
-         logsigma_agetime_mmc, logsigma_agespace_mmc, logsigma_spacetime_mmc,
-         logsigma_age_tmc, logsigma_space_tmc, logsigma_agespace_tmc,
-         
-         logitrho_mmc_time1, logitrho_mmc_time2, logitrho_mmc_time3,
-         logitrho_mmc_age1,
-         logitrho_mmc_age2,
-         logitrho_mmc_age3,
-         logitrho_tmc_age1, logitrho_tmc_age2,
-         
-         // report vals
-         haz_mmc, haz_tmc, haz, inc_mmc, inc_tmc, inc,
-         cum_inc_mmc, cum_inc_tmc, cum_inc, surv
-      );
+        // indicators
+        paed_age_cutoff, 
+        
+        // report vals
+        haz_mmc, haz_tmc, haz, inc_mmc, inc_tmc, inc,
+        cum_inc_mmc, cum_inc_tmc, cum_inc, surv
+       );
     }
     
     ///////////////////////////
