@@ -191,38 +191,38 @@ Type objective_function<Type>::operator() ()
 
     } else {
 
-      // dummy paediatric MMC design matrices + parameters
+      // dummy paed params & design matrices, use existing pars to preserve dims
     
       /* DATA_SPARSE_MATRIX(X_fixed_mmc_paed); 
          DATA_SPARSE_MATRIX(X_age_mmc_paed); 
          DATA_SPARSE_MATRIX(X_space_mmc_paed); 
          DATA_SPARSE_MATRIX(X_agespace_mmc_paed); */
-      Eigen::SparseMatrix<Type> X_fixed_mmc_paed;
-      Eigen::SparseMatrix<Type> X_age_mmc_paed;
-      Eigen::SparseMatrix<Type> X_space_mmc_paed;
-      Eigen::SparseMatrix<Type> X_agespace_mmc_paed;
+      Eigen::SparseMatrix<Type> X_fixed_mmc_paed    = X_fixed_mmc;
+      Eigen::SparseMatrix<Type> X_age_mmc_paed      = X_age_mmc;
+      Eigen::SparseMatrix<Type> X_space_mmc_paed    = X_space_mmc;
+      Eigen::SparseMatrix<Type> X_agespace_mmc_paed = X_agespace_mmc;
       
       /* PARAMETER_VECTOR(u_fixed_mmc_paed);
          PARAMETER_VECTOR(u_age_mmc_paed); 
          PARAMETER_VECTOR(u_space_mmc_paed);
          PARAMETER_ARRAY(u_agespace_mmc_paed); */
-      vector<Type> u_fixed_mmc_paed;
-      vector<Type> u_age_mmc_paed;
-      vector<Type> u_space_mmc_paed;
-      array<Type>  u_agespace_mmc_paed;
+      vector<Type> u_fixed_mmc_paed     = u_fixed_mmc;
+      vector<Type> u_age_mmc_paed       = u_age_mmc;
+      vector<Type> u_space_mmc_paed     = u_space_mmc;
+      array<Type>  u_agespace_mmc_paed  = u_agespace_mmc;
       
 
       /* PARAMETER(logsigma_age_mmc_paed)   
          PARAMETER(logsigma_space_mmc_paed);
          PARAMETER(logsigma_agespace_mmc_paed); */
-      Type logsigma_age_mmc_paed = Type(0);
-      Type logsigma_space_mmc_paed = Type(0);
-      Type logsigma_agespace_mmc_paed = Type(0);
+      Type logsigma_age_mmc_paed      = logsigma_age_mmc;
+      Type logsigma_space_mmc_paed    = logsigma_space_mmc;
+      Type logsigma_agespace_mmc_paed = logsigma_agespace_mmc;
 
       /* PARAMETER(logitrho_mmc_paed_age1);   
          PARAMETER(logitrho_mmc_paed_age2);  */
-      Type logitrho_mmc_paed_age1 = Type(0);
-      Type logitrho_mmc_paed_age2 = Type(0);
+      Type logitrho_mmc_paed_age1 = logitrho_mmc_age1;
+      Type logitrho_mmc_paed_age2 = logitrho_mmc_age2;
  
       // calculate nll when no paed_age_cutoff is specified
       nll = threemc(
