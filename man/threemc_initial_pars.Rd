@@ -8,6 +8,7 @@ threemc_initial_pars(
   dat_tmb,
   custom_init = NULL,
   rw_order = NULL,
+  rw_order_tmc_ar = FALSE,
   paed_age_cutoff = NULL,
   inc_time_tmc = FALSE
 )
@@ -35,6 +36,10 @@ model parameters you want to supersede "hardcoded" defaults, default = NULL.}
 \item{rw_order}{Order of the random walk used for temporal precision matrix.
 Setting to NULL assumes you wish to specify an AR 1 temporal prior.
 Default: NULL}
+
+\item{rw_order_tmc_ar}{Whether to use an AR 1 temporal prior for TMC,
+regardless of whether you are using a RW temporal prior for TMC or not,
+Default: FALSE}
 
 \item{paed_age_cutoff}{Age at which to split MMC design matrices between
 paediatric and non-paediatric populations, the former of which are constant

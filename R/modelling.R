@@ -347,6 +347,9 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
 #' object for later aggregation.
 #' @inheritParams threemc_fit_model
 #' @inheritParams threemc_prepare_model_data
+#' @param rw_order_tmc_ar Whether to use an AR 1 temporal prior for TMC, 
+#' regardless of whether you are using a RW temporal prior for TMC or not, 
+#' Default: FALSE
 #' @param custom_init named \code{list} of custom fixed and random
 #' model parameters you want to supersede "hardcoded" defaults, default = NULL.
 #' @return Named \code{list} of intial (hyper)parameters for
@@ -356,7 +359,7 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
 threemc_initial_pars <- function(dat_tmb,
                                  custom_init = NULL,
                                  rw_order = NULL,
-                                 rw_order_tmc_ar = TRUE,
+                                 rw_order_tmc_ar = FALSE,
                                  paed_age_cutoff = NULL,
                                  inc_time_tmc = FALSE) {
 
