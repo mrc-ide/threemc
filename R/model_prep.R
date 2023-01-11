@@ -14,7 +14,8 @@
 #' `aggregated = TRUE` means we only look at area level of interest.
 #' @param weight variable to weigh circumcisions by when aggregating for
 #' lower area hierarchies (only applicable for `aggregated = TRUE`)
-#' @param k_dt Age knot spacing in spline definitions, Default: 5
+#' @param k_dt_age Age knot spacing in spline definitions, Default: 5
+#' @param k_dt_time Time knot spacing in spline definitions, Default: 5
 #' @param paed_age_cutoff Age at which to split MMC design matrices between
 #' paediatric and non-paediatric populations, the former of which are constant
 #' over time. Set to NULL if not desired, Default: NULL
@@ -48,7 +49,8 @@ threemc_prepare_model_data <- function(out,
                                        area_lev = NULL,
                                        aggregated = TRUE,
                                        weight = "population",
-                                       k_dt = 5,
+                                       k_dt_age = 5,
+                                       k_dt_time = 5,
                                        paed_age_cutoff = NULL,
                                        rw_order = NULL,
                                        inc_time_tmc = FALSE,
@@ -69,7 +71,7 @@ threemc_prepare_model_data <- function(out,
   # Create design matrices for fixed effects and temporal, age, space and
   # interaction random effects
   design_matrices <- create_design_matrices(
-    dat = out, area_lev = area_lev, k_dt = k_dt, inc_time_tmc = inc_time_tmc
+    dat = out, area_lev = area_lev, k_dt_age = k_dt_age, k_dt_time = k_dt_time, inc_time_tmc = inc_time_tmc
   )
 
   # Have piecewise mmc design matrices for paediatric and non-paediatric pops
@@ -160,7 +162,8 @@ threemc_prepare_model_data <- function(out,
 #' @keywords internal
 create_design_matrices <- function(dat,
                                    area_lev = NULL,
-                                   k_dt = 5,
+                                   k_dt_age = 5,
+                                   k_dt_time = 5,
                                    inc_time_tmc = FALSE) {
   if (is.null(area_lev)) {
     message(
@@ -174,11 +177,11 @@ create_design_matrices <- function(dat,
 
   # Spline definitions
   k_age <-
-    k_dt * (floor(min(dat$age) / k_dt) - 3):(ceiling(max(dat$age) / k_dt) + 3)
+    k_dt_age * (floor(min(dat$age) / k_dt_age) - 3):(ceiling(max(dat$age) / k_dt_age) + 3)
 	
   # Spline definitions
   k_time <-
-    k_dt * (floor(min(dat$time) / k_dt) - 3):(ceiling(max(dat$time) / k_dt) + 3)
+    k_dt_time * (floor(min(dat$time) / k_dt_time) - 3):(ceiling(max(dat$time) / k_dt_time) + 3)
 
   # Design matrix for the fixed effects
   X_fixed <- Matrix::sparse.model.matrix(N ~ 1, data = dat)
