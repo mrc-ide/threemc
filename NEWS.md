@@ -1,3 +1,11 @@
+# threemc 0.1.35
+
+- Adds models 
+("Surv_SpaceAgeTime_ByType_withUnknownType_RW_MMC2" and 
+"Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2") which use 
+a random walk temporal prior for MMC, but an AR 1 temporal prior for TMC.
+
+
 # threemc 0.1.34 
 
 - Version 0.1.27 introduced filling in missing population data in 

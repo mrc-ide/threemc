@@ -96,10 +96,12 @@ threemc_fit_model <- function(fit = NULL,
       mod <- paste0(mod, "_Const_Paed_MMC")
     }
     
-    # if there are no correlation hyperparameters, use random walk model
-    # if (!any(grepl("logitrho_mmc_time", param_names))) {
-    if (!any(grepl("logitrho", param_names) & grepl("time", param_names))) {
-      mod <- paste0(mod, "_RW")
+    # if there are no MMC time autocorr hyperpars, use RW model
+    cond <- grepl("logitrho_mmc", param_names) & grepl("time", param_names)
+    # if there is a TMC autocorr hyperpar, use RW model for MMC and AR for TMC
+    tmc_cond <- "logitrho_tmc_time1" %in% param_names
+    if (all(cond == FALSE)) {
+      if (tmc_cond) mod <- paste0(mod, "_RW_MMC") else mod <- paste0(mod, "RW")
     }
 
     # if there is a time term for TMC, use the model with non-constant TMC
@@ -111,6 +113,13 @@ threemc_fit_model <- function(fit = NULL,
       mod <- paste0(mod, "2")
     }
     
+    # "RW_MMC" mod only valid where time TMC effect is used
+    if (grepl("_RW_MMC", mod) && !grepl("2", mod)) {
+      stop(paste(
+        "Model with RW for MMC temporal parameters only available when ",
+        "including time TMC effect"
+      ))
+    }
     message("mod not supplied, mod used = ", mod)
   }
   
@@ -338,6 +347,9 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
 #' object for later aggregation.
 #' @inheritParams threemc_fit_model
 #' @inheritParams threemc_prepare_model_data
+#' @param rw_order_tmc_ar Whether to use an AR 1 temporal prior for TMC, 
+#' regardless of whether you are using a RW temporal prior for TMC or not, 
+#' Default: FALSE
 #' @param custom_init named \code{list} of custom fixed and random
 #' model parameters you want to supersede "hardcoded" defaults, default = NULL.
 #' @return Named \code{list} of intial (hyper)parameters for
@@ -347,6 +359,7 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
 threemc_initial_pars <- function(dat_tmb,
                                  custom_init = NULL,
                                  rw_order = NULL,
+                                 rw_order_tmc_ar = FALSE,
                                  paed_age_cutoff = NULL,
                                  inc_time_tmc = FALSE) {
 
@@ -451,11 +464,17 @@ threemc_initial_pars <- function(dat_tmb,
       )
     }
     parameters <- parameters[!grepl("logitrho_mmc_time", names(parameters))]
+    
+    # if using an AR 1 temporal prior for TMC, only remove MMC autocorr pars
+    remove_pars <- c("logitrho_mmc_time")
+    if (rw_order_tmc_ar == FALSE) {
+      remove_pars <- c(remove_pars, "logitrho_tmc_time")
+    }
+    
     parameters <- parameters[!grepl(
-      paste("logitrho_mmc_time", "logitrho_tmc_time", sep = "|"), 
+      paste(remove_pars, collapse = "|"),
       names(parameters)
     )]
-    
   }
 
   # remove time tmc terms, if not fitting model with non-constant tmc over time
