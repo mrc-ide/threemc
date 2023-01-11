@@ -18,7 +18,7 @@ object for later aggregation."><!-- mathjax --><script src="https://cdnjs.cloudf
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">threemc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.34</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.35</span>
       </span>
     </div>
 
@@ -69,6 +69,7 @@ object for later aggregation.</p>
 <span>  <span class="va">dat_tmb</span>,</span>
 <span>  custom_init <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rw_order <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  rw_order_tmc_ar <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  paed_age_cutoff <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  inc_time_tmc <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -100,6 +101,12 @@ model parameters you want to supersede "hardcoded" defaults, default = NULL.</p>
 <dd><p>Order of the random walk used for temporal precision matrix.
 Setting to NULL assumes you wish to specify an AR 1 temporal prior.
 Default: NULL</p></dd>
+
+
+<dt>rw_order_tmc_ar</dt>
+<dd><p>Whether to use an AR 1 temporal prior for TMC,
+regardless of whether you are using a RW temporal prior for TMC or not,
+Default: FALSE</p></dd>
 
 
 <dt>paed_age_cutoff</dt>
