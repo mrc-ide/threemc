@@ -69,7 +69,8 @@
 <span>  area_lev <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  aggregated <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  weight <span class="op">=</span> <span class="st">"population"</span>,</span>
-<span>  k_dt <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  k_dt_age <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  k_dt_time <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  paed_age_cutoff <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rw_order <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  inc_time_tmc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -105,8 +106,13 @@ object, allowing for the use of surveys for lower area hierarchies.
 lower area hierarchies (only applicable for <code>aggregated = TRUE</code>)</p></dd>
 
 
-<dt>k_dt</dt>
+<dt>k_dt_age</dt>
 <dd><p>Age knot spacing in spline definitions, Default: 5</p></dd>
+
+
+<dt>k_dt_time</dt>
+<dd><p>Time knot spacing in spline definitions, set to NULL to
+disable temporal splines, Default: 5</p></dd>
 
 
 <dt>paed_age_cutoff</dt>

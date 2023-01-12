@@ -65,7 +65,13 @@ spatial and random effects, for both medical and traditional circumcision.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_design_matrices</span><span class="op">(</span><span class="va">dat</span>, area_lev <span class="op">=</span> <span class="cn">NULL</span>, k_dt <span class="op">=</span> <span class="fl">5</span>, inc_time_tmc <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_design_matrices</span><span class="op">(</span></span>
+<span>  <span class="va">dat</span>,</span>
+<span>  area_lev <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  k_dt_age <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  k_dt_time <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  inc_time_tmc <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -81,8 +87,13 @@ unique record.</p></dd>
 <dd><p>PSNU area level for specific country.</p></dd>
 
 
-<dt>k_dt</dt>
+<dt>k_dt_age</dt>
 <dd><p>Age knot spacing in spline definitions, Default: 5</p></dd>
+
+
+<dt>k_dt_time</dt>
+<dd><p>Time knot spacing in spline definitions, set to NULL to
+disable temporal splines, Default: 5</p></dd>
 
 
 <dt>inc_time_tmc</dt>
