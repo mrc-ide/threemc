@@ -183,7 +183,7 @@ create_design_matrices <- function(dat,
   # Spline definitions
   k_age <- k_dt_age * (floor(min(dat$age) / k_dt_age) - 3):
     (ceiling(max(dat$age) / k_dt_age) + 3)
-  if (!is.null(k_time)) {
+  if (!is.null(k_dt_time)) {
     k_time <- k_dt_time * (floor(min(dat$time) / k_dt_time) - 3):
       (ceiling(max(dat$time) / k_dt_time) + 3)
   }
@@ -192,7 +192,7 @@ create_design_matrices <- function(dat,
   X_fixed <- Matrix::sparse.model.matrix(N ~ 1, data = dat)
 
   # Design matrix for the temporal random effects
-  if (is.null(k_time)) {
+  if (is.null(k_dt_time)) {
     X_time <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(time), data = dat)
   } else {
     X_time <- splines::splineDesign(k_time, dat$time, outer.ok = TRUE)
@@ -214,7 +214,7 @@ create_design_matrices <- function(dat,
   # Design matrix for the interaction random effects
   X_agetime <- mgcv::tensor.prod.model.matrix(list(X_time, X_age))
   X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))
-  if (is.null(k_time)) {
+  if (is.null(k_dt_time)) {
     X_spacetime <- Matrix::sparse.model.matrix(
       N ~ -1 + factor((dat %>%
                          group_by(space, time) %>%
