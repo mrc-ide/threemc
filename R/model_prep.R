@@ -14,7 +14,9 @@
 #' `aggregated = TRUE` means we only look at area level of interest.
 #' @param weight variable to weigh circumcisions by when aggregating for
 #' lower area hierarchies (only applicable for `aggregated = TRUE`)
-#' @param k_dt Age knot spacing in spline definitions, Default: 5
+#' @param k_dt_age Age knot spacing in spline definitions, Default: 5
+#' @param k_dt_time Time knot spacing in spline definitions, set to NULL to 
+#' disable temporal splines, Default: 5
 #' @param paed_age_cutoff Age at which to split MMC design matrices between
 #' paediatric and non-paediatric populations, the former of which are constant
 #' over time. Set to NULL if not desired, Default: NULL
@@ -48,7 +50,8 @@ threemc_prepare_model_data <- function(out,
                                        area_lev = NULL,
                                        aggregated = TRUE,
                                        weight = "population",
-                                       k_dt = 5,
+                                       k_dt_age = 5,
+                                       k_dt_time = 5,
                                        paed_age_cutoff = NULL,
                                        rw_order = NULL,
                                        inc_time_tmc = FALSE,
@@ -69,7 +72,11 @@ threemc_prepare_model_data <- function(out,
   # Create design matrices for fixed effects and temporal, age, space and
   # interaction random effects
   design_matrices <- create_design_matrices(
-    dat = out, area_lev = area_lev, k_dt = k_dt, inc_time_tmc = inc_time_tmc
+    dat          = out, 
+    area_lev     = area_lev, 
+    k_dt_age     = k_dt_age, 
+    k_dt_time    = k_dt_time, 
+    inc_time_tmc = inc_time_tmc
   )
 
   # Have piecewise mmc design matrices for paediatric and non-paediatric pops
@@ -160,7 +167,8 @@ threemc_prepare_model_data <- function(out,
 #' @keywords internal
 create_design_matrices <- function(dat,
                                    area_lev = NULL,
-                                   k_dt = 5,
+                                   k_dt_age = 5,
+                                   k_dt_time = 5,
                                    inc_time_tmc = FALSE) {
   if (is.null(area_lev)) {
     message(
@@ -173,14 +181,23 @@ create_design_matrices <- function(dat,
   dat <- shell_data_spec_area(dat, area_lev)
 
   # Spline definitions
-  k_age <-
-    k_dt * (floor(min(dat$age) / k_dt) - 3):(ceiling(max(dat$age) / k_dt) + 3)
+  k_age <- k_dt_age * (floor(min(dat$age) / k_dt_age) - 3):
+    (ceiling(max(dat$age) / k_dt_age) + 3)
+  if (!is.null(k_dt_time)) {
+    k_time <- k_dt_time * (floor(min(dat$time) / k_dt_time) - 3):
+      (ceiling(max(dat$time) / k_dt_time) + 3)
+  }
 
   # Design matrix for the fixed effects
   X_fixed <- Matrix::sparse.model.matrix(N ~ 1, data = dat)
 
   # Design matrix for the temporal random effects
-  X_time <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(time), data = dat)
+  if (is.null(k_dt_time)) {
+    X_time <- Matrix::sparse.model.matrix(N ~ -1 + as.factor(time), data = dat)
+  } else {
+    X_time <- splines::splineDesign(k_time, dat$time, outer.ok = TRUE)
+    X_time <- methods::as(X_time, "sparseMatrix")
+  }
 
   # Design matrix for the age random effects
   X_age <- splines::splineDesign(k_age, dat$age, outer.ok = TRUE)
@@ -197,12 +214,17 @@ create_design_matrices <- function(dat,
   # Design matrix for the interaction random effects
   X_agetime <- mgcv::tensor.prod.model.matrix(list(X_time, X_age))
   X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))
-  X_spacetime <- Matrix::sparse.model.matrix(
-    N ~ -1 + factor((dat %>%
-      group_by(space, time) %>%
-      group_indices())),
-    data = dat
-  )
+  if (is.null(k_dt_time)) {
+    X_spacetime <- Matrix::sparse.model.matrix(
+      N ~ -1 + factor((dat %>%
+                         group_by(space, time) %>%
+                         group_indices())),
+      data = dat
+    )
+  } else {
+    X_spacetime <- mgcv::tensor.prod.model.matrix(list(X_space, X_time))
+  }
+  
   # return design matrices as list
   output <- list(
     "X_fixed_mmc"     = X_fixed,
