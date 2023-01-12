@@ -1,3 +1,8 @@
+# threemc 0.1.36
+
+- Add optional penalised time spline, by specifying a non-null value for the 
+`k_dt_time` argument of `threemc_prepare_model_data`.
+
 # threemc 0.1.35
 
 - Adds models 
