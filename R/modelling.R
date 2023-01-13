@@ -101,7 +101,11 @@ threemc_fit_model <- function(fit = NULL,
     # if there is a TMC autocorr hyperpar, use RW model for MMC and AR for TMC
     tmc_cond <- "logitrho_tmc_time1" %in% param_names
     if (all(cond == FALSE)) {
-      if (tmc_cond) mod <- paste0(mod, "_RW_MMC") else mod <- paste0(mod, "RW")
+      if (tmc_cond) {
+        mod <- paste0(mod, "_RW_MMC") 
+      } else {
+        mod <- paste0(mod, "_RW")
+      }
     }
 
     # if there is a time term for TMC, use the model with non-constant TMC
