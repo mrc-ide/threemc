@@ -16,8 +16,8 @@ Surv_SpaceAgeTime_ByType_withUnknownType2.dll: Surv_SpaceAgeTime_ByType_withUnkn
 	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType2.cpp', '-O1 -g',DLLFLAGS='')"
 Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2.dll: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2.cpp
 	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2.cpp', '-O1 -g',DLLFLAGS='')"
-Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.dll: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.cpp
-	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.cpp', '-O1 -g',DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType_RW_MMC2.dll: Surv_SpaceAgeTime_ByType_withUnknownType_RW_MMC2.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_RW_MMC2.cpp', '-O1 -g',DLLFLAGS='')"
 Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.dll: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.cpp
 	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.cpp', '-O1 -g',DLLFLAGS='')"
 Surv_SpaceAgeTime.dll: Surv_SpaceAgeTime.cpp
