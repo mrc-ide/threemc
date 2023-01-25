@@ -23,7 +23,7 @@ unique record.}
 \item{k_dt_age}{Age knot spacing in spline definitions, Default: 5}
 
 \item{k_dt_time}{Time knot spacing in spline definitions, set to NULL to
-disable temporal splines, Default: 5}
+disable temporal splines, Default: NULL}
 
 \item{inc_time_tmc}{Indicator variable which decides whether to include
 temporal random effects for TMC as well as MMC, Default: FALSE}

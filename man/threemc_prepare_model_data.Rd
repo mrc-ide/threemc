@@ -11,7 +11,7 @@ threemc_prepare_model_data(
   aggregated = TRUE,
   weight = "population",
   k_dt_age = 5,
-  k_dt_time = 5,
+  k_dt_time = NULL,
   paed_age_cutoff = NULL,
   rw_order = NULL,
   inc_time_tmc = FALSE,
@@ -38,7 +38,7 @@ lower area hierarchies (only applicable for \code{aggregated = TRUE})}
 \item{k_dt_age}{Age knot spacing in spline definitions, Default: 5}
 
 \item{k_dt_time}{Time knot spacing in spline definitions, set to NULL to
-disable temporal splines, Default: 5}
+disable temporal splines, Default: NULL}
 
 \item{paed_age_cutoff}{Age at which to split MMC design matrices between
 paediatric and non-paediatric populations, the former of which are constant

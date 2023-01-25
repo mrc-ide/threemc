@@ -16,7 +16,7 @@
 #' lower area hierarchies (only applicable for `aggregated = TRUE`)
 #' @param k_dt_age Age knot spacing in spline definitions, Default: 5
 #' @param k_dt_time Time knot spacing in spline definitions, set to NULL to 
-#' disable temporal splines, Default: 5
+#' disable temporal splines, Default: NULL
 #' @param paed_age_cutoff Age at which to split MMC design matrices between
 #' paediatric and non-paediatric populations, the former of which are constant
 #' over time. Set to NULL if not desired, Default: NULL
@@ -51,7 +51,7 @@ threemc_prepare_model_data <- function(out,
                                        aggregated = TRUE,
                                        weight = "population",
                                        k_dt_age = 5,
-                                       k_dt_time = 5,
+                                       k_dt_time = NULL,
                                        paed_age_cutoff = NULL,
                                        rw_order = NULL,
                                        inc_time_tmc = FALSE,
