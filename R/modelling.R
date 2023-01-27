@@ -63,6 +63,7 @@ threemc_fit_model <- function(fit = NULL,
   randoms <- c(
     "u_time_mmc", "u_age_mmc", "u_space_mmc",
     "u_agetime_mmc", "u_agespace_mmc", "u_spacetime_mmc", 
+    "u_age_mmc_paed", "u_agespace_mmc_paed",
     "u_time_tmc", "u_age_tmc", "u_space_tmc", 
     "u_agespace_tmc"
   )
