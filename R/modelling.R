@@ -96,10 +96,16 @@ threemc_fit_model <- function(fit = NULL,
       mod <- paste0(mod, "_Const_Paed_MMC")
     }
     
-    # if there are no MMC time autocorr hyperpars, use RW model
-    cond <- grepl("logitrho_mmc", param_names) & grepl("time", param_names)
+    # if there are no (MMC for type mod) time autocorr hyperpars, use RW model
+    if (!grepl("_ByType_withUnknownType", mod)) {
+      cond <- grepl("logitrho", param_names) & grepl("time", param_names)
+    } else {
+      cond <- grepl("logitrho_mmc", param_names) & grepl("time", param_names)
+    }
     # if there is a TMC autocorr hyperpar, use RW model for MMC and AR for TMC
     tmc_cond <- "logitrho_tmc_time1" %in% param_names
+    
+    
     if (all(cond == FALSE)) {
       if (tmc_cond) {
         mod <- paste0(mod, "_RW_MMC") 
