@@ -86,7 +86,7 @@ create_shell_dataset <- function(survey_circumcision,
       min_pop_year
     )
   }
-
+ 
   # remove spatial elements from areas, take only specified/highest area level
   if (inherits(areas, "sf")) {
     areas_model <- sf::st_drop_geometry(areas)
@@ -129,6 +129,9 @@ create_shell_dataset <- function(survey_circumcision,
         ),
       by = c("area_id", "year", "circ_age")
     )
+  
+  # give error if there are NAs in populations
+  stopifnot(all(!is.na(out$population))) 
   
   # give warning about duplicated rows from left_join
   if (n != nrow(out)) {
