@@ -1,3 +1,8 @@
+# threec 0.1.37
+
+- In `create_shell_dataset`, replace missing populations for less granular areas
+with their respective child areas' populations. 
+
 # threemc 0.1.36
 
 - Add optional penalised time spline, by specifying a non-null value for the 
