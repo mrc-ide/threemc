@@ -95,25 +95,43 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   areas_model <- areas_model %>%
+    mutate(iso3 = substr(.data$area_id, 0, 3)) %>% 
     dplyr::filter(
       .data$area_level <= area_lev,
-      # be sure not to include other countries (loop if > 1 country required)
-      substr(.data$area_id, 0, 3) %chin% substr(
-        survey_circumcision$area_id, 0, 3
-      )
+      # be sure not to include other countries 
+      iso3 %chin% substr(survey_circumcision$area_id, 0, 3)
     ) %>%
-    dplyr::select(.data$area_id, .data$area_name, .data$area_level, .data$space)
+    dplyr::select(
+      .data$area_id, 
+      .data$area_name, 
+      contains("parent_area"),
+      .data$area_level, 
+      .data$space
+    )
+  
+  # "manually" add in parent_area_name, if not in areas
+  if (!"parent_area_name" %in% names(areas_model)) {
+    parent_areas <- areas_model %>% 
+      dplyr::select(
+        parent_area_id   = .data$area_id, 
+        parent_area_name = .data$area_name
+      )
+    areas_model <- areas_model %>% 
+      dplyr::left_join(parent_areas, by = "parent_area_id") %>% 
+      dplyr::relocate(.data$parent_area_name, .after = .data$parent_area_id)
+  }
 
   # create skeleton dataset with row for every unique area_id, area_name,
   # space, year and circ_age
-  out <- tidyr::crossing(areas_model,
+  out <- tidyr::crossing(
+    dplyr::select(areas_model, -dplyr::contains("parent_area")),
     "year"     = seq(start_year, end_year, by = 1),
     "circ_age" = c(0, seq_len(max(survey_circumcision$circ_age, na.rm = TRUE)))
   ) %>%
     # Get time and age variable
     dplyr::mutate(
       time = .data$year - start_year + 1,
-      age = .data$circ_age + 1
+      age  = .data$circ_age + 1
     ) %>%
     # Sort dataset
     dplyr::arrange(.data$space, .data$age, .data$time)
@@ -124,12 +142,53 @@ create_shell_dataset <- function(survey_circumcision,
     dplyr::left_join(
       populations %>%
         dplyr::select(
-          .data$area_id, .data$year,
-          circ_age = .data$age, .data$population
+          .data$area_id, 
+          .data$year,
+          circ_age = .data$age, 
+          .data$population
         ),
       by = c("area_id", "year", "circ_age")
     )
   
+  # fill in NAs for populations with populations of child areas 
+  # TODO: expand to have work for area_level differences > 1
+  parent_areas_na_pops <- out %>% 
+    filter(is.na(population), area_level < area_lev) %>% 
+    distinct(area_id) %>% 
+    pull()
+  
+  if (length(parent_areas_na_pops) != 0) {
+    
+    message(paste0(
+      "Populations missing for ", 
+      paste(parent_areas_na_pops, collapse = ", "), 
+      ", filling in using populations of child areas"
+    ))
+    
+    # find areas which have parent areas with missing populations
+    areas_child_pops <- areas_model %>% 
+      dplyr::filter(.data$parent_area_id %in% parent_areas_na_pops) %>% 
+      dplyr::select(.data$area_id, .data$parent_area_id, .data$parent_area_name)
+    
+    # Pull populations for child areas, aggregate to parent area_ids
+    missing_pops <- out %>% 
+      dplyr::filter(area_id %in% areas_child_pops$area_id) %>% 
+      dplyr::left_join(areas_child_pops, by = "area_id") %>% 
+      dplyr::mutate(area_id = parent_area_id, area_name = parent_area_name) %>% 
+      dplyr::select(-contains("parent")) %>% 
+      dplyr::group_by(area_id, year, circ_age, time, age) %>% 
+      dplyr::summarise(missing_pops = sum(population), .groups = "drop")
+    
+    # replace missing populations in skeleton dataset
+    out <- out %>% 
+      dplyr::left_join(
+        missing_pops, 
+        by = c("area_id", "year", "circ_age", "time", "age")
+      ) %>% 
+      mutate(population = ifelse(is.na(population), missing_pops, population)) %>% 
+      select(-missing_pops)
+  }
+   
   # give error if there are NAs in populations
   stopifnot(all(!is.na(out$population))) 
   
