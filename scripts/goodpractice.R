@@ -1,9 +1,10 @@
 ## check package with goodpractise ##
 
-stopifnot(basename(getwd()) == "threemc") # fail if not running for threemc
+# fail if not running for threemc
+stopifnot(readLines("DESCRIPTION")[[1]] == "Package: threemc")
 
 # assume you don't want to build vignettes; very slow!
-if (!exists(check_vignettes) && !rlang::is_bool(check_vignettes)) {
+if (!exists("check_vignettes") || !rlang::is_bool(check_vignettes)) {
   check_vignettes <- FALSE
 }
 
