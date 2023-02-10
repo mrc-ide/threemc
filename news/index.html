@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">threemc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.37</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.39</span>
       </span>
     </div>
 
@@ -57,6 +57,12 @@
       <small>Source: <a href="https://github.com/mrc-ide/threemc/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.39" id="threemc-0139">threemc 0.1.39<a class="anchor" aria-label="anchor" href="#threemc-0139"></a></h2>
+<ul><li>Add extensive developer notes to <code>README.md</code> (mostly just as a reminder to myself!)</li></ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.38" id="threemc-0138">threemc 0.1.38<a class="anchor" aria-label="anchor" href="#threemc-0138"></a></h2>
+<ul><li>Fix bug in <code>threemc_ppc</code>. Weighted mean is calculated using <code>circ_status</code> and <code>indweight</code>. However, this ignores <code>circ_type</code>. For <code>type %in% c("MMC", "TMC")</code>, need to have <code>circ_status == 0</code> for all <code>circ_type == "Missing"</code>. This does not apply to <code>type == "MC"</code>, as we do not need to know <code>circ_type</code> to still count it amongst <code>MC</code> circumcisions.</li></ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.1.36" id="threemc-0136">threemc 0.1.36<a class="anchor" aria-label="anchor" href="#threemc-0136"></a></h2>
 <ul><li>Add optional penalised time spline, by specifying a non-null value for the <code>k_dt_time</code> argument of <code>threemc_prepare_model_data</code>.</li></ul></div>

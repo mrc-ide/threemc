@@ -37,7 +37,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">threemc</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.37</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.39</span>
       </span>
     </div>
 
@@ -96,6 +96,12 @@
 <h2 id="threemc-1">threemc<a class="anchor" aria-label="anchor" href="#threemc-1"></a>
 </h2>
 <p>To see how <code>threemc</code> works for a simple example, please see the relevant vignette.</p>
+</div>
+<div class="section level2">
+<h2 id="development-steps">Development steps<a class="anchor" aria-label="anchor" href="#development-steps"></a>
+</h2>
+<p>(largely copied from <a href="https://github.com/mrc-ide/naomi" class="external-link">naomi</a>) - Make changes in a new branch, - Run checks (requires <code>goodpractice</code> package). Also documents functions with <code>devtools::check()</code>. These checks can be run directly from the script <code>scripts/goodpractice.R</code> or from the command line with <code>make goodpractice</code> (use <code>make goodpractice_vignette</code> if making changes to vignettes, which are very slow to build), - When branch is ready for merging create a PR and add a reviewer, - Ensure that the version number has been updated according to <a href="https://semver.org/" class="external-link">semantic versioning</a> and add a news item describing the change, and - Reviewer should check code and ensure the build passes on Buildkite before merging.</p>
+<p>Additionally: - Wherever possible, add arguments for optional new functionality, with old functionality as default, - If changing <code>threemc_aggregate</code> or <code>threemc_ppc</code> (the slowest “purely R” functions in this package), a before vs after profiling would be useful, using e.g. <code>profvis</code>, - Follow the <a href="https://style.tidyverse.org" class="external-link">tidverse styleguide</a> as much as possible, but at least have your commits pass the call to <code>lintr</code> in from <code>goodpractice</code>, - Ensure that git commits and R comments are in the imperative case (see <a href="https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html" class="external-link">here</a> for tpopes rational behind this), - To avoid notes from <code>devtools::check()</code> when using non-standard evaluation, - in <code>dplyr</code>, refer to all columns with <code>rlang::</code>.data`<code>, e.g.</code>.data$col<code>,   - in</code>data.table<code>, assign columns referenced in NSE to the value NULL at the    beginning of a function (see</code>threemc_ppc` for an example).</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
