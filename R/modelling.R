@@ -323,7 +323,7 @@ circ_sample_tmb <- function(fit = NULL,
   }
 
   # Generate samples
-  fit <- naomi::sample_tmb(fit, nsample = nsample, ...)
+  fit <- sample_tmb(fit, nsample = nsample, ...)
 
   # ensure names for MC columns in fit have the suffix "_mc"
   fit$sample <- append_mc_name(fit$sample)
