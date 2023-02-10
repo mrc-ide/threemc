@@ -71,7 +71,7 @@ create_shell_dataset <- function(survey_circumcision,
       data.frame(pop_duplicates)), collapse = "\n"
     ))
     message("Removing area_name and treating these as single areas")
-    # remove area_name from populations and take unique vals to avoid duplication
+    # remove area_name from pops and take unique vals to avoid duplication
     populations <- populations %>% 
       dplyr::select(-.data$area_name) %>% 
       dplyr::distinct()
@@ -185,7 +185,9 @@ create_shell_dataset <- function(survey_circumcision,
         missing_pops, 
         by = c("area_id", "year", "circ_age", "time", "age")
       ) %>% 
-      mutate(population = ifelse(is.na(population), missing_pops, population)) %>% 
+      mutate(
+        population = ifelse(is.na(population), missing_pops, population)
+      ) %>% 
       select(-missing_pops)
   }
    
