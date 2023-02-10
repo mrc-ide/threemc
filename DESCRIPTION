@@ -1,6 +1,6 @@
 Package: threemc
 Title: (Matt's) Multi-Level Model of Male Circumcision in Sub-Saharan Africa
-Version: 0.1.37
+Version: 0.1.39
 Authors@R: c(person(family  = "Thomas", 
                     give    = "Matthew", 
                     role    = "aut",
@@ -57,7 +57,8 @@ Suggests:
     knitr (>= 1.40),
     rmarkdown (>= 2.18),
     ggplot2 (>= 3.4.0), 
-    scales (>= 1.2.1)
+    scales (>= 1.2.1),
+    goodpractice (>= 1.0.4)
 LinkingTo: 
     TMB (>= 1.7.22),
     RcppEigen (>= 0.3.3.9.1),
