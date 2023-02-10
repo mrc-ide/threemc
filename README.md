@@ -39,8 +39,8 @@ Additionally:
   functions in this package), a before vs after profiling would be useful,
   using e.g. `profvis`,
 - Follow the [tidverse styleguide](https://style.tidyverse.org) as much as
-  possible, but at least have your commits pass the call to `lintr` in 
-  from `goodpractice`,
+  possible, but at least have your commits pass the call to `lintr` from 
+  `goodpractice`,
 - Ensure that git commits and R comments are in the imperative case (see 
   [here](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
   for tpopes rational behind this),
