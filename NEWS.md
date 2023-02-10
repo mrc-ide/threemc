@@ -1,3 +1,8 @@
+# threemc 0.1.39
+
+- Add extensive developer notes to `README.md` (mostly just as a reminder to 
+myself!)
+
 # threemc 0.1.38
 
 - Fix bug in `threemc_ppc`. Weighted mean is calculated using `circ_status` and 
