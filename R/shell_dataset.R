@@ -50,7 +50,7 @@ create_shell_dataset <- function(survey_circumcision,
   #        based on the theoretical maximum circumcision age that we want
   #        outputs for, rather than the maximum observed age; but not 100%
   #        sure.
-
+  
   if (is.null(area_lev)) {
     message("area_lev arg missing, taken as maximum area level in areas")
     area_lev <- max(areas$area_level, na.rm = TRUE)
@@ -62,7 +62,7 @@ create_shell_dataset <- function(survey_circumcision,
     dplyr::group_by(.data$area_id) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::arrange(dplyr::desc(.data$n)) %>% 
-    filter(.data$n > 1)
+    dplyr::filter(.data$n > 1)
   
   if (nrow(pop_duplicates) > 0) {
     
@@ -95,16 +95,16 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   areas_model <- areas_model %>%
-    mutate(iso3 = substr(.data$area_id, 0, 3)) %>% 
+    dplyr::mutate(iso3 = substr(.data$area_id, 0, 3)) %>% 
     dplyr::filter(
       .data$area_level <= area_lev,
       # be sure not to include other countries 
-      iso3 %chin% substr(survey_circumcision$area_id, 0, 3)
+      .data$iso3 %chin% substr(survey_circumcision$area_id, 0, 3)
     ) %>%
     dplyr::select(
       .data$area_id, 
       .data$area_name, 
-      contains("parent_area"),
+      dplyr::contains("parent_area"),
       .data$area_level, 
       .data$space
     )
@@ -153,9 +153,9 @@ create_shell_dataset <- function(survey_circumcision,
   # fill in NAs for populations with populations of child areas 
   # TODO: expand to have work for area_level differences > 1
   parent_areas_na_pops <- out %>% 
-    filter(is.na(population), area_level < area_lev) %>% 
-    distinct(area_id) %>% 
-    pull()
+    dplyr::filter(is.na(.data$population), .data$area_level < area_lev) %>% 
+    dplyr::distinct(.data$area_id) %>% 
+    dplyr::pull()
   
   if (length(parent_areas_na_pops) != 0) {
     
@@ -172,12 +172,17 @@ create_shell_dataset <- function(survey_circumcision,
     
     # Pull populations for child areas, aggregate to parent area_ids
     missing_pops <- out %>% 
-      dplyr::filter(area_id %in% areas_child_pops$area_id) %>% 
+      dplyr::filter(.data$area_id %in% areas_child_pops$area_id) %>% 
       dplyr::left_join(areas_child_pops, by = "area_id") %>% 
-      dplyr::mutate(area_id = parent_area_id, area_name = parent_area_name) %>% 
-      dplyr::select(-contains("parent")) %>% 
-      dplyr::group_by(area_id, year, circ_age, time, age) %>% 
-      dplyr::summarise(missing_pops = sum(population), .groups = "drop")
+      dplyr::mutate(
+        area_id   = .data$parent_area_id, 
+        area_name = .data$parent_area_name
+      ) %>% 
+      dplyr::select(-dplyr::contains("parent")) %>% 
+      dplyr::group_by(
+        .data$area_id, .data$year, .data$circ_age, .data$time, .data$age
+      ) %>% 
+      dplyr::summarise(missing_pops = sum(.data$population), .groups = "drop")
     
     # replace missing populations in skeleton dataset
     out <- out %>% 
@@ -185,10 +190,12 @@ create_shell_dataset <- function(survey_circumcision,
         missing_pops, 
         by = c("area_id", "year", "circ_age", "time", "age")
       ) %>% 
-      mutate(
-        population = ifelse(is.na(population), missing_pops, population)
+      dplyr::mutate(
+        population = ifelse(
+          is.na(.data$population), missing_pops, .data$population
+        )
       ) %>% 
-      select(-missing_pops)
+      dplyr::select(-.data$missing_pops)
   }
    
   # give error if there are NAs in populations

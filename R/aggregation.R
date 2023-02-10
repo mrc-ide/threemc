@@ -718,7 +718,7 @@ posterior_summary_fun <- function(.data, probs = c(0.025, 0.5, 0.975)) {
 merge_area_info <- function(results, areas) {
 
   # global bindings for `data.table` non-standard evaluation
-  . <- area_id <- area_name <- area_level <- ..rm_cols <- NULL
+  . <- area_id <- area_name <- area_level <- ..rm_cols <- ..keep_cols <- NULL
 
   if (!inherits(results, "data.table")) results <- data.table::setDT(results)
   if (!inherits(areas, "data.table")) areas <- data.table::setDT(areas)

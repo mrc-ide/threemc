@@ -29,10 +29,10 @@
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
-
+  
   # maybe add a warning for missing "circ" columns for surveys?? And add
   # in NAs in this situation (look at KEN for this)
-
+  
   # read in data, depending on file type
   cond <- tools::file_ext(path) %chin% c("geojson", "shp", "shx")
   if (cond) {
@@ -41,7 +41,7 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
     # selection prior to loading is allowed by fread
     .data <- as.data.frame(data.table::fread(path, select = c(selected), ...))
   }
-
+  
   # if desired, recursively filter data with provided `filters` vector
   if (!is.null(filters)) {
     cols <- names(filters)
@@ -52,13 +52,13 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
       .data <- dplyr::filter(.data, !!rlang::sym(cols[i]) == vals[i])
     }
   }
-
+  
   # Select specific columns, if desired (and present) (no need to do for fread)
   if (!is.null(selected) && cond) {
     .data <- .data %>%
       dplyr::select(dplyr::all_of(selected[selected %chin% names(.data)]))
   }
-
+  
   # for areas, add unique identifier within Admin code and merge to boundaries
   if (inherits(.data, "sf")) {
     .data <- .data %>%
@@ -79,10 +79,10 @@ read_circ_data <- function(path, filters = NULL, selected = NULL, ...) {
 #' @rdname create_dirs_r
 #' @export
 create_dirs_r <- function(dir_path) {
-
+  
   # split by "/"
   dirs <- stringr::str_split(dir_path, "/")[[1]]
-
+  
   # check if dir_path is for dir (required) or specific file
   # does our string end in "/"? Then likely a dir
   cond <- substr(dir_path, nchar(dir_path), nchar(dir_path))
@@ -131,13 +131,13 @@ add_area_id <- function(df,
                         df_areas_wide,
                         par,
                         add_keep_cols = NULL) {
-
+  
   # Get area_id's
   area_lev_current_id <- paste0("area_id", par$area_lev)
   # The level we want
   area_lev_select_id <- paste0("area_id", par$area_lev_select)
   area_lev_select_name <- paste0("area_name", par$area_lev_select)
-
+  
   # only select columns in our dataframe ("model" may be missing,
   # and `age` and `age_group` are interchangable)
   select_cols <- c("year", "age", "age_group", "population", "type", "model")
@@ -148,38 +148,38 @@ add_area_id <- function(df,
   # remove columns which interfere with select below
   select_cols <- select_cols[!select_cols %chin% c("area_id", "area_name")]
   select_cols <- select_cols[select_cols %chin% names(df)]
-
+  
   df_area_id <- df %>%
     # join in area names for chosen area_id
     dplyr::select(-dplyr::contains("area_name")) %>%
     dplyr::left_join(df_areas_wide %>%
-      dplyr::select(
-        # current level
-        area_id = dplyr::all_of(area_lev_current_id),
-        # desired level and
-        dplyr::all_of(area_lev_select_id),
-        # corresponding name
-        area_name = dplyr::all_of(area_lev_select_name)
-      ) %>%
-      dplyr::distinct(),
-    by = c("area_id")
+                       dplyr::select(
+                         # current level
+                         area_id = dplyr::all_of(area_lev_current_id),
+                         # desired level and
+                         dplyr::all_of(area_lev_select_id),
+                         # corresponding name
+                         area_name = dplyr::all_of(area_lev_select_name)
+                       ) %>%
+                       dplyr::distinct(),
+                     by = c("area_id")
     ) %>%
     # Select the right columns (account for when we are at the lowest level)
     dplyr::select(
       "area_id" = ifelse(par$area_lev_select == par$area_lev,
-        "area_id",
-        area_lev_select_id
+                         "area_id",
+                         area_lev_select_id
       ),
       "area_name",
       dplyr::all_of(select_cols),
       dplyr::all_of(par$sample_cols)
     )
-
+  
   # add missing area_level col, if required
   if (!"area_level" %in% names(df_area_id)) {
     df_area_id$area_level <- par$area_lev_select
   }
-
+  
   return(df_area_id)
 }
 
@@ -210,18 +210,18 @@ combine_areas <- function(.data,
                           join,
                           add_keep_cols = NULL,
                           ...) {
-
+  
   # add area_level to original df, if required
   if (!"area_level" %in% names(.data)) .data$area_level <- area_lev
-
+  
   # all area levels in the data (0 indexed)
   area_levs <- seq_len(area_lev) - 1
   if (length(area_levs) == 0) area_levs <- -1
-
+  
   # columns to keep
   add_keep_cols <- c(add_keep_cols, names(.data)[grepl("samp_", names(.data))])
   if (length(add_keep_cols) == 0) add_keep_cols <- NULL
-
+  
   # collect results for lower area hierarchies by joining higher area
   # hierarchies (do so until you reach "area 0")
   if (area_levs[1] > -1) {
@@ -241,12 +241,12 @@ combine_areas <- function(.data,
   } else {
     results_list <- .data
   }
-
+  
   # return list or dataframe?
   if (join == TRUE) {
     return(data.table::rbindlist(results_list, use.names = TRUE, ...))
   }
-
+  
   return(results_list)
 }
 
@@ -262,7 +262,7 @@ append_mc_name <- function(.data) {
   mmc_tmc <- paste(c("mmc", "tmc"), collapse = "|")
   locs <- !(grepl(paste(c(mmc_tmc, "mc"), collapse = "|"), names(.data)))
   names(.data)[locs] <- paste0(names(.data)[locs], "_mc")
-
+  
   return(.data)
 }
 
@@ -289,10 +289,10 @@ create_aggregate_structure <- function(areas,
   # drop geometry and filter to specified area level
   areas <- sf::st_drop_geometry(areas) %>%
     dplyr::filter(.data$area_level <= area_lev)
-
+  
   # Long to wide hierarchy (Need for new aggregation matrices)
   areas_wide <- spread_areas(areas)
-
+  
   # iterate over all area_ids at specific area_lev (i.e. spaces)
   max_space <- areas %>%
     dplyr::filter(.data$area_level == area_lev) %>%
@@ -305,11 +305,11 @@ create_aggregate_structure <- function(areas,
       dplyr::filter(dplyr::if_any(dplyr::starts_with("space"), ~ . == i)) %>%
       dplyr::pull(paste0("space", area_lev))
   })
-
+  
   n_sub_region_df <- areas %>%
     dplyr::distinct(.data$area_id) %>%
     dplyr::mutate(sp_dep = vapply(sub_region_list, length, numeric(1)))
-
+  
   return(
     list(sub_region_list = sub_region_list, n_sub_region_df = n_sub_region_df)
   )
@@ -350,7 +350,7 @@ spread_areas <- function(areas,
       `:=`(!!paste0("area_name", min_level), .data$area_name),
       `:=`(!!paste0("space", min_level), .data$space)
     )
-
+  
   # create safe sequence from min_level + 1 to max_level to loop over
   level_seq <- seq_len(max_level)
   if (length(level_seq) == 0) {
@@ -358,7 +358,7 @@ spread_areas <- function(areas,
   } else {
     level_seq <- level_seq[level_seq >= (min_level + 1)]
   }
-
+  
   if (all(level_seq != 0)) {
     for (level in level_seq) {
       areas_wide <- areas_wide %>%
@@ -377,20 +377,20 @@ spread_areas <- function(areas,
         )
     }
   }
-
+  
   areas_wide$area_id <- areas_wide[[paste0("area_id", max_level)]]
   if (!is.null(boundaries)) {
     areas_wide <- sf::st_as_sf(
       dplyr::left_join(areas_wide, boundaries, by = "area_id")
     )
   }
-
+  
   # remove "space" columns returns same object as naomi::spread_areas
   if (space == FALSE) {
     areas_wide <- areas_wide %>%
       dplyr::select(-dplyr::contains("space"))
   }
-
+  
   return(areas_wide)
 }
 
@@ -449,7 +449,7 @@ change_agegroup_convention <- function(.data) {
 #' @rdname survey_points_dmppt2_convert_convention
 #' @export
 survey_points_dmppt2_convert_convention <- function(.data) {
-
+  
   # change column naming convention
   if ("survey_mid_calendar_quarter" %chin% names(.data)) {
     .data <- .data %>%
@@ -476,7 +476,7 @@ survey_points_dmppt2_convert_convention <- function(.data) {
         )
       )
     )
-
+  
   # convert age group to threemc convention (i.e. Y000_004 -> 0-4)
   if (grepl("Y", .data$age_group[1])) {
     .data <- change_agegroup_convention(.data)
@@ -493,12 +493,12 @@ survey_points_dmppt2_convert_convention <- function(.data) {
 #' @rdname brackify
 #' @keywords internal
 brackify <- function(x, quote = FALSE) {
-    cutoff <- 10L
-    if (quote && is.character(x)) {
-      x <- paste0("'", utils::head(x, cutoff + 1L), "'")
-    }
-    if (length(x) > cutoff) x <- c(x[seq_len(cutoff)], "...")
-    sprintf("[%s]", toString(x))
+  cutoff <- 10L
+  if (quote && is.character(x)) {
+    x <- paste0("'", utils::head(x, cutoff + 1L), "'")
+  }
+  if (length(x) > cutoff) x <- c(x[seq_len(cutoff)], "...")
+  sprintf("[%s]", toString(x))
 }
 
 #' @title Pattern matching for `data.table`
@@ -508,13 +508,14 @@ brackify <- function(x, quote = FALSE) {
 #' @rdname patterns
 #' @keywords internal
 patterns <- function(..., cols = character(0L)) {
-    l <- list(...)
-    p <- unlist(l, use.names = any(nzchar(names(l))))
-    if (!is.character(p)) stop("Input patterns must be of type character.")
-    matched <- lapply(p, grep, cols)
-    idx <- which(sapply(matched, length) == 0L)
-    if (length(idx)) stop("Pattern(s) not found: [%s]", brackify(p[idx]))
-    matched
+  l <- list(...)
+  p <- unlist(l, use.names = any(nzchar(names(l))))
+  if (!is.character(p)) stop("Input patterns must be of type character.")
+  matched <- lapply(p, grep, cols)
+  idx <- which(vapply(matched, length, FUN.VALUE = numeric(1)) == 0L)
+  if (length(idx)) stop("Pattern(s) not found: [%s]", brackify(p[idx]))
+  
+  return(matched)
 }
 
 #### fill_downup_populations ####
@@ -527,10 +528,10 @@ patterns <- function(..., cols = character(0L)) {
 #' @keywords internal
 fill_downup_populations <- function(
     populations, start_year, min_pop_year = NULL
-  ) {
+) {
   message(paste0(
-      "Filling missing populations with earliest known population",
-      " for each area_id and age"
+    "Filling missing populations with earliest known population",
+    " for each area_id and age"
   ))
   
   # calculate minimum year in populations if not provided
