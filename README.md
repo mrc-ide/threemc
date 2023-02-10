@@ -43,7 +43,7 @@ Additionally:
   `goodpractice`,
 - Ensure that git commits and R comments are in the imperative case (see 
   [here](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
-  for tpopes rational behind this),
+  for Tim Pope's rational behind this),
 - To avoid notes from `devtools::check()` when using non-standard evaluation, 
   - in `dplyr`, refer to all columns with `rlang::`.data``, e.g. `.data$col`,
   - in `data.table`, assign columns referenced in NSE to the value NULL at the 
