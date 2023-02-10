@@ -7,6 +7,12 @@ all:
 test:
 	${RSCRIPT} -e 'devtools::test()'
 
+goodpractice:
+	${RSCRIPT} -e 'check_vignettes = FALSE; source("scripts/goodpractice.R", echo = TRUE)'
+
+goodpractice_vignette:
+	${RSCRIPT} -e 'check_vignettes = TRUE; source("scripts/goodpractice.R", echo = TRUE)'
+
 roxygen:
 	@mkdir -p man
 	${RSCRIPT} -e "devtools::document()"
