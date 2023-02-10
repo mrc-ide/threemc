@@ -16,6 +16,20 @@ remotes::install_github("mrc-ide/threemc", upgrade = FALSE)
 
 To see how `threemc` works for a simple example, please see the relevant vignette.
 
+## Development steps ##
+
+- Make changes in a new branch,
+- Run checks (requires `goodpractice` package). Also documents functions with
+  `devtools::check()`. These checks can be run directly from the script
+  `scripts/goodpractice.R` or from the command line with `make goodpractice`
+  (use `make goodpractice_vignette` if making changes to vignettes, which are
+  very slow to build),
+- When branch is ready for merging create a PR and add a reviewer,
+- Ensure that the version number has been updated according to semantic 
+  versioning and add a news item describing the change, and
+- Reviewer should check code and ensure the build passes on Buildkite before 
+  merging.
+
 ## License
 
 MIT © Imperial College of Science, Technology and Medicine
