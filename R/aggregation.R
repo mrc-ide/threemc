@@ -38,6 +38,9 @@ threemc_aggregate <- function(
   ...
   ) {
   
+  # produce error if fit does not contain samples
+  stopifnot("sample" %in% names(fit))
+  
   # copy data.table datasets so destructive operations don't change global vars
   .data <- data.table::copy(.data)
   areas <- data.table::copy(areas)
