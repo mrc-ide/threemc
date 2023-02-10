@@ -26,8 +26,9 @@ To see how `threemc` works for a simple example, please see the relevant vignett
   (use `make goodpractice_vignette` if making changes to vignettes, which are
   very slow to build),
 - When branch is ready for merging create a PR and add a reviewer,
-- Ensure that the version number has been updated according to semantic 
-  versioning and add a news item describing the change, and
+- Ensure that the version number has been updated according to 
+  [semantic versioning](https://semver.org/) and add a news item describing the 
+  change, and
 - Reviewer should check code and ensure the build passes on Buildkite before 
   merging.
 
