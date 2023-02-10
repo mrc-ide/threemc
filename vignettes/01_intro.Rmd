@@ -305,7 +305,8 @@ quantiles (default `c(0.025, 0.5, 0.975)`, but can be changed by specifying the
 out_spec <- compute_quantiles(out, fit, area_lev = area_lev)
 
 out_spec %>% 
-  select(-c(N:icens)) %>%  # remove observed circ rate cols we already know about
+  # remove observed circ rate cols we already know about
+  select(-c(N:icens)) %>%  
   head()
 ```
 

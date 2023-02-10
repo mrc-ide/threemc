@@ -1,3 +1,11 @@
+# threemc 0.1.38
+
+- Fix bug in `threemc_ppc`. Weighted mean is calculated using `circ_status` and 
+`indweight`. However, this ignores `circ_type`. For `type %in% c("MMC", "TMC")`,
+need to have `circ_status == 0` for all `circ_type == "Missing"`. This does not 
+apply to `type == "MC"`, as we do not need to know `circ_type` to still count it 
+amongst `MC` circumcisions.
+
 # threec 0.1.37
 
 - In `create_shell_dataset`, replace missing populations for less granular areas

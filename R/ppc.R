@@ -51,6 +51,7 @@ threemc_ppc <- function(fit,
                         seed = 123) {
   
   stopifnot(type %chin% c("MC", "MMC", "TMC"))
+  stopifnot("sample" %in% names(fit))
   
   # global bindings for data.table non-standard evaluation
   samp_colnames <- age <- age_group <- area_id <- area_level <- circ_status <- 
@@ -135,12 +136,26 @@ threemc_ppc <- function(fit,
   # next, parse circumcision type from circ_who and circ_where
   survey_circumcision_test <- find_circ_type(survey_circumcision_test)
   # change type not matching the specified argument type to Missing
-  survey_circumcision_test$type <- ifelse(
-    survey_circumcision_test$type %chin% check_types,
-    paste(survey_circumcision_test$type, "coverage"), 
-    "Missing"
-  )
-
+  survey_circumcision_test[,
+    type := ifelse(
+      type %chin% check_types,
+      paste(type, "coverage"),
+      "Missing"
+    )
+  ]
+  # change missing circumcisions to non-circumcisions, for weighted mean
+  # don't do so for MC, as we can have missing type circumcisions here!
+  if (!type == "MC") {
+    survey_circumcision_test[,
+      circ_status := ifelse(
+        type == "Missing",
+        0,
+        circ_status
+      )
+    ]  
+  }
+  
+  
   #### Join Samples with Out and Aggregate to area_lev ####
   
   # take random sample of cols in samples if required
