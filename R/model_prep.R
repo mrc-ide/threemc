@@ -117,10 +117,26 @@ threemc_prepare_model_data <- function(out,
       sf_obj = areas, area_lev = area_lev, row.names = "space"
     )
   )
+  
+  # Indicator variables
+  indicators <- create_data_indicators(
+    out             = out, 
+    rw_order        = rw_order,
+    paed_age_cutoff = paed_age_cutoff,
+    inc_time_tmc    = inc_time_tmc
+  )
+  
+  # return indicators used
+  message("Indicators supplied: \n")
+  message(paste(names(indicators), indicators, sep = " = ", collapse = ", "))
 
   # returned list
   dat_tmb <- c(
-    design_matrices, integration_matrices, survival_matrices, Q_space
+    design_matrices, 
+    integration_matrices, 
+    survival_matrices, 
+    Q_space, 
+    indicators
   )
 
   # Precision matrix for temporal random effects
@@ -1029,4 +1045,45 @@ create_rw_prec_matrix <- function(dim,
   Q <- methods::as(Q, "sparseMatrix")
   # Return matrix
   return(Q)
+}
+
+#### create_data_indicators ####
+
+#' @title Create data indicators for TMB model
+#'
+#' @description Create indicators for the TMB model. These include: 
+#' \itemize{
+#'  \item{"is_type"}{Whether type information is available for the country in 
+#'  question, as indicated by the columns `obs_mmc` and `obs_tmc` in `out`.}
+#'  \item{"rw_order"}{Whether an AR 1 (`FALSE`) or a RW x temporal prior should
+#'  be used (`TRUE`).}
+#'  \item{"paed_age_cutoff"}{Whether a paediatric MMC age cutoff should be 
+#'  incorporated into the model.}
+#'  \item{inc_time_tmc}{Whether we want to include a time effect for TMC.}
+#' }
+#'@inheritParams threemc_prepare_model_data
+#
+#' @return List of indicators of length 4.
+#' @rdname create_data_indicators
+#' @keywords internal
+create_data_indicators <- function(out,
+                                   rw_order        = NULL,
+                                   paed_age_cutoff = NULL,
+                                   inc_time_tmc    = NULL) {
+  
+  # initialise list of FALSEs for each indicator, name appropriately
+  indicators <- lapply(seq_len(4), function(i) FALSE)
+  names(indicators) <- c(
+    "is_type", "rw_order", "paed_age_cutoff", "inc_time_tmc"
+  )
+  
+  # change to TRUE as required
+  if (!(all(out$obs_mmc == 0) && all(out$obs_tmc == 0))) indicators[1] <- TRUE
+  if (!is.null(rw_order) && rw_order %in% c(1, 2)) indicators[2] <- TRUE
+  if (!is.null(paed_age_cutoff) && !is.infinite(paed_age_cutoff)) {
+    indicators[3] <- TRUE
+  }
+  if (!is.null(inc_time_tmc) && inc_time_tmc) indicators[4] <- TRUE
+    
+  return(indicators)
 }

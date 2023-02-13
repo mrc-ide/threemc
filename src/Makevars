@@ -1,0 +1,17 @@
+CXX_STD = CXX11
+
+# PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) -DDO_PROF
+# PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -lprofiler
+
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) # -DDO_CHECKS
+# PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+
+# Strip debug symbols from build object; reduces shared library size by an
+# order of magnitude or more. Taken from Dirk Eddelbuettel:
+# http://dirk.eddelbuettel.com/blog/2017/08/14/#009_compact_shared_libraries
+# Seems to fix https://stackoverflow.com/questions/53819970/r-package-libs-directory-too-large-after-compilation-to-submit-on-cran
+strippedLib: $(SHLIB)
+	if test -e "/usr/bin/strip"; then /usr/bin/strip --strip-debug $(SHLIB); fi
+
+.phony: strippedLib

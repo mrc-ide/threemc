@@ -1,4 +1,3 @@
-
 #### Main Function ####
 
 #' @title Produce TMB model fit with sample, or re-sample from existing
@@ -29,10 +28,6 @@
 #' indicate parameters to be kept fixed at their initial value throughout the
 #' optimisation process.
 #' @param randoms \code{vector} of random effects.
-#' @param mod TMB model, one of either
-#' "Surv_SpaceAgeTime_ByType_withUnknownType" or "Surv_SpaceAgeTime" if the
-#' surveys for the country in question make no distinction between circumcision
-#' type (i.e whether they were performed in a medical or traditional setting).
 #' @param sample If set to TRUE, has function also return N samples for
 #' medical, traditional and total circumcisions, Default: TRUE
 #' @param smaller_fit_obj Returns a smaller fit object. Useful for saving the
@@ -49,7 +44,6 @@
 #' @export
 threemc_fit_model <- function(fit = NULL,
                               dat_tmb = NULL,
-                              mod = NULL,
                               parameters = NULL,
                               maps = NULL,
                               randoms = c(
@@ -65,75 +59,7 @@ threemc_fit_model <- function(fit = NULL,
                               verbose = TRUE,
                               ...) {
 
-  
-  # If model is not specified, allow function to choose based on dat_tmb
-  # This also abstracts esoteric model specification from the user
-  if (is.null(mod)) { # should be it's own function! Can test more easily then
-    
-    if (!is.null(parameters)) {
-      param_names <- names(parameters)
-    } else if (!is.null(fit)) {
-      param_names <- names(fit$par)
-      # add mapped parameters which won't be in fit$par, if appropriate
-      if (!is.null(maps)) param_names <- c(param_names, names(maps))
-    } else {
-      stop("Please provide one of `parameters` or `fit`")
-    }
-    
-    # Start with model with no type information
-    mod <- "Surv_SpaceAgeTime"
-    
-    # determine whether there was information on circumcision type in `out`
-    cond <- "type_info" %in% names(dat_tmb) && dat_tmb$type_info == TRUE ||
-      # if we don't define dat_tmb, and instead have fit to be re-sampled from
-      (!is.null(fit) && any(grepl("mmc", param_names)))
-    
-    if (cond) {
-      mod <- paste0(mod, "_ByType_withUnknownType")
-    }
-      
-    if (any(grepl("paed", param_names))) {
-      mod <- paste0(mod, "_Const_Paed_MMC")
-    }
-    
-    # if there are no (MMC for type mod) time autocorr hyperpars, use RW model
-    if (!grepl("_ByType_withUnknownType", mod)) {
-      cond <- grepl("logitrho", param_names) & grepl("time", param_names)
-    } else {
-      cond <- grepl("logitrho_mmc", param_names) & grepl("time", param_names)
-    }
-    # if there is a TMC autocorr hyperpar, use RW model for MMC and AR for TMC
-    tmc_cond <- "logitrho_tmc_time1" %in% param_names
-    
-    
-    if (all(cond == FALSE)) {
-      if (tmc_cond) {
-        mod <- paste0(mod, "_RW_MMC") 
-      } else {
-        mod <- paste0(mod, "_RW")
-      }
-    }
-
-    # if there is a time term for TMC, use the model with non-constant TMC
-    # if (dat_tmb$type_info == TRUE && "u_time_tmc" %in% param_names) {
-    cond <- dat_tmb$type_info == TRUE
-    if (length(cond) == 0) cond <- "u_time_tmc" %in% param_names
-    cond <- cond && "u_time_tmc" %in% param_names
-    if (cond) {
-      mod <- paste0(mod, "2")
-    }
-    
-    # "RW_MMC" mod only valid where time TMC effect is used
-    if (grepl("_RW_MMC", mod) && !grepl("2", mod)) {
-      stop(paste(
-        "Model with RW for MMC temporal parameters only available when ",
-        "including time TMC effect"
-      ))
-    }
-    message("mod not supplied, mod used = ", mod)
-  }
-  
-  if (is.null(mod)) stop("Please provide one of `mod`, `parameters` or `fit`")
+  mod <- "threemc"
   
   # for specified "smaller fit" object (i.e. fit which requires resampling)
   if (!is.null(fit)) {
@@ -152,7 +78,7 @@ threemc_fit_model <- function(fit = NULL,
     parameters <- split(fit$par.full, names(fit$par.full))
     init_params <- fit$par_init
     # pull different pars depending on whether the model has mmc/tmc split
-    if (!mod %in% c("Surv_SpaceAgeTime", "Surv_SpaceAgeTime_RW")) {
+    if (dat_tmb$is_type == FALSE) {
       fit$par_init <- fit$par_init[names(fit$par_init) %in% names(parameters)]
       parameters <- parameters[names(fit$par_init)]
       
@@ -170,25 +96,25 @@ threemc_fit_model <- function(fit = NULL,
       # remove duplicate parameters
       parameters <- parameters[!duplicated(names(parameters))]
     }
-
+    
     if (!is.null(maps)) {
       # ensure mapped parameters are in the same order as parameters for model
       mapped_pars <- is.na(names(parameters))
       param_order <- names(init_params)[mapped_pars]
       maps <- maps[match(names(maps), param_order)]
-
+      
       # replace NAs in parameters with mapped parameters in par_init
       parameters[mapped_pars] <- init_params[
         names(init_params) %chin% names(maps)
       ]
       names(parameters)[mapped_pars] <- names(maps)
     }
-
+    
     is_matrix <- vapply(init_params, is.matrix, logical(1))
     parameters[is_matrix] <- Map(matrix,
-      parameters[is_matrix],
-      nrow = lapply(init_params[is_matrix], nrow),
-      ncol = lapply(init_params[is_matrix], ncol)
+                                 parameters[is_matrix],
+                                 nrow = lapply(init_params[is_matrix], nrow),
+                                 ncol = lapply(init_params[is_matrix], ncol)
     )
     # if no fit == NULL, must have non-null dat_tmb & parameters
   } else {
@@ -196,23 +122,23 @@ threemc_fit_model <- function(fit = NULL,
       stop("Please specify non-null dat_tmb and parameters")
     }
   }
-
+  
   # remove "mmc" from parameter & matrix names if required
-  if (mod %in% c("Surv_SpaceAgeTime", "Surv_SpaceAgeTime_RW")) {
+  if (dat_tmb$is_type == FALSE) {
     remove_type_distinction <- function(x) {
       names(x) <- stringr::str_remove(names(x), "_mmc")
       x <- x[!grepl("_tmc", names(x))]
     }
-
+    
     dat_tmb <- remove_type_distinction(
       dat_tmb[!names(dat_tmb) %chin% c("A_mmc", "A_tmc")]
     )
     names(dat_tmb)[names(dat_tmb) == "A_mc"] <- "A"
-
+    
     parameters <- remove_type_distinction(parameters)
     randoms <- unique(stringr::str_remove(randoms, "_tmc|_mmc"))
   }
-
+  
   # Only have named random parameters
   randoms <- randoms[randoms %chin% names(parameters)]
   if (length(randoms) == 0) randoms <- NULL
@@ -233,12 +159,11 @@ threemc_fit_model <- function(fit = NULL,
     map = maps,
     method = "BFGS",
     hessian = TRUE,
-    DLL = mod,
+    DLL = "threemc",
     ...
   )
   # for specified fit, simply resample and return
   if (!is.null(fit)) {
-
     if (verbose) message("Resampling from `fit`...")
     fit$obj <- obj
     fit$obj$fn()
@@ -248,7 +173,7 @@ threemc_fit_model <- function(fit = NULL,
     fit$tmb_data <- fit$par_init <- NULL # make fit object smaller for saving
     return(fit)
   }
-
+  
   # Run optimiser (use optim if all pars are fixed, nlminb otherwise)
   if (verbose) message("Optimising...")
   if (length(obj$par) == 0) {
@@ -265,7 +190,7 @@ threemc_fit_model <- function(fit = NULL,
   
   # release memory allocated on C++ side from MakeADFun
   if (sample == FALSE) TMB::FreeADFun(obj)
-
+  
   # sample from TMB fit
   if (sample == TRUE) {
     if (verbose) message("Sampling...")
@@ -321,7 +246,7 @@ circ_sample_tmb <- function(fit = NULL,
     fit <- c(opt, obj = list(obj))
   }
   class(fit) <- "naomi_fit"
-
+  
   # Look at standard deviation report
   if (sdreport == TRUE) {
     fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
@@ -329,10 +254,10 @@ circ_sample_tmb <- function(fit = NULL,
 
   # Generate samples
   fit <- sample_tmb(fit, nsample = nsample, ...)
-
+ 
   # ensure names for MC columns in fit have the suffix "_mc"
   fit$sample <- append_mc_name(fit$sample)
-
+  
   return(fit)
 }
 
@@ -351,7 +276,7 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
   fit_small$par_init <- parameters
   fit_small$sample <- NULL
   fit_small$obj <- NULL
-
+  
   return(fit_small)
 }
 
@@ -377,10 +302,10 @@ threemc_initial_pars <- function(dat_tmb,
                                  rw_order_tmc_ar = FALSE,
                                  paed_age_cutoff = NULL,
                                  inc_time_tmc = FALSE) {
-
-
+  
+  
   # Create dummy matrices if not in dat_tmb for particular model specification:
-
+  
   # dummy paediatric MMC matrices
   if (is.null(paed_age_cutoff)) {
     if ("X_fixed_mmc_paed" %in% names(dat_tmb)) {
@@ -391,7 +316,7 @@ threemc_initial_pars <- function(dat_tmb,
     }
     X_fixed_mmc_paed <- X_age_mmc_paed <- X_space_mmc_paed <- data.frame(0)
   }
-
+  
   # dummy time TMC matrices
   if (inc_time_tmc == FALSE) {
     if ("X_time_tmc" %in% names(dat_tmb)) {
@@ -402,7 +327,7 @@ threemc_initial_pars <- function(dat_tmb,
     }
     X_time_tmc <- data.frame(0)
   }
-
+  
   # Initial values
   parameters <- with(
     dat_tmb,
@@ -463,11 +388,14 @@ threemc_initial_pars <- function(dat_tmb,
       "logitrho_tmc_age2"           = 2
     )
   )
-
+  
   # remove paed-related parameters if not desired
   if (is.null(paed_age_cutoff)) {
     parameters <- parameters[!grepl("paed", names(parameters))]
   }
+  # Add paed_age_cutoff ~bool par, decides whether to fit paed TMB mod
+  paed_age_cutoff_par <- ifelse(is.null(paed_age_cutoff), 0, 1)
+  parameters <- c(parameters, "paed_age_cutoff" = paed_age_cutoff_par)
 
   # remove mmc time correlation parameters, if fitting with RW precision matrix
   # if ("Q_time" %in% names(dat_tmb)) {
@@ -491,7 +419,7 @@ threemc_initial_pars <- function(dat_tmb,
       names(parameters)
     )]
   }
-
+  
   # remove time tmc terms, if not fitting model with non-constant tmc over time
   if (inc_time_tmc == FALSE) {
     parameters <- parameters[
@@ -500,11 +428,11 @@ threemc_initial_pars <- function(dat_tmb,
       )
     ]
   }
-
+  
   # Allow for any custom changes to parameter values
   if (!is.null(custom_init)) {
     parameters[names(parameters) == names(custom_init)] <- custom_init
   }
-
+  
   return(parameters)
 }
