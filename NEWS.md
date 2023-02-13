@@ -1,3 +1,8 @@
+# threemc 0.1.40
+
+- Remove dependencies on non-CRAN packages (i.e. `naomi`), by adding necessary 
+R and C functions from `naomi` and `TMB` to the package. 
+
 # threemc 0.1.39
 
 - Add extensive developer notes to `README.md` (mostly just as a reminder to 

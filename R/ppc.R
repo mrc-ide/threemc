@@ -1,7 +1,7 @@
 #' @title Posterior Predictive Distribution and checks on OOS survey
 #' @description Aggregate specified `numeric` columns by population-weighted
 #' age groups (rather than single year ages), split by specified categories.
-#' @param fit Fit object returned by \link[naomi]{sample_tmb}, which includes,
+#' @param fit Fit object returned by \code{naomi::sample_tmb}, which includes,
 #' among other things, the optimised parameters and subsequent sample for our
 #' TMB model.
 #' @param out Results of model fitting (at specified model `area_lev`) 

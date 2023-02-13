@@ -554,3 +554,226 @@ fill_downup_populations <- function(
   
   return(populations)
 }
+
+#### naomi functions (not on CRAN) ####
+
+#' @title Sample from TMB fit
+#' @description See also `naomi::sample_tmb()`.
+#' @rdname sample_tmb
+#' @keywords internal
+sample_tmb <- function(
+    fit, nsample = 1000, rng_seed = NULL, random_only = TRUE, verbose = FALSE
+  ) {
+  
+  set.seed(rng_seed)
+  
+  stopifnot(methods::is(fit, "naomi_fit"))
+  stopifnot(nsample > 1)
+  
+  # internal function from TMB
+  isNullPointer <- function(pointer) {
+    .Call("isNullPointer", pointer) 
+  }
+  to_tape <- isNullPointer(fit$obj$env$ADFun$ptr)
+  if (to_tape)
+    fit$obj$retape(FALSE)
+  
+  if (!random_only) {
+    if (verbose) print("Calculating joint precision")
+    hess <- sdreport_joint_precision(fit$obj, fit$par.fixed)
+    
+    if (verbose) print("Inverting precision for joint covariance")
+    cov <- solve(hess)
+    
+    if (verbose) print("Drawing sample")
+    ## TODO: write version of rmvnorm that uses precision instead of covariance
+    smp <- mvtnorm::rmvnorm(nsample, fit$par.full, cov)
+    
+  } else {
+    r <- fit$obj$env$random
+    par_f <- fit$par.full[-r]
+    
+    par_r <- fit$par.full[r]
+    hess_r <- fit$obj$env$spHess(fit$par.full, random = TRUE)
+    smp_r <- rmvnorm_sparseprec(nsample, par_r, hess_r)
+    
+    smp <- matrix(0, nsample, length(fit$par.full))
+    smp[, r] <- smp_r
+    smp[, -r] <- matrix(par_f, nsample, length(par_f), byrow = TRUE)
+    colnames(smp)[r] <- colnames(smp_r)
+    colnames(smp)[-r] <- names(par_f)
+  }
+  
+  if (verbose) print("Simulating outputs")
+  sim <- apply(smp, 1, fit$obj$report)
+  
+  r <- fit$obj$report()
+  
+  if (verbose) print("Returning sample")
+  fit$sample <- Map(
+    vapply, 
+    list(sim), 
+    "[[", 
+    lapply(lengths(r), numeric), names(r)
+  )
+  is_vector <- vapply(fit$sample, inherits, logical(1), "numeric")
+  
+  fit$sample[is_vector] <- lapply(fit$sample[is_vector], matrix, nrow = 1)
+  names(fit$sample) <- names(r)
+  
+  return(fit)
+}
+
+#' @title Get Joint Precision of TMB Fixed and Random
+#' @description See also `naomi:::sdreport_joint_precision()`.
+#' @rdname sdreport_joint_precision
+#' @keywords internal
+sdreport_joint_precision <- function(
+    obj, 
+    par.fixed               = NULL, 
+    hessian.fixed           = NULL, 
+    bias.correct            = FALSE, 
+    bias.correct.control    = list(sd = FALSE, split = NULL, nsplit = NULL), 
+    ignore.parm.uncertainty = FALSE, 
+    skip.delta.method       = FALSE
+  ) {
+  
+  if (is.null(obj$env$ADGrad) && (!is.null(obj$env$random))) {
+    stop(paste0(
+      "Cannot calculate sd's without type ADGrad available in object for ",
+      "random effect models."
+    ))
+  }
+  obj2 <- TMB::MakeADFun(
+    obj$env$data, 
+    obj$env$parameters, 
+    type = "ADFun",
+    ADreport = TRUE, 
+    DLL = obj$env$DLL, 
+    silent = obj$env$silent
+  )
+  r <- obj$env$random
+  if (is.null(par.fixed)) {
+    par <- obj$env$last.par.best
+    if (!is.null(r)) {
+      par.fixed <- par[-r]
+    } else {
+      par.fixed <- par
+    }
+    gradient.fixed <- obj$gr(par.fixed)
+  } else {
+    gradient.fixed <- obj$gr(par.fixed)
+    par <- obj$env$last.par
+  }
+  if (length(par.fixed) == 0)
+    ignore.parm.uncertainty <- TRUE
+  if (ignore.parm.uncertainty) {
+    hessian.fixed <- NULL
+    pdHess <- TRUE
+    Vtheta <- matrix(0, length(par.fixed), length(par.fixed))
+  } else {
+    if (is.null(hessian.fixed)) {
+      hessian.fixed <- stats::optimHess(par.fixed, obj$fn, obj$gr)
+    }
+    pdHess <- !is.character(try(chol(hessian.fixed), silent = TRUE))
+    Vtheta <- try(solve(hessian.fixed), silent = TRUE)
+    if (methods::is(Vtheta, "try-error"))
+      Vtheta <- hessian.fixed * NaN
+  }
+  if (!is.null(r)) {
+    hessian.random <- obj$env$spHess(par, random = TRUE)
+    L <- obj$env$L.created.by.newton
+    if (!is.null(L)) {
+      # non-exported function from TMB
+      updateCholesky <- function(L, H, t = 0) {
+        .Call("tmb_destructive_CHM_update", L, H, t)
+      }
+      updateCholesky(L, hessian.random)
+      hessian.random@factors <- list(SPdCholesky = L)
+    }
+  }
+  ADGradForward0Initialized <- FALSE
+  ADGradForward0Initialize <- function() {
+    obj$env$f(par, order = 0, type = "ADGrad")
+    ADGradForward0Initialized <<- TRUE
+  }
+  if (!is.null(r)) {
+    if (methods::is(L, "dCHMsuper")) {
+      ## Non exported function from TMB
+      solveSubset <- function(
+        Q, 
+        L = Matrix::Cholesky(Q, super = TRUE, perm = TRUE), diag = FALSE
+      ) {
+        stopifnot(methods::is(L, "dCHMsuper"))
+        invQ <- .Call("tmb_invQ", L)
+        iperm <- Matrix::invPerm(L@perm + 1L)
+        if (diag) {
+          invQ <- Matrix::diag(invQ)[iperm]
+        } else {
+          invQ <- invQ[iperm, iperm, drop = FALSE]
+        }
+        return(invQ)
+      }
+      diag.term1 <- solveSubset(L = L, diag = TRUE)
+      if (ignore.parm.uncertainty) {
+        diag.term2 <- 0
+      } else {
+        f <- obj$env$f
+        w <- rep(0, length(par))
+        if (!ADGradForward0Initialized) ADGradForward0Initialize()
+        reverse.sweep <- function(i) {
+          w[i] <- 1
+          f(par, order = 1, type = "ADGrad", rangeweight = w,
+            doforward = 0)[r]
+        }
+        nonr <- setdiff(seq_along(par), r)
+        tmp <- sapply(nonr, reverse.sweep)
+        if (!is.matrix(tmp))
+          tmp <- matrix(tmp, ncol = length(nonr))
+        A <- solve(hessian.random, tmp)
+        diag.term2 <- rowSums((A %*% Vtheta) * A)
+      }
+      if (length(par.fixed) == 0) {
+        jointPrecision <- hessian.random
+      } else if (!ignore.parm.uncertainty) {
+        G <- hessian.random %*% A
+        G <- as.matrix(G)
+        M1 <- methods::cbind2(hessian.random, G)
+        M2 <- methods::cbind2(
+          t(G), 
+          as.matrix(t(A) %*% G) + hessian.fixed
+        )
+        M <- methods::rbind2(M1, M2)
+        M <- Matrix::forceSymmetric(M, uplo = "L")
+        dn <- c(names(par)[r], names(par[-r]))
+        dimnames(M) <- list(dn, dn)
+        p <- Matrix::invPerm(c(r, (seq_len(length(par)))[-r]))
+        jointPrecision <- M[p, p]
+      } else {
+        message("ignore.parm.uncertainty ==> No joint precision available")
+      }
+    } else {
+      message("Could not report sd's of full randomeffect vector.")
+    }
+  }
+  return(jointPrecision)
+}
+
+#' @title Take multivariate normal sample from sparse precision matrix
+#' @description See also `naomi:::rmvnorm_sparseprec()`.
+#' @rdname rmvnorm_sparseprec
+#' @keywords internal
+rmvnorm_sparseprec <- function(
+    n, 
+    mean = rep(0, nrow(prec)), 
+    prec = diag(length(mean))
+  ) {
+  
+  z <- matrix(stats::rnorm(n * length(mean)), ncol = n)
+  L_inv <- Matrix::Cholesky(prec)
+  v <- mean + Matrix::solve(
+    methods::as(L_inv, "pMatrix"), 
+    Matrix::solve(Matrix::t(methods::as(L_inv, "Matrix")), z)
+  )
+  return(as.matrix(Matrix::t(v)))
+}

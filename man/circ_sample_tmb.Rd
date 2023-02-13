@@ -19,9 +19,12 @@ circ_sample_tmb(
 \item{opt}{Optimised TMB model, outputted by optimisation function such
 as \link[stats]{nlminb} or \link[stats]{optim}.}
 
+\item{sdreport}{Boolean of whether to produce \code{TMB::sdreport}, Default:
+FALSE}
+
 \item{nsample}{Number of samples to be generated, Default: 1000}
 
-\item{...}{Further arguments passed to \link[naomi]{sample_tmb}.}
+\item{...}{Further arguments passed to \code{naomi::sample_tmb}.}
 }
 \value{
 Object of class "naomi_fit", containing the original TMB object
@@ -30,12 +33,11 @@ Object of class "naomi_fit", containing the original TMB object
 and hazard rate of circumcision for the region(s) in question.
 }
 \description{
-Sample from TMB object, using \link[naomi]{sample_tmb}. Saves
-changing object to "Naomi" format. Also produces and returns standard
-deviation report outputted by \link[TMB]{sdreport}.
+Sample from TMB object, using \code{naomi::sample_tmb}. Saves
+changing object to \code{naomi} format. Also produces and returns standard
+deviation report outputted by \link[TMB]{sdreport}, if desired.
 }
 \seealso{
 \code{\link[TMB]{sdreport}}
-\code{\link[naomi]{sample_tmb}}
 }
 \keyword{internal}

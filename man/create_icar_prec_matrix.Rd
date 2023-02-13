@@ -22,7 +22,6 @@ Create the precision matrix for an ICAR process.
 \seealso{
 \code{\link[spdep]{poly2nb}}
 \code{\link[spdep]{nb2mat}}
-\code{\link[naomi]{scale_gmrf_precision}}
 \code{\link[methods]{as}}
 }
 \keyword{internal}

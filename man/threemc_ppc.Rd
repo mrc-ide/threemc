@@ -19,7 +19,7 @@ threemc_ppc(
 )
 }
 \arguments{
-\item{fit}{Fit object returned by \link[naomi]{sample_tmb}, which includes,
+\item{fit}{Fit object returned by \code{naomi::sample_tmb}, which includes,
 among other things, the optimised parameters and subsequent sample for our
 TMB model.}
 

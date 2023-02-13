@@ -911,7 +911,6 @@ create_hazard_matrix_agetime <- function(dat,
 #' @seealso
 #'  \code{\link[spdep]{poly2nb}}
 #'  \code{\link[spdep]{nb2mat}}
-#'  \code{\link[naomi]{scale_gmrf_precision}}
 #'  \code{\link[methods]{as}}
 #' @rdname create_icar_prec_matrix
 #' @importFrom dplyr %>%
@@ -948,7 +947,7 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
   Q_space <- methods::as(Q_space, "sparseMatrix")
 
   # Create precision matrix from adjacency
-  Q_space <- naomi::scale_gmrf_precision(
+  Q_space <- scale_gmrf_precision(
     Q   = Q,
     A   = matrix(1, 1, nrow(Q_space)),
     eps = 0
@@ -957,6 +956,48 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
   # Change to same class as outputted by INLA::inla.scale.model
   Q_space <- methods::as(Q_space, "dgTMatrix")
 }
+
+#' @title Scale of GMRF precision matrix
+#' @description See also `naomi::scale_gmrf_precision()`.
+#' @rdname scale_gmrf_precision
+#' @keywords internal
+scale_gmrf_precision <- function(
+    Q, 
+    A = matrix(1, ncol = ncol(Q)), 
+    eps = sqrt(.Machine$double.eps)
+  ) {
+  nb <- spdep::mat2listw(abs(Q))$neighbours
+  comp <- spdep::n.comp.nb(nb)
+  for (k in seq_len(comp$nc)) {
+    idx <- which(comp$comp.id == k)
+    Qc <- Q[idx, idx, drop = FALSE]
+    if (length(idx) == 1) {
+      Qc[1, 1] <- 1
+    } else {
+      qinv <- function(Q, A = NULL) {
+        Sigma <- Matrix::solve(Q)
+        if (is.null(A)) {
+          return(Sigma)
+        } else {
+          A <- matrix(1, 1, nrow(Sigma))
+          W <- Sigma %*% t(A)
+          Sigma_const <- Sigma - W %*% Matrix::solve(A %*% W) %*% Matrix::t(W)
+          return(Sigma_const)
+        }
+      }
+      
+      Ac <- A[, idx, drop = FALSE]
+      Qc_eps <- Qc + Matrix::Diagonal(ncol(Qc)) * max(Matrix::diag(Qc)) * 
+        eps
+      Qc_inv <- qinv(Qc_eps, A = Ac)
+      scaling_factor <- exp(mean(log(Matrix::diag(Qc_inv))))
+      Qc <- scaling_factor * Qc
+    }
+    Q[idx, idx] <- Qc
+  }
+  Q
+}
+
 
 #### create_rw_prec_matrix ####
 
