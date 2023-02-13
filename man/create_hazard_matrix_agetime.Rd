@@ -23,7 +23,7 @@ create_hazard_matrix_agetime(
 )
 }
 \arguments{
-\item{dat}{Shell dataset (outputted by \link[threemc]{create_shell_dataset}
+\item{dat}{Shell dataset (datputted by \link[threemc]{create_shell_dataset}
 with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.}
@@ -32,31 +32,17 @@ unique record.}
 
 \item{area_lev}{PSNU area level for specific country.}
 
-\item{subset}{Subset for dataset, Default: NULL}
-
 \item{time1}{Variable name for time of birth, Default: "time1"}
 
 \item{time2}{Variable name for time circumcised or censored,
 Default: "time2"}
 
-\item{timecaps}{Window to fix temporal dimension before and after,
-Default: c(1, Inf)}
-
-\item{Ntime}{Number of time points (if NULL, function will calculate),
-Default: NULL}
-
 \item{age}{\itemize{
 \item Variable with age circumcised or censored. Default: "age"
 }}
 
-\item{Nage}{Number of age groups (if NULL, function will calculate),
-Default: NULL}
-
 \item{strat}{Variable to stratify by in using a 3D hazard function,
 Default: NULL}
-
-\item{Nstrat}{Number of stratification groups (if NULL, function will
-calculate), Default: NULL}
 
 \item{circ}{Variables with circumcision matrix, Default: "circ"}
 

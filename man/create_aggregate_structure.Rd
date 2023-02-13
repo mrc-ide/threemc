@@ -9,7 +9,9 @@ create_aggregate_structure(areas, area_lev)
 \arguments{
 \item{areas}{\code{sf} shapefiles for specific country/region.}
 
-\item{area_lev}{PSNU area level for specific country.}
+\item{area_lev}{\itemize{
+\item Desired admin boundary level to perform the analysis on.
+}}
 }
 \value{
 A list of length 2 containing:

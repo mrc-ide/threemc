@@ -2,7 +2,7 @@
 % Please edit documentation in R/aggregation.R
 \name{aggregate_sample_age_group}
 \alias{aggregate_sample_age_group}
-\title{Produce Population weighted Aggregations for Age Groups}
+\title{Produce Population Weighted Aggregations for Age Groups}
 \usage{
 aggregate_sample_age_group(
   results_list,
