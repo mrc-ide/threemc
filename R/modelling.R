@@ -262,6 +262,9 @@ threemc_fit_model <- function(fit = NULL,
       ...
     )
   }
+  
+  # release memory allocated on C++ side from MakeADFun
+  if (sample == FALSE) TMB::FreeADFun(obj)
 
   # sample from TMB fit
   if (sample == TRUE) {
@@ -269,6 +272,7 @@ threemc_fit_model <- function(fit = NULL,
     fit <- circ_sample_tmb(
       obj = obj, opt = opt, nsample = N, sdreport = sdreport
     )
+    TMB::FreeADFun(obj)
     # return smaller fit object
     if (smaller_fit_obj == TRUE) {
       if (verbose) message("Minimising fit object...")
