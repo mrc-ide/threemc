@@ -911,7 +911,6 @@ create_hazard_matrix_agetime <- function(dat,
 #' @seealso
 #'  \code{\link[spdep]{poly2nb}}
 #'  \code{\link[spdep]{nb2mat}}
-#'  \code{\link[naomi]{scale_gmrf_precision}}
 #'  \code{\link[methods]{as}}
 #' @rdname create_icar_prec_matrix
 #' @importFrom dplyr %>%

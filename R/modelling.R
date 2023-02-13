@@ -283,15 +283,17 @@ threemc_fit_model <- function(fit = NULL,
 #### circ_sample_tmb ####
 
 #' @title Sample TMB fit for Circumcision Model
-#' @description  Sample from TMB object, using \link[naomi]{sample_tmb}. Saves
-#' changing object to "Naomi" format. Also produces and returns standard
-#' deviation report outputted by \link[TMB]{sdreport}.
+#' @description  Sample from TMB object, using \code{naomi::sample_tmb}. Saves
+#' changing object to \code{naomi} format. Also produces and returns standard
+#' deviation report outputted by \link[TMB]{sdreport}, if desired.
 #'
 #' @param obj TMB object/AD model outputted by \link[TMB]{MakeADFun}.
 #' @param opt Optimised TMB model, outputted by optimisation function such
 #' as \link[stats]{nlminb} or \link[stats]{optim}.
+#' @param sdreport Boolean of whether to produce \code{TMB::sdreport}, Default:
+#' FALSE
 #' @param nsample Number of samples to be generated, Default: 1000
-#' @param ...  Further arguments passed to \link[naomi]{sample_tmb}.
+#' @param ...  Further arguments passed to \code{naomi::sample_tmb}.
 #' @return Object of class "naomi_fit", containing the original TMB object
 #' ("obj"), the standard deviation report for optimised AD model (from
 #' \link[TMB]{sdreport}) and `n_samples` samples for the (cumulative) incidence
@@ -299,7 +301,6 @@ threemc_fit_model <- function(fit = NULL,
 #'
 #' @seealso
 #'  \code{\link[TMB]{sdreport}}
-#'  \code{\link[naomi]{sample_tmb}}
 #' @rdname circ_sample_tmb
 #' @keywords internal
 circ_sample_tmb <- function(fit = NULL,
