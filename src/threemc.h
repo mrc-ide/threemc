@@ -3,6 +3,14 @@
 
 #include "utils.h"
 
+#define EIGEN_SUPERLU_SUPPORT
+#define EIGEN_USE_BLAS
+#define EIGEN_USE_LAPACKE
+
+// includes to call Eigen
+#include <Eigen/Sparse>
+#include <Eigen/StdVector>
+
 /* Objective Functions */
 
 /************************************************************************/
