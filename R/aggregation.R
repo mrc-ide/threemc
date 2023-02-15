@@ -77,14 +77,13 @@ threemc_aggregate <- function(
   .data$model <- "No program data"
   fit_no_prog <- fit # need to load model with programme data as well
   
-  # Take sample matrix rows that are kept in .data from original skeleton data
+  # Take sample matrix rows that are kept in out from original skeleton data
   if ("n" %in% names(.data)) {
-    fit_no_prog$sample <- lapply(fit_no_prog$sample, function(x) x[.data$n, ])
+    fit_no_prog$sample <- lapply(fit_no_prog$sample, function(x) x[out$n, ])
     .data$n <- NULL
-  # Else, throw error if number of rows in results does not equal sample number
-  } else {
-    stopifnot(nrow(.data) == nrow(fit_no_prog$sample$haz))
-  }
+  } 
+  # throw error if number of rows in results does not equal sample number
+  stopifnot(nrow(.data) == nrow(fit_no_prog$sample$haz))
 
   #### Load rates from survival model ####
   .data <- prepare_sample_data(

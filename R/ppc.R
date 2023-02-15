@@ -103,6 +103,14 @@ threemc_ppc <- function(fit,
 
   #### Preprocess survey data and samples ####
 
+  # Take sample matrix rows that are kept in .data from original skeleton data
+  if ("n" %in% names(out)) {
+    fit$sample <- lapply(fit$sample, function(x) x[out$n, ])
+    out$n <- NULL
+  } 
+  # throw error if number of rows in results does not equal sample number
+  stopifnot(nrow(out) == nrow(fit$sample$haz))
+  
   # pull N "cum_inc" (only doing coverage) samples from fit
   samples <- fit$sample[
     grepl("cum_inc", names(fit$sample))
@@ -119,7 +127,7 @@ threemc_ppc <- function(fit,
   # take samples of the correct "type"
   samples <- samples[[which(names(samples) == paste(type, "coverage"))]]
 
-  # only take sample rows corresponding to subsetted out, if approporiate
+  # only take sample rows corresponding to subsetted out, if appropriate
   if ("n" %chin% names(out)) {
     samples <- samples[c(out$n), ]
     out <- out[, c("n") := NULL]
