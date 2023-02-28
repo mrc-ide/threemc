@@ -79,7 +79,7 @@ threemc_aggregate <- function(
   
   # Take sample matrix rows that are kept in out from original skeleton data
   if ("n" %in% names(.data)) {
-    fit_no_prog$sample <- lapply(fit_no_prog$sample, function(x) x[out$n, ])
+    fit_no_prog$sample <- lapply(fit_no_prog$sample, function(x) x[.data$n, ])
     .data$n <- NULL
   } 
   # throw error if number of rows in results does not equal sample number
