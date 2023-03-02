@@ -232,7 +232,6 @@ threemc_fit_model <- function(fit = NULL,
     random = randoms,
     map = maps,
     method = "BFGS",
-    hessian = TRUE,
     DLL = mod,
     ...
   )
