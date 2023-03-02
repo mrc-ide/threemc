@@ -231,7 +231,6 @@ threemc_fit_model <- function(fit = NULL,
     parameters,
     random = randoms,
     map = maps,
-    method = "L-BFGS-B",
     DLL = mod,
     ...
   )
