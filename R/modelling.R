@@ -133,6 +133,15 @@ threemc_fit_model <- function(fit = NULL,
     message("mod not supplied, mod used = ", mod)
   }
   
+  # config options 
+  TMB::config(
+    # should reduce memory usage https://tinyurl.com/5cuxmm4t
+    tmbad.sparse_hessian_compress = 1, 
+    # Reduce memory peak of a parallel model by creating tapes in serial
+    tape.parallel = 0, 
+    DLL = mod
+  )
+  
   if (is.null(mod)) stop("Please provide one of `mod`, `parameters` or `fit`")
   
   # for specified "smaller fit" object (i.e. fit which requires resampling)
