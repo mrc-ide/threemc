@@ -217,8 +217,8 @@ create_design_matrices <- function(dat,
   if (is.null(k_dt_time)) {
     X_spacetime <- Matrix::sparse.model.matrix(
       N ~ -1 + factor((dat %>%
-                         group_by(space, time) %>%
-                         group_indices())),
+                         dplyr::group_by(space, time) %>%
+                         dplyr::group_indices())),
       data = dat
     )
   } else {
