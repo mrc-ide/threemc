@@ -967,7 +967,7 @@ scale_gmrf_precision <- function(
     A = matrix(1, ncol = ncol(Q)), 
     eps = sqrt(.Machine$double.eps)
   ) {
-  nb <- spdep::mat2listw(abs(Q))$neighbours
+  nb <- spdep::mat2listw(abs(Q), style = "B")$neighbours
   comp <- spdep::n.comp.nb(nb)
   for (k in seq_len(comp$nc)) {
     idx <- which(comp$comp.id == k)
