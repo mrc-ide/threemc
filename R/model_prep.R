@@ -215,11 +215,12 @@ create_design_matrices <- function(dat,
   X_agetime <- mgcv::tensor.prod.model.matrix(list(X_time, X_age))
   X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))
   if (is.null(k_dt_time)) {
+    space_time_fct <- dat %>%
+      dplyr::group_by(space, time) %>%
+      dplyr::group_indices() %>%
+      as.factor()
     X_spacetime <- Matrix::sparse.model.matrix(
-      N ~ -1 + factor((dat %>%
-                         dplyr::group_by(space, time) %>%
-                         dplyr::group_indices())),
-      data = dat
+      dat$N ~ -1 + space_time_fct
     )
   } else {
     X_spacetime <- mgcv::tensor.prod.model.matrix(list(X_space, X_time))
