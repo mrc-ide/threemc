@@ -12,11 +12,11 @@ Type objective_function<Type>::operator() ()
   //// Data definitions ////
   //////////////////////////
   // Survival analysis matrices
-  // DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting instantaneous hazard for medically circumcised pop
-  // DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
-  // DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
-  // DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
-  // DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
+  DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting instantaneous hazard for medically circumcised pop
+  DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
+  DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
+  DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
+  DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
   DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard 
   DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard 
   
@@ -188,6 +188,9 @@ Type objective_function<Type>::operator() ()
                            sigma_age_tmc,
                            sigma_space_tmc,
                            sigma_agespace_tmc);
+
+  // Get likelihood for MMC, TMC, unknown type, and right and left censoring
+  threemc.likelihood(A_mmc, A_tmc, A_mc, B, C);
 
   //// report hazard rates, incidence and cumulative incidence ////
   REPORT(threemc.get_haz_mmc());     // Medical hazard rate
