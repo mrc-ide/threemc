@@ -89,35 +89,35 @@ class Threemc {
 
     // Prior on the age random effects
     // TODO: Will change in model where there is a paediatric-adult age split
-    // void rand_eff_age_p(vector<Type> u_age_mmc,
-    //                     vector<Type> u_age_tmc,
-    //                     Type logsigma_age_mmc,
-    //                     Type sigma_age_mmc,
-    //                     Type logsigma_age_tmc,
-    //                     Type sigma_age_tmc,
-    //                     Type logitrho_mmc_age1,
-    //                     Type rho_mmc_age1,
-    //                     Type logitrho_tmc_age1,
-    //                     Type rho_tmc_age1) {
+    void rand_eff_age_p(vector<Type> u_age_mmc,
+                        vector<Type> u_age_tmc,
+                        Type logsigma_age_mmc,
+                        Type sigma_age_mmc,
+                        Type logsigma_age_tmc,
+                        Type sigma_age_tmc,
+                        Type logitrho_mmc_age1,
+                        Type rho_mmc_age1,
+                        Type logitrho_tmc_age1,
+                        Type rho_tmc_age1) {
 
-    //   // ar1 processes
-    //   nll += ar1(rho_mmc_age1)(u_age_mmc);
-    //   nll += ar1(rho_tmc_age1)(u_age_tmc);
+      // AR1 processes
+      nll += AR1(rho_mmc_age1)(u_age_mmc);
+      nll += AR1(rho_tmc_age1)(u_age_tmc);
 
-    //   // sum to zero constraint
-    //   nll -= dnorm(u_age_mmc.sum(), Type(0), Type(0.001) * u_age_mmc.size(), true);
-    //   nll -= dnorm(u_age_tmc.sum(), Type(0), Type(0.001) * u_age_tmc.size(), true);
+      // sum to zero constraint
+      nll -= dnorm(u_age_mmc.sum(), Type(0), Type(0.001) * u_age_mmc.size(), true);
+      nll -= dnorm(u_age_tmc.sum(), Type(0), Type(0.001) * u_age_tmc.size(), true);
 
-    //   // prior on the standard deviation for the age random effects
-    //   nll -= dexp(sigma_age_mmc, Type(1), true) + logsigma_age_mmc;
-    //   nll -= dexp(sigma_age_tmc, Type(1), true) + logsigma_age_tmc;
+      // prior on the standard deviation for the age random effects
+      nll -= dexp(sigma_age_mmc, Type(1), true) + logsigma_age_mmc;
+      nll -= dexp(sigma_age_tmc, Type(1), true) + logsigma_age_tmc;
 
-    //   // prior on the logit autocorrelation parameters
-    //   nll -= dnorm(logitrho_mmc_age1, Type(3), Type(2), true);
-    //   nll -= dnorm(logitrho_tmc_age1, Type(3), Type(2), true);
-    // };
+      // prior on the logit autocorrelation parameters
+      nll -= dnorm(logitrho_mmc_age1, Type(3), Type(2), true);
+      nll -= dnorm(logitrho_tmc_age1, Type(3), Type(2), true);
+    };
 
-    // // Prior on the spatial random effects
+    // Prior on the spatial random effects
     // void rand_eff_space_p(SparseMatrix<Type> Q_space,
     //                       vector<Type> u_space_mmc,
     //                       vector<Type> u_space_tmc,

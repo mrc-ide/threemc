@@ -45,8 +45,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(u_fixed_tmc);
 
   // // Age random effect
-  // PARAMETER_VECTOR(u_age_mmc); 
-  // PARAMETER_VECTOR(u_age_tmc); 
+  PARAMETER_VECTOR(u_age_mmc); 
+  PARAMETER_VECTOR(u_age_tmc); 
   
   // Temporal random effects 
   PARAMETER_VECTOR(u_time_mmc);
@@ -62,13 +62,13 @@ Type objective_function<Type>::operator() ()
   // PARAMETER_ARRAY(u_agespace_tmc);
   
   // Standard deviations 
-  // PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
+  PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
   PARAMETER(logsigma_time_mmc);      Type sigma_time_mmc      = exp(logsigma_time_mmc);
   // PARAMETER(logsigma_space_mmc);     Type sigma_space_mmc     = exp(logsigma_space_mmc);
   // PARAMETER(logsigma_agetime_mmc);   Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
   // PARAMETER(logsigma_agespace_mmc);  Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
   // PARAMETER(logsigma_spacetime_mmc); Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
-  // PARAMETER(logsigma_age_tmc);       Type sigma_age_tmc       = exp(logsigma_age_tmc);
+  PARAMETER(logsigma_age_tmc);       Type sigma_age_tmc       = exp(logsigma_age_tmc);
   // PARAMETER(logsigma_space_tmc);     Type sigma_space_tmc     = exp(logsigma_space_tmc);
   // PARAMETER(logsigma_agespace_tmc);  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
 
@@ -79,14 +79,14 @@ Type objective_function<Type>::operator() ()
   // Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
   // PARAMETER(logitrho_mmc_time3);
   // Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
-  // PARAMETER(logitrho_mmc_age1);
-  // Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_mmc_age1);
+  Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
   // PARAMETER(logitrho_mmc_age2);
   // Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
   // PARAMETER(logitrho_mmc_age3);
   // Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
-  // PARAMETER(logitrho_tmc_age1);
-  // Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
+  PARAMETER(logitrho_tmc_age1);
+  Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
   // PARAMETER(logitrho_tmc_age2);
   // Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
 
@@ -104,6 +104,18 @@ Type objective_function<Type>::operator() ()
                           sigma_time_mmc,
                           logitrho_mmc_time1,
                           rho_mmc_time1);
+
+  // prior on the age random effects
+  threemc.rand_eff_age_p(u_age_mmc,
+                         u_age_tmc,
+                         logsigma_age_mmc,
+                         sigma_age_mmc,
+                         logsigma_age_tmc,
+                         sigma_age_tmc,
+                         logitrho_mmc_age1,
+                         rho_mmc_age1,
+                         logitrho_tmc_age1,
+                         rho_tmc_age1);
 
   // prior on spatial random effects
   // threemc.rand_eff_space_p(Q_space,
