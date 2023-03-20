@@ -118,26 +118,26 @@ class Threemc {
     };
 
     // Prior on the spatial random effects
-    // void rand_eff_space_p(SparseMatrix<Type> Q_space,
-    //                       vector<Type> u_space_mmc,
-    //                       vector<Type> u_space_tmc,
-    //                       Type logsigma_space_mmc,
-    //                       Type sigma_space_mmc,
-    //                       Type logsigma_space_tmc,
-    //                       Type sigma_space_tmc) {
+    void rand_eff_space_p(SparseMatrix<Type> Q_space,
+                          vector<Type> u_space_mmc,
+                          vector<Type> u_space_tmc,
+                          Type logsigma_space_mmc,
+                          Type sigma_space_mmc,
+                          Type logsigma_space_tmc,
+                          Type sigma_space_tmc) {
 
-    //   // Gaussian markov random field with prespecified precision matrix
-    //   nll += GMRF(Q_space)(u_space_mmc);
-    //   nll += GMRF(Q_space)(u_space_tmc);
+      // Gaussian markov random field with prespecified precision matrix
+      nll += GMRF(Q_space)(u_space_mmc);
+      nll += GMRF(Q_space)(u_space_tmc);
 
-    //   // Sum to zero constraints
-    //   nll -= dnorm(u_space_mmc.sum(), Type(0), Type(0.001) * u_space_mmc.size(), TRUE);
-    //   nll -= dnorm(u_space_tmc.sum(), Type(0), Type(0.001) * u_space_tmc.size(), TRUE);
+      // Sum to zero constraints
+      nll -= dnorm(u_space_mmc.sum(), Type(0), Type(0.001) * u_space_mmc.size(), TRUE);
+      nll -= dnorm(u_space_tmc.sum(), Type(0), Type(0.001) * u_space_tmc.size(), TRUE);
 
-    //   // Prior on the standard deviation for the spatial random effects
-    //   nll -= dexp(sigma_space_mmc, Type(1), TRUE) + logsigma_space_mmc;
-    //   nll -= dexp(sigma_space_tmc, Type(1), TRUE) + logsigma_space_tmc;
-    // };
+      // Prior on the standard deviation for the spatial random effects
+      nll -= dexp(sigma_space_mmc, Type(1), TRUE) + logsigma_space_mmc;
+      nll -= dexp(sigma_space_tmc, Type(1), TRUE) + logsigma_space_tmc;
+    };
 
     // // Prior on the interaction random effects
     // void rand_eff_interact_p(SparseMatrix<Type> Q_space,

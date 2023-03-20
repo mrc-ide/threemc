@@ -34,7 +34,7 @@ Type objective_function<Type>::operator() ()
   // DATA_SPARSE_MATRIX(X_agespace_tmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
  
   // Precision matrices 
-  // DATA_SPARSE_MATRIX(Q_space); // Aggregation matrix for number of circumcisions performed
+  DATA_SPARSE_MATRIX(Q_space); // Aggregation matrix for number of circumcisions performed
 
   //////////////////
   /// Parameters ///
@@ -52,8 +52,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(u_time_mmc);
   
   // Spatial random effects
-  // PARAMETER_VECTOR(u_space_mmc);
-  // PARAMETER_VECTOR(u_space_tmc);
+  PARAMETER_VECTOR(u_space_mmc);
+  PARAMETER_VECTOR(u_space_tmc);
   
   // Interactions
   // PARAMETER_ARRAY(u_agetime_mmc);
@@ -64,12 +64,12 @@ Type objective_function<Type>::operator() ()
   // Standard deviations 
   PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
   PARAMETER(logsigma_time_mmc);      Type sigma_time_mmc      = exp(logsigma_time_mmc);
-  // PARAMETER(logsigma_space_mmc);     Type sigma_space_mmc     = exp(logsigma_space_mmc);
+  PARAMETER(logsigma_space_mmc);     Type sigma_space_mmc     = exp(logsigma_space_mmc);
   // PARAMETER(logsigma_agetime_mmc);   Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
   // PARAMETER(logsigma_agespace_mmc);  Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
   // PARAMETER(logsigma_spacetime_mmc); Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
   PARAMETER(logsigma_age_tmc);       Type sigma_age_tmc       = exp(logsigma_age_tmc);
-  // PARAMETER(logsigma_space_tmc);     Type sigma_space_tmc     = exp(logsigma_space_tmc);
+  PARAMETER(logsigma_space_tmc);     Type sigma_space_tmc     = exp(logsigma_space_tmc);
   // PARAMETER(logsigma_agespace_tmc);  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
 
   // Autocorrelation parameters 
@@ -118,13 +118,13 @@ Type objective_function<Type>::operator() ()
                          rho_tmc_age1);
 
   // prior on spatial random effects
-  // threemc.rand_eff_space_p(Q_space,
-  //                          u_space_mmc,
-  //                          u_space_tmc,
-  //                          logsigma_space_mmc,
-  //                          sigma_space_mmc,
-  //                          logsigma_space_tmc,
-  //                          sigma_space_tmc);
+  threemc.rand_eff_space_p(Q_space,
+                           u_space_mmc,
+                           u_space_tmc,
+                           logsigma_space_mmc,
+                           sigma_space_mmc,
+                           logsigma_space_tmc,
+                           sigma_space_tmc);
 
   // prior on interaction random effects
   // threemc.rand_eff_interact_p(Q_space,
