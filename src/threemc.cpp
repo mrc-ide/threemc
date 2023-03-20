@@ -45,8 +45,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(u_fixed_tmc);
 
   // // Age random effect
-  PARAMETER_VECTOR(u_age_mmc); 
-  PARAMETER_VECTOR(u_age_tmc); 
+  // PARAMETER_VECTOR(u_age_mmc); 
+  // PARAMETER_VECTOR(u_age_tmc); 
   
   // Temporal random effects 
   PARAMETER_VECTOR(u_time_mmc);
@@ -62,13 +62,13 @@ Type objective_function<Type>::operator() ()
   // PARAMETER_ARRAY(u_agespace_tmc);
   
   // Standard deviations 
-  PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
+  // PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
   PARAMETER(logsigma_time_mmc);      Type sigma_time_mmc      = exp(logsigma_time_mmc);
   // PARAMETER(logsigma_space_mmc);     Type sigma_space_mmc     = exp(logsigma_space_mmc);
   // PARAMETER(logsigma_agetime_mmc);   Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
   // PARAMETER(logsigma_agespace_mmc);  Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
   // PARAMETER(logsigma_spacetime_mmc); Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
-  PARAMETER(logsigma_age_tmc);       Type sigma_age_tmc       = exp(logsigma_age_tmc);
+  // PARAMETER(logsigma_age_tmc);       Type sigma_age_tmc       = exp(logsigma_age_tmc);
   // PARAMETER(logsigma_space_tmc);     Type sigma_space_tmc     = exp(logsigma_space_tmc);
   // PARAMETER(logsigma_agespace_tmc);  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
 
