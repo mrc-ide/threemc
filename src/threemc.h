@@ -40,7 +40,8 @@ using namespace density;
 // TODO: Move implementation to separate file
 template <class Type>
 class Threemc {
-  private:
+  // private:
+  public:
     // negative log likelihood
     Type nll; 
     // report values (hazard rates, incidence and cumulative incidence)
@@ -57,7 +58,7 @@ class Threemc {
 
     // also add report values here (??)
 
-  public:
+  // public:
     // Default Constructor
     Threemc() {
       Type nll = Type(0); // initialise nll to 0
@@ -317,25 +318,43 @@ class Threemc {
     // Function
     // likelihood() {};
 
+    //// Getter Functions ////
+   
     // getter for nll;
     Type get_nll() {
       return nll;
     };
-
-    // Report values (
-    // TOOD: Need two versions depending on whether MC is split by type)
-    // void report() {
-    //   REPORT(haz_mmc);     // Medical hazard rate
-    //   REPORT(haz_tmc);     // Traditional hazard rate
-    //   REPORT(haz);         // Total hazard rate
-    //   REPORT(inc_tmc);     // Traditional circumcision incidence rate
-    //   REPORT(inc_mmc);     // Medical circumcision incidence rate
-    //   REPORT(inc);         // Total circumcision incidence rate
-    //   REPORT(cum_inc_tmc); // Traditional circumcision cumulative incidence rate
-    //   REPORT(cum_inc_mmc); // Medical circumcision cumulative incidence rate
-    //   REPORT(cum_inc);     // Total circumcision cumulative incidence rate
-    //   REPORT(surv);        // Survival probabilities
-    // };
+    // getters for report vals
+    vector<Type> get_haz_mmc() {
+      return haz_mmc;
+    };
+    vector<Type> get_haz_tmc() {
+      return haz_tmc;
+    };
+    vector<Type> get_haz() {
+      return haz;
+    };
+    vector<Type> get_inc_mmc() {
+      return inc_mmc;
+    };
+    vector<Type> get_inc_tmc() {
+      return inc_tmc;
+    };
+    vector<Type> get_inc() {
+      return inc;
+    };
+    vector<Type> get_cum_inc_mmc() {
+      return cum_inc_mmc;
+    };
+    vector<Type> get_cum_inc_tmc() {
+      return cum_inc_tmc;
+    };
+    vector<Type> get_cum_inc() {
+      return cum_inc;
+    };
+    vector<Type> get_surv() {
+      return surv;
+    };
 };
 
 #endif

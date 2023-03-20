@@ -8,10 +8,10 @@ Type objective_function<Type>::operator() ()
   
   using namespace density;
 
-  ////////////////////////
-  /// Data definitions ///
-  ////////////////////////
-  // // Survival analysis matrices
+  //////////////////////////
+  //// Data definitions ////
+  //////////////////////////
+  // Survival analysis matrices
   // DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting instantaneous hazard for medically circumcised pop
   // DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
   // DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
@@ -36,15 +36,15 @@ Type objective_function<Type>::operator() ()
   // Precision matrices 
   DATA_SPARSE_MATRIX(Q_space); // Aggregation matrix for number of circumcisions performed
 
-  //////////////////
-  /// Parameters ///
-  //////////////////
+  ////////////////////
+  //// Parameters ////
+  ////////////////////
 
   // Fixed Effects
   PARAMETER_VECTOR(u_fixed_mmc);
   PARAMETER_VECTOR(u_fixed_tmc);
 
-  // // Age random effect
+  // Age random effect
   PARAMETER_VECTOR(u_age_mmc); 
   PARAMETER_VECTOR(u_age_tmc); 
   
@@ -90,12 +90,12 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logitrho_tmc_age2);
   Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
 
-  /// Calculate nll and report values ///
+  //// Calculate nll and report values ////
 
   // define object of class Threemc, which will store our negative log likelihood
   Threemc<Type> threemc;
 
-  /// Priors ///
+  //// Priors ////
   
   // Apply prior on fixed effects
   threemc.fix_eff_p(u_fixed_mmc, u_fixed_tmc);
@@ -153,7 +153,7 @@ Type objective_function<Type>::operator() ()
                               logitrho_mmc_time3,
                               rho_mmc_time3);
 
-  /// Calculate report values (hazard, (cumulative) incidence) ///
+  //// Calculate report values (hazard, (cumulative) incidence) ////
   // TODO: come up with more informative function name?
   threemc.calc_report_vals(X_fixed_mmc, 
                            X_time_mmc,
@@ -189,6 +189,18 @@ Type objective_function<Type>::operator() ()
                            sigma_space_tmc,
                            sigma_agespace_tmc);
 
-  /// return nll ///
+  //// report hazard rates, incidence and cumulative incidence ////
+  REPORT(threemc.get_haz_mmc());     // Medical hazard rate
+  REPORT(threemc.get_haz_tmc());     // Traditional hazard rate
+  REPORT(threemc.get_haz());         // Total hazard rate
+  REPORT(threemc.get_inc_mmc());     // Medical circumcision incidence rate
+  REPORT(threemc.get_inc_tmc());     // Traditional circumcision incidence rate
+  REPORT(threemc.get_inc());         // Total circumcision incidence rate
+  REPORT(threemc.get_cum_inc_mmc()); // Medical circumcision cumulative incidence rate
+  REPORT(threemc.get_cum_inc_tmc()); // Traditional circumcision cumulative incidence rate
+  REPORT(threemc.get_cum_inc());     // Total circumcision cumulative incidence rate
+  REPORT(threemc.get_surv());            // Survival probabilities
+  
+  //// return nll ////
   return threemc.get_nll();
 }
