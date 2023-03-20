@@ -195,6 +195,19 @@ threemc_fit_model <- function(fit = NULL,
     fit <- circ_sample_tmb(
       obj = obj, opt = opt, nsample = N, sdreport = sdreport
     )
+    
+    # clean up sample names, if required (e.g. threemc.get_inc() -> inc)
+    if (all(grepl("threemc", names(fit$sample)))) {
+      names(fit$sample) <- stringr::str_remove_all(
+        names(fit$sample), 
+        "threemc.get_"
+      )
+      names(fit$sample) <- stringr::str_remove_all(
+        names(fit$sample),
+        "\\(\\)" 
+      )
+    }
+    
     # return smaller fit object
     if (smaller_fit_obj == TRUE) {
       if (verbose) message("Minimising fit object...")
