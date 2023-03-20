@@ -55,6 +55,7 @@ class Threemc {
     vector<Type> cum_inc_mmc; // Medical circumcision cumulative incidence rate
     vector<Type> cum_inc;     // Total circumcision cumulative incidence rate
     vector<Type> surv;        // Survival probabilities
+    vector<Type> leftcens;    // Left censoring probabilities (only used in likelihood)
 
     // also add report values here (??)
 
@@ -300,9 +301,9 @@ class Threemc {
 
       // Survival probabilities
       vector<Type> logprob  = log(Type(1.0) - haz);
-      surv     = exp(IntMat1 * logprob);
+      surv = exp(IntMat1 * logprob);
       vector<Type> surv_lag = exp(IntMat2 * logprob);
-      vector<Type> leftcens = Type(1.0) - surv;
+      leftcens = Type(1.0) - surv;
 
       // Incidence
       inc_tmc = haz_tmc * surv_lag;
@@ -315,8 +316,28 @@ class Threemc {
       cum_inc = cum_inc_tmc + cum_inc_mmc;
     };
 
-    // Function
-    // likelihood() {};
+    /// Calculate likelihood for types of circumcision ///
+    void likelihood(SparseMatrix<Type> A_mmc,
+                    SparseMatrix<Type> A_tmc,
+                    SparseMatrix<Type> A_mc,
+                    SparseMatrix<Type> B,
+                    SparseMatrix<Type> C) {
+
+      // likelihood for those medically circumcised
+      nll -= (A_mmc * log(inc_mmc)).sum();
+
+      // likelihood for those traditionally circumcised
+      nll -= (A_tmc * log(inc_tmc)).sum();
+
+      // // likelihood for those circumcised of unknown type
+      nll -= (A_mc * log(inc)).sum();
+
+      // likelihood for those right censored
+      nll -= (B * log(surv)).sum();
+
+      // // likelihood for those left censored
+      nll -= (C * log(leftcens)).sum();
+    };
 
     //// Getter Functions ////
    
