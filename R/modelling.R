@@ -162,6 +162,22 @@ threemc_fit_model <- function(fit = NULL,
     DLL = "threemc",
     ...
   )
+  
+  # Fun to clean up sample names, if required (e.g. threemc.get_inc() -> inc)
+  clean_sample_names <- function(fit) {
+    if (all(grepl("threemc", names(fit$sample)))) {
+      names(fit$sample) <- stringr::str_remove_all(
+        names(fit$sample), 
+        "threemc.get_"
+      )
+      names(fit$sample) <- stringr::str_remove_all(
+        names(fit$sample),
+        "\\(\\)" 
+      )
+    }
+    return(fit)
+  }
+  
   # for specified fit, simply resample and return
   if (!is.null(fit)) {
     
@@ -171,7 +187,12 @@ threemc_fit_model <- function(fit = NULL,
     fit <- circ_sample_tmb(
       fit = fit, obj = obj, nsample = N, sdreport = sdreport
     )
+    fit <- clean_sample_names(fit)
     fit$tmb_data <- fit$par_init <- NULL # make fit object smaller for saving
+    
+    # free parallelADFun objects
+    gc()
+    
     return(fit)
   }
   
@@ -195,18 +216,10 @@ threemc_fit_model <- function(fit = NULL,
     fit <- circ_sample_tmb(
       obj = obj, opt = opt, nsample = N, sdreport = sdreport
     )
+    fit <- clean_sample_names(fit)
     
-    # clean up sample names, if required (e.g. threemc.get_inc() -> inc)
-    if (all(grepl("threemc", names(fit$sample)))) {
-      names(fit$sample) <- stringr::str_remove_all(
-        names(fit$sample), 
-        "threemc.get_"
-      )
-      names(fit$sample) <- stringr::str_remove_all(
-        names(fit$sample),
-        "\\(\\)" 
-      )
-    }
+    # free parallelADFun objects
+    gc()
     
     # return smaller fit object
     if (smaller_fit_obj == TRUE) {
