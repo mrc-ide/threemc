@@ -199,7 +199,7 @@ Type objective_function<Type>::operator() ()
   REPORT(threemc.get_cum_inc_mmc()); // Medical circumcision cumulative incidence rate
   REPORT(threemc.get_cum_inc_tmc()); // Traditional circumcision cumulative incidence rate
   REPORT(threemc.get_cum_inc());     // Total circumcision cumulative incidence rate
-  REPORT(threemc.get_surv());            // Survival probabilities
+  REPORT(threemc.get_surv());        // Survival probabilities
   
   //// return nll ////
   return threemc.get_nll();
