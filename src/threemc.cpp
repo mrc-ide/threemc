@@ -8,43 +8,43 @@ Type objective_function<Type>::operator() ()
   
   using namespace density;
 
-  ////////////////////////
-  /// Data definitions ///
-  ////////////////////////
-  // // Survival analysis matrices
+  //////////////////////////
+  //// Data definitions ////
+  //////////////////////////
+  // Survival analysis matrices
   // DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting instantaneous hazard for medically circumcised pop
   // DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
   // DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
   // DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
   // DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
-  // DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard 
-  // DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard 
+  DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard 
+  DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard 
   
-  // // Design matrices 
-  // DATA_SPARSE_MATRIX(X_fixed_mmc); // Design matrix for the fixed effects in the medical circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_time_mmc); // Design matrix for the temporal random effects in the medical circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_age_mmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_space_mmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_agetime_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_agespace_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_spacetime_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_fixed_tmc); // Design matrix for the fixed effects in the traditional circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_age_tmc); // Design matrix for the stratification random effects in the traditional circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_space_tmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
-  // DATA_SPARSE_MATRIX(X_agespace_tmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  // Design matrices 
+  DATA_SPARSE_MATRIX(X_fixed_mmc); // Design matrix for the fixed effects in the medical circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_time_mmc); // Design matrix for the temporal random effects in the medical circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_age_mmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_space_mmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_agetime_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_agespace_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_spacetime_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_fixed_tmc); // Design matrix for the fixed effects in the traditional circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_age_tmc); // Design matrix for the stratification random effects in the traditional circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_space_tmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_agespace_tmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
  
   // Precision matrices 
   DATA_SPARSE_MATRIX(Q_space); // Aggregation matrix for number of circumcisions performed
 
-  //////////////////
-  /// Parameters ///
-  //////////////////
+  ////////////////////
+  //// Parameters ////
+  ////////////////////
 
   // Fixed Effects
   PARAMETER_VECTOR(u_fixed_mmc);
   PARAMETER_VECTOR(u_fixed_tmc);
 
-  // // Age random effect
+  // Age random effect
   PARAMETER_VECTOR(u_age_mmc); 
   PARAMETER_VECTOR(u_age_tmc); 
   
@@ -90,12 +90,12 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logitrho_tmc_age2);
   Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
 
-  /// Calculate nll and report values ///
+  //// Calculate nll and report values ////
 
   // define object of class Threemc, which will store our negative log likelihood
   Threemc<Type> threemc;
 
-  /// Priors ///
+  //// Priors ////
   
   // Apply prior on fixed effects
   threemc.fix_eff_p(u_fixed_mmc, u_fixed_tmc);
@@ -153,6 +153,54 @@ Type objective_function<Type>::operator() ()
                               logitrho_mmc_time3,
                               rho_mmc_time3);
 
-  /// return nll ///
+  //// Calculate report values (hazard, (cumulative) incidence) ////
+  // TODO: come up with more informative function name?
+  threemc.calc_report_vals(X_fixed_mmc, 
+                           X_time_mmc,
+                           X_age_mmc, 
+                           X_space_mmc,
+                           X_agetime_mmc, 
+                           X_agespace_mmc,
+                           X_spacetime_mmc, 
+                           X_fixed_tmc,
+                           X_age_tmc, 
+                           X_space_tmc,
+                           X_agespace_tmc,
+                           IntMat1,
+                           IntMat2,
+                           u_fixed_mmc, 
+                           u_fixed_tmc,
+                           u_age_mmc,
+                           u_age_tmc,
+                           u_time_mmc,
+                           u_space_mmc, 
+                           u_space_tmc,
+                           u_agetime_mmc,
+                           u_agespace_mmc,
+                           u_spacetime_mmc,
+                           u_agespace_tmc,
+                           sigma_age_mmc,
+                           sigma_time_mmc,
+                           sigma_space_mmc,
+                           sigma_agetime_mmc,
+                           sigma_agespace_mmc,
+                           sigma_spacetime_mmc,
+                           sigma_age_tmc,
+                           sigma_space_tmc,
+                           sigma_agespace_tmc);
+
+  //// report hazard rates, incidence and cumulative incidence ////
+  REPORT(threemc.get_haz_mmc());     // Medical hazard rate
+  REPORT(threemc.get_haz_tmc());     // Traditional hazard rate
+  REPORT(threemc.get_haz());         // Total hazard rate
+  REPORT(threemc.get_inc_mmc());     // Medical circumcision incidence rate
+  REPORT(threemc.get_inc_tmc());     // Traditional circumcision incidence rate
+  REPORT(threemc.get_inc());         // Total circumcision incidence rate
+  REPORT(threemc.get_cum_inc_mmc()); // Medical circumcision cumulative incidence rate
+  REPORT(threemc.get_cum_inc_tmc()); // Traditional circumcision cumulative incidence rate
+  REPORT(threemc.get_cum_inc());     // Total circumcision cumulative incidence rate
+  REPORT(threemc.get_surv());            // Survival probabilities
+  
+  //// return nll ////
   return threemc.get_nll();
 }

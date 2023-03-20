@@ -40,11 +40,25 @@ using namespace density;
 // TODO: Move implementation to separate file
 template <class Type>
 class Threemc {
-  private:
-    Type nll; // negative log likelihood
+  // private:
+  public:
+    // negative log likelihood
+    Type nll; 
+    // report values (hazard rates, incidence and cumulative incidence)
+    vector<Type> haz_mmc;     // Medical hazard rate
+    vector<Type> haz_tmc;     // Traditional hazard rate
+    vector<Type> haz;         // Total hazard rate
+    vector<Type> inc_tmc;     // Traditional circumcision incidence rate
+    vector<Type> inc_mmc;     // Medical circumcision incidence rate
+    vector<Type> inc;         // Total circumcision incidence rate
+    vector<Type> cum_inc_tmc; // Traditional circumcision cumulative incidence rate
+    vector<Type> cum_inc_mmc; // Medical circumcision cumulative incidence rate
+    vector<Type> cum_inc;     // Total circumcision cumulative incidence rate
+    vector<Type> surv;        // Survival probabilities
+
     // also add report values here (??)
 
-  public:
+  // public:
     // Default Constructor
     Threemc() {
       Type nll = Type(0); // initialise nll to 0
@@ -196,13 +210,6 @@ class Threemc {
                      true);
       }
       
-      // Vectorising the interaction
-      // TODO: Move this to function where report values are calculated
-      // vector<Type> u_agespace_mmc_v(u_agespace_mmc);
-      // vector<Type> u_agetime_mmc_v(u_agetime_mmc);
-      // vector<Type> u_spacetime_mmc_v(u_spacetime_mmc);
-      // vector<Type> u_agespace_tmc_v(u_agespace_tmc);
-
       // Prior on the standard deviation for the interaction random effects
       nll -= dexp(sigma_agespace_mmc,  Type(1), TRUE) + logsigma_agespace_mmc;
       nll -= dexp(sigma_agetime_mmc,   Type(1), TRUE) + logsigma_agetime_mmc;
@@ -219,32 +226,135 @@ class Threemc {
 
     // Function to calculate report values
     // TODO: This will change depending on whether type information is included
-    // calc_report_vals() {
-    //   
-    // };
+    void calc_report_vals(SparseMatrix<Type> X_fixed_mmc, 
+                          SparseMatrix<Type> X_time_mmc,
+                          SparseMatrix<Type> X_age_mmc, 
+                          SparseMatrix<Type> X_space_mmc,
+                          SparseMatrix<Type> X_agetime_mmc, 
+                          SparseMatrix<Type> X_agespace_mmc,
+                          SparseMatrix<Type> X_spacetime_mmc, 
+                          // TMC terms
+                          SparseMatrix<Type> X_fixed_tmc,
+                          SparseMatrix<Type> X_age_tmc, 
+                          SparseMatrix<Type> X_space_tmc,
+                          SparseMatrix<Type> X_agespace_tmc,
+                          // Integration matrices
+                          density::SparseMatrix<Type> IntMat1,
+                          density::SparseMatrix<Type> IntMat2,
+                          // parameters
+                          vector<Type> u_fixed_mmc, 
+                          vector<Type> u_fixed_tmc,
+                          vector<Type> u_age_mmc,
+                          vector<Type> u_age_tmc,
+                          vector<Type> u_time_mmc,
+                          vector<Type> u_space_mmc, 
+                          vector<Type> u_space_tmc,
+                          array<Type> u_agetime_mmc,
+                          array<Type> u_agespace_mmc,
+                          array<Type> u_spacetime_mmc,
+                          array<Type> u_agespace_tmc,
+                          Type sigma_age_mmc,
+                          Type sigma_time_mmc,
+                          Type sigma_space_mmc,
+                          Type sigma_agetime_mmc,
+                          Type sigma_agespace_mmc,
+                          Type sigma_spacetime_mmc,
+                          Type sigma_age_tmc,
+                          Type sigma_space_tmc,
+                          Type sigma_agespace_tmc) {
+       
+      // Vector the interaction terms
+      vector<Type> u_agespace_mmc_v(u_agespace_mmc);
+      vector<Type> u_agetime_mmc_v(u_agetime_mmc);
+      vector<Type> u_spacetime_mmc_v(u_spacetime_mmc);
+      vector<Type> u_agespace_tmc_v(u_agespace_tmc);
+
+      /// Estimate hazard rate ///
+      /// TODO: Break this down into functions as well!
+      // Medical hazard rate
+      haz_mmc = X_fixed_mmc * u_fixed_mmc +
+        X_time_mmc * u_time_mmc * sigma_time_mmc +
+        X_space_mmc * u_space_mmc * sigma_space_mmc +
+        X_age_mmc * u_age_mmc * sigma_age_mmc +
+        X_agetime_mmc * u_agetime_mmc_v * sigma_agetime_mmc +
+        X_agespace_mmc * u_agespace_mmc_v * sigma_agespace_mmc +
+        X_spacetime_mmc * u_spacetime_mmc_v * sigma_spacetime_mmc;
+
+      // Traditional hazard rate
+      haz_tmc = X_fixed_tmc * u_fixed_tmc +
+        X_space_tmc * u_space_tmc * sigma_space_tmc +
+        X_age_tmc * u_age_tmc * sigma_age_tmc +
+        X_agespace_tmc * u_agespace_tmc_v * sigma_agespace_tmc;
+
+      // Rates on [0,1] scale
+      haz_tmc = invlogit_vec(haz_tmc);
+      haz_mmc = invlogit_vec(haz_mmc);
+
+      // Adjustment such that \lambda_mmc + \lambda_tmc \in [0,1]
+      // Medical rate to only take from the remaining proportion
+      // not taken through traditional circumcision (1 - \lambda_tmc)
+      haz_mmc = haz_mmc * (1 - haz_tmc);
+
+      // Total hazard rate
+      haz = haz_mmc + haz_tmc;
+
+      // Survival probabilities
+      vector<Type> logprob  = log(Type(1.0) - haz);
+      surv     = exp(IntMat1 * logprob);
+      vector<Type> surv_lag = exp(IntMat2 * logprob);
+      vector<Type> leftcens = Type(1.0) - surv;
+
+      // Incidence
+      inc_tmc = haz_tmc * surv_lag;
+      inc_mmc = haz_mmc * surv_lag;
+      inc = haz * surv_lag;
+
+      // Cumulative incidence
+      cum_inc_tmc = IntMat1 * inc_tmc;
+      cum_inc_mmc = IntMat1 * inc_mmc;
+      cum_inc = cum_inc_tmc + cum_inc_mmc;
+    };
 
     // Function
     // likelihood() {};
 
+    //// Getter Functions ////
+   
     // getter for nll;
     Type get_nll() {
       return nll;
     };
-
-    // Report values (
-    // TOOD: Need two versions depending on whether MC is split by type)
-    // void report() {
-    //   REPORT(haz_mmc);     // Medical hazard rate
-    //   REPORT(haz_tmc);     // Traditional hazard rate
-    //   REPORT(haz);         // Total hazard rate
-    //   REPORT(inc_tmc);     // Traditional circumcision incidence rate
-    //   REPORT(inc_mmc);     // Medical circumcision incidence rate
-    //   REPORT(inc);         // Total circumcision incidence rate
-    //   REPORT(cum_inc_tmc); // Traditional circumcision cumulative incidence rate
-    //   REPORT(cum_inc_mmc); // Medical circumcision cumulative incidence rate
-    //   REPORT(cum_inc);     // Total circumcision cumulative incidence rate
-    //   REPORT(surv);        // Survival probabilities
-    // };
+    // getters for report vals
+    vector<Type> get_haz_mmc() {
+      return haz_mmc;
+    };
+    vector<Type> get_haz_tmc() {
+      return haz_tmc;
+    };
+    vector<Type> get_haz() {
+      return haz;
+    };
+    vector<Type> get_inc_mmc() {
+      return inc_mmc;
+    };
+    vector<Type> get_inc_tmc() {
+      return inc_tmc;
+    };
+    vector<Type> get_inc() {
+      return inc;
+    };
+    vector<Type> get_cum_inc_mmc() {
+      return cum_inc_mmc;
+    };
+    vector<Type> get_cum_inc_tmc() {
+      return cum_inc_tmc;
+    };
+    vector<Type> get_cum_inc() {
+      return cum_inc;
+    };
+    vector<Type> get_surv() {
+      return surv;
+    };
 };
 
 #endif
