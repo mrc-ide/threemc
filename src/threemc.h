@@ -139,83 +139,83 @@ class Threemc {
       nll -= dexp(sigma_space_tmc, Type(1), TRUE) + logsigma_space_tmc;
     };
 
-    // // Prior on the interaction random effects
-    // void rand_eff_interact_p(SparseMatrix<Type> Q_space,
-    //                          array<Type> u_agespace_mmc,
-    //                          array<Type> u_agespace_tmc,
-    //                          array<Type> u_agetime_mmc,
-    //                          array<Type> u_spacetime_mmc,
-    //                          Type logsigma_agespace_mmc,
-    //                          Type sigma_agespace_mmc,
-    //                          Type logsigma_agespace_tmc,
-    //                          Type sigma_agespace_tmc,
-    //                          Type logsigma_agetime_mmc,
-    //                          Type sigma_agetime_mmc,
-    //                          Type logsigma_spacetime_mmc,
-    //                          Type sigma_spacetime_mmc,
-    //                          Type logitrho_mmc_age2,
-    //                          Type rho_mmc_age2,
-    //                          Type logitrho_tmc_age2,
-    //                          Type rho_tmc_age2,
-    //                          Type logitrho_mmc_age3,
-    //                          Type rho_mmc_age3,
-    //                          Type logitrho_mmc_time2,
-    //                          Type rho_mmc_time2,
-    //                          Type logitrho_mmc_time3,
-    //                          Type rho_mmc_time3) {
+    // Prior on the interaction random effects
+    void rand_eff_interact_p(SparseMatrix<Type> Q_space,
+                             array<Type> u_agespace_mmc,
+                             array<Type> u_agespace_tmc,
+                             array<Type> u_agetime_mmc,
+                             array<Type> u_spacetime_mmc,
+                             Type logsigma_agespace_mmc,
+                             Type sigma_agespace_mmc,
+                             Type logsigma_agespace_tmc,
+                             Type sigma_agespace_tmc,
+                             Type logsigma_agetime_mmc,
+                             Type sigma_agetime_mmc,
+                             Type logsigma_spacetime_mmc,
+                             Type sigma_spacetime_mmc,
+                             Type logitrho_mmc_age2,
+                             Type rho_mmc_age2,
+                             Type logitrho_tmc_age2,
+                             Type rho_tmc_age2,
+                             Type logitrho_mmc_age3,
+                             Type rho_mmc_age3,
+                             Type logitrho_mmc_time2,
+                             Type rho_mmc_time2,
+                             Type logitrho_mmc_time3,
+                             Type rho_mmc_time3) {
 
-    //   // Interactions: space-time (GMRF x AR1), age-time (AR1 x AR1) and age-space (AR1 x GMRF)
-    //   nll += SEPARABLE(AR1(rho_mmc_time2), AR1(rho_mmc_age2))(u_agetime_mmc);
-    //   nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_age3))(u_agespace_mmc);
-    //   nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_time3))(u_spacetime_mmc);
-    //   nll += SEPARABLE(GMRF(Q_space), AR1(rho_tmc_age2))(u_agespace_tmc);
-    //   
-    //   // Sum-to-zero constraints
-    //   for (int i = 0; i < u_agespace_mmc.cols(); i++) {
-    //     nll -= dnorm(u_agespace_mmc.col(i).sum(),
-    //                  Type(0),
-    //                  Type(0.001) * u_agespace_mmc.col(i).size(),
-    //                  true);
-    //   } 
-    //   for (int i = 0; i < u_agetime_mmc.cols(); i++) {
-    //     nll -= dnorm(u_agetime_mmc.col(i).sum(),
-    //                  Type(0),
-    //                  Type(0.001) * u_agetime_mmc.col(i).size(),
-    //                  true);
-    //   }  
-    //   for (int i = 0; i < u_spacetime_mmc.cols(); i++) {
-    //     nll -= dnorm(u_spacetime_mmc.col(i).sum(),
-    //                  Type(0),
-    //                  Type(0.001) * u_spacetime_mmc.col(i).size(),
-    //                  true);
-    //   }  
-    //   for (int i = 0; i < u_agespace_tmc.cols(); i++) {
-    //     nll -= dnorm(u_agespace_tmc.col(i).sum(),
-    //                  Type(0),
-    //                  Type(0.001) * u_agespace_tmc.col(i).size(),
-    //                  true);
-    //   }
-    //   
-    //   // Vectorising the interaction
-    //   // TODO: Move this to function where report values are calculated
-    //   // vector<Type> u_agespace_mmc_v(u_agespace_mmc);
-    //   // vector<Type> u_agetime_mmc_v(u_agetime_mmc);
-    //   // vector<Type> u_spacetime_mmc_v(u_spacetime_mmc);
-    //   // vector<Type> u_agespace_tmc_v(u_agespace_tmc);
+      // Interactions: space-time (GMRF x AR1), age-time (AR1 x AR1) and age-space (AR1 x GMRF)
+      nll += SEPARABLE(AR1(rho_mmc_time2), AR1(rho_mmc_age2))(u_agetime_mmc);
+      nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_age3))(u_agespace_mmc);
+      nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_time3))(u_spacetime_mmc);
+      nll += SEPARABLE(GMRF(Q_space), AR1(rho_tmc_age2))(u_agespace_tmc);
+      
+      // Sum-to-zero constraints
+      for (int i = 0; i < u_agespace_mmc.cols(); i++) {
+        nll -= dnorm(u_agespace_mmc.col(i).sum(),
+                     Type(0),
+                     Type(0.001) * u_agespace_mmc.col(i).size(),
+                     true);
+      } 
+      for (int i = 0; i < u_agetime_mmc.cols(); i++) {
+        nll -= dnorm(u_agetime_mmc.col(i).sum(),
+                     Type(0),
+                     Type(0.001) * u_agetime_mmc.col(i).size(),
+                     true);
+      }  
+      for (int i = 0; i < u_spacetime_mmc.cols(); i++) {
+        nll -= dnorm(u_spacetime_mmc.col(i).sum(),
+                     Type(0),
+                     Type(0.001) * u_spacetime_mmc.col(i).size(),
+                     true);
+      }  
+      for (int i = 0; i < u_agespace_tmc.cols(); i++) {
+        nll -= dnorm(u_agespace_tmc.col(i).sum(),
+                     Type(0),
+                     Type(0.001) * u_agespace_tmc.col(i).size(),
+                     true);
+      }
+      
+      // Vectorising the interaction
+      // TODO: Move this to function where report values are calculated
+      // vector<Type> u_agespace_mmc_v(u_agespace_mmc);
+      // vector<Type> u_agetime_mmc_v(u_agetime_mmc);
+      // vector<Type> u_spacetime_mmc_v(u_spacetime_mmc);
+      // vector<Type> u_agespace_tmc_v(u_agespace_tmc);
 
-    //   // Prior on the standard deviation for the interaction random effects
-    //   nll -= dexp(sigma_agespace_mmc,  Type(1), TRUE) + logsigma_agespace_mmc;
-    //   nll -= dexp(sigma_agetime_mmc,   Type(1), TRUE) + logsigma_agetime_mmc;
-    //   nll -= dexp(sigma_spacetime_mmc, Type(1), TRUE) + logsigma_spacetime_mmc;
-    //   nll -= dexp(sigma_agespace_tmc,  Type(1), TRUE) + logsigma_agespace_tmc;
+      // Prior on the standard deviation for the interaction random effects
+      nll -= dexp(sigma_agespace_mmc,  Type(1), TRUE) + logsigma_agespace_mmc;
+      nll -= dexp(sigma_agetime_mmc,   Type(1), TRUE) + logsigma_agetime_mmc;
+      nll -= dexp(sigma_spacetime_mmc, Type(1), TRUE) + logsigma_spacetime_mmc;
+      nll -= dexp(sigma_agespace_tmc,  Type(1), TRUE) + logsigma_agespace_tmc;
 
-    //   // Prior on the logit autocorrelation parameters
-    //   nll -= dnorm(logitrho_mmc_time2, Type(3), Type(2), TRUE);
-    //   nll -= dnorm(logitrho_mmc_age2,  Type(3), Type(2), TRUE);
-    //   nll -= dnorm(logitrho_mmc_time3, Type(3), Type(2), TRUE);
-    //   nll -= dnorm(logitrho_mmc_age3,  Type(3), Type(2), TRUE);
-    //   nll -= dnorm(logitrho_tmc_age2,  Type(3), Type(2), TRUE);
-    // };
+      // Prior on the logit autocorrelation parameters
+      nll -= dnorm(logitrho_mmc_time2, Type(3), Type(2), TRUE);
+      nll -= dnorm(logitrho_mmc_age2,  Type(3), Type(2), TRUE);
+      nll -= dnorm(logitrho_mmc_time3, Type(3), Type(2), TRUE);
+      nll -= dnorm(logitrho_mmc_age3,  Type(3), Type(2), TRUE);
+      nll -= dnorm(logitrho_tmc_age2,  Type(3), Type(2), TRUE);
+    };
 
     // Function to calculate report values
     // TODO: This will change depending on whether type information is included
