@@ -40,8 +40,7 @@ using namespace density;
 // TODO: Move implementation to separate file
 template <class Type>
 class Threemc {
-  // private:
-  public:
+  private:
     // negative log likelihood
     Type nll; 
     // report values (hazard rates, incidence and cumulative incidence)
@@ -59,7 +58,7 @@ class Threemc {
 
     // also add report values here (??)
 
-  // public:
+  public:
     // Default Constructor
     Threemc() {
       Type nll = Type(0); // initialise nll to 0
