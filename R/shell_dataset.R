@@ -55,6 +55,16 @@ create_shell_dataset <- function(survey_circumcision,
     message("area_lev arg missing, taken as maximum area level in areas")
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }
+  
+  # test that data has been provided correctly (i.e. with > 0 rows)
+  stopifnot(nrow(survey_circumcision) > 0)
+  stopifnot(nrow(populations) > 0)
+  stopifnot(nrow(areas) > 0)
+  
+  # check that populations and areas haven't been provided "backwards"!
+  stopifnot("population" %in% names(populations))
+  stopifnot("area_id" %in% names(areas))
+  
 
   # check for area_ids with duplicated area_names
   pop_duplicates <- populations %>% 
