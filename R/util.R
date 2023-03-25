@@ -298,6 +298,14 @@ create_aggregate_structure <- function(areas,
     dplyr::filter(.data$area_level == area_lev) %>%
     dplyr::summarise(max(.data$space)) %>%
     dplyr::pull()
+
+  if (max_space != nrow(areas)) {
+    message(paste0(
+        "max(areas$space) != nrow(areas), ",
+        "may produce error in create_aggregate_structure"
+    ))
+  }
+
   area_id_seq <- seq(1, max_space, 1)
   sub_region_list <- lapply(area_id_seq, function(i) {
     # Get areas lower in the hierarchy
