@@ -28,14 +28,133 @@ Type geninvlogit(Type x, Type a, Type b){
   return y;
 }
 
+// Data Struct //
+template<class Type>
+struct Threemc_data {
+
+  // indicators
+  int is_type; // Does the data for the modelled country include type information
+  
+  // Survival analysis matrices
+  density::SparseMatrix<Type> A_mmc; // Matrix selecting instantaneous hazard for medically circumcised pop
+  density::SparseMatrix<Type> A_tmc; // Matrix selecting instantaneous hazard for traditionally circumcised pop
+  density::SparseMatrix<Type> A_mc; // Matrix selecting instantaneous hazard for unknown circumcised pop
+  density::SparseMatrix<Type> B; // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
+  density::SparseMatrix<Type> C; // Matrix selecting relevant cumulative hazard entry for interval censored pop
+
+  // Integeration matrices
+  density::SparseMatrix<Type> IntMat1;
+  density::SparseMatrix<Type> IntMat2;
+
+  // Design Matrices
+  density::SparseMatrix<Type> X_fixed_mmc; // Design matrix for the fixed effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_time_mmc; // Design matrix for the temporal random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_age_mmc; // Design matrix for the stratification random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_space_mmc; // Design matrix for the stratification random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_agetime_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_agespace_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_spacetime_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_fixed_tmc; // Design matrix for the fixed effects in the traditional circumcision hazard rate
+  density::SparseMatrix<Type> X_age_tmc; // Design matrix for the stratification random effects in the traditional circumcision hazard rate
+  density::SparseMatrix<Type> X_space_tmc; // Design matrix for the stratification random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_agespace_tmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+
+  // for model with no type
+  density::SparseMatrix<Type> X_fixed;    // Design matrix for the fixed effects
+  density::SparseMatrix<Type> X_time;     // Design matrix for the temporal random effects
+  density::SparseMatrix<Type> X_age;      // Design matrix for the stratification random effects
+  density::SparseMatrix<Type> X_space;    // Design matrix for the stratification random effects
+  density::SparseMatrix<Type> X_agetime;  // Design matrix for the age-time interaction random effects
+  density::SparseMatrix<Type> X_agespace; // Design matrix for the age-space interaction random effects
+  density::SparseMatrix<Type> X_spacetime; // Design matrix for the age-space interaction random effects
+ 
+  // Precision Matrix
+  density::SparseMatrix<Type> Q_space; // Aggregation matrix for number of circumcisions performed
+
+  // Constructor, which conditionally uses data macros to assign values to declared matrices
+  // Threemc_data(int is_type) {
+  Threemc_data(SEXP x) {
+
+    // common to all
+    // DATA_SPARSE_MATRIX(A_mc); 
+    // DATA_SPARSE_MATRIX(B); 
+    // DATA_SPARSE_MATRIX(C); 
+    // DATA_SPARSE_MATRIX(IntMat1); 
+    // DATA_SPARSE_MATRIX(IntMat2);
+
+    // DATA_SPARSE_MATRIX(Q_space); 
+
+    // is_type = asInt(getListElement(x, "is_type"));
+    // is_type = Rcpp::as<int>(getListElement(x, "is_type"));
+    is_type = CppAD::Integer(asVector<Type>(getListElement(x, "is_type"))[0]);  
+    A_mc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_mc"));
+    B       = tmbutils::asSparseMatrix<Type>(getListElement(x, "B"));
+    C       = tmbutils::asSparseMatrix<Type>(getListElement(x, "C"));
+    IntMat1 = tmbutils::asSparseMatrix<Type>(getListElement(x, "IntMat1"));
+    IntMat2 = tmbutils::asSparseMatrix<Type>(getListElement(x, "IntMat2"));
+
+    Q_space = tmbutils::asSparseMatrix<Type>(getListElement(x, "Q_space"));
+
+    // for model with type only
+    if (is_type == 1) {
+      // DATA_SPARSE_MATRIX(A_mmc); 
+      // DATA_SPARSE_MATRIX(A_tmc); 
+      
+      // DATA_SPARSE_MATRIX(X_fixed_mmc); 
+      // DATA_SPARSE_MATRIX(X_time_mmc); 
+      // DATA_SPARSE_MATRIX(X_age_mmc); 
+      // DATA_SPARSE_MATRIX(X_space_mmc); 
+      // DATA_SPARSE_MATRIX(X_agetime_mmc); 
+      // DATA_SPARSE_MATRIX(X_agespace_mmc); 
+      // DATA_SPARSE_MATRIX(X_spacetime_mmc);
+      // DATA_SPARSE_MATRIX(X_fixed_tmc); 
+      // DATA_SPARSE_MATRIX(X_age_tmc); 
+      // DATA_SPARSE_MATRIX(X_space_tmc); 
+      // DATA_SPARSE_MATRIX(X_agespace_tmc); 
+
+      A_mmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_mmc"));
+      A_tmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_tmc"));
+
+      X_fixed_mmc     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed_mmc"));
+      X_time_mmc      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time_mmc")); 
+      X_age_mmc       = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_mmc")); 
+      X_space_mmc     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_mmc")); 
+      X_agetime_mmc   = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agetime_mmc")); 
+      X_agespace_mmc  = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_mmc")); 
+      X_spacetime_mmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_spacetime_mmc"));
+      X_fixed_tmc     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed_tmc")); 
+      X_age_tmc       = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_tmc")); 
+      X_space_tmc     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_tmc")); 
+      X_agespace_tmc  = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_tmc")); 
+
+    // for model with no type
+    } else {
+      // DATA_SPARSE_MATRIX(X_fixed);
+      // DATA_SPARSE_MATRIX(X_time);
+      // DATA_SPARSE_MATRIX(X_age);
+      // DATA_SPARSE_MATRIX(X_space);
+      // DATA_SPARSE_MATRIX(X_agetime);
+      // DATA_SPARSE_MATRIX(X_agespace);
+      // DATA_SPARSE_MATRIX(X_spacetime);
+
+      X_fixed     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed"));
+      X_time      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time")); 
+      X_age       = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age")); 
+      X_space     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space")); 
+      X_agetime   = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agetime")); 
+      X_agespace  = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace")); 
+      X_spacetime = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_spacetime"));
+    }
+  }
+};
+
+
 /*******************************************************************/
 /*   Class to calculate negative log likelihood in threemc model   */
 /*******************************************************************/
 
 #ifndef THREEMCHEADERDEF
 #define THREEMCHEADERDEF
-
-using namespace density;
 
 // TODO: Move implementation to separate file
 template <class Type>
@@ -85,8 +204,8 @@ class Threemc {
                          Type logitrho_time1,
                          Type rho_time1) {
 
-      // AR1 Process
-      nll += AR1(rho_time1)(u_time);
+      // density::AR1 Process
+      nll += density::AR1(rho_time1)(u_time);
 
       // Sum to zero constraint
       nll -= dnorm(u_time.sum(), Type(0), Type(0.001) * u_time.size(), true);
@@ -107,8 +226,8 @@ class Threemc {
                         Type logitrho_age1,
                         Type rho_age1) {
 
-      // AR1 processes
-      nll += AR1(rho_age1)(u_age);
+      // density::AR1 processes
+      nll += density::AR1(rho_age1)(u_age);
 
       // sum to zero constraint
       nll -= dnorm(u_age.sum(), Type(0), Type(0.001) * u_age.size(), true);
@@ -121,13 +240,13 @@ class Threemc {
     };
 
     // Prior on the spatial random effects
-    void rand_eff_space_p(SparseMatrix<Type> Q_space,
+    void rand_eff_space_p(density::SparseMatrix<Type> Q_space,
                           vector<Type> u_space,
                           Type logsigma_space,
                           Type sigma_space) {
 
       // Gaussian markov random field with prespecified precision matrix
-      nll += GMRF(Q_space)(u_space);
+      nll += density::GMRF(Q_space)(u_space);
 
       // Sum to zero constraints
       nll -= dnorm(u_space.sum(), Type(0), Type(0.001) * u_space.size(), true);
@@ -137,7 +256,7 @@ class Threemc {
     };
 
     // Prior on the interaction random effects for either MMC or MC (for model w/ no type)
-    void rand_eff_interact_p(SparseMatrix<Type> Q_space,
+    void rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
                              array<Type> u_agespace,
                              array<Type> u_agetime,
                              array<Type> u_spacetime,
@@ -156,10 +275,10 @@ class Threemc {
                              Type logitrho_time3,
                              Type rho_time3) {
 
-      // Interactions: space-time (GMRF x AR1), age-time (AR1 x AR1) and age-space (AR1 x GMRF)
-      nll += SEPARABLE(AR1(rho_time2), AR1(rho_age2))(u_agetime);
-      nll += SEPARABLE(GMRF(Q_space), AR1(rho_age3))(u_agespace);
-      nll += SEPARABLE(GMRF(Q_space), AR1(rho_time3))(u_spacetime);
+      // Interactions: space-time (density::GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x density::GMRF)
+      nll += SEPARABLE(density::AR1(rho_time2), density::AR1(rho_age2))(u_agetime);
+      nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_age3))(u_agespace);
+      nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_time3))(u_spacetime);
       
       // Sum-to-zero constraint
       // TODO: Iterate over map of these
@@ -197,15 +316,15 @@ class Threemc {
     };
 
     // Overload prior on the interaction random effects for just TMC
-    void rand_eff_interact_p(SparseMatrix<Type> Q_space,
+    void rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
                              array<Type> u_agespace_tmc,
                              Type logsigma_agespace_tmc,
                              Type sigma_agespace_tmc,
                              Type logitrho_tmc_age2,
                              Type rho_tmc_age2) {
 
-      // Interactions: space-time (GMRF x AR1), age-time (AR1 x AR1) and age-space (AR1 x GMRF)
-      nll += SEPARABLE(GMRF(Q_space), AR1(rho_tmc_age2))(u_agespace_tmc);
+      // Interactions: space-time (density::GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x density::GMRF)
+      nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_tmc_age2))(u_agespace_tmc);
       
       // Sum-to-zero constraints
       for (int i = 0; i < u_agespace_tmc.cols(); i++) {
@@ -228,13 +347,13 @@ class Threemc {
     // Need to just overload this function
     // TODO: Can definitely design this function better to avoid repitition
     // For MMC: 
-    void calc_haz(SparseMatrix<Type> X_fixed, 
-                  SparseMatrix<Type> X_time,
-                  SparseMatrix<Type> X_age, 
-                  SparseMatrix<Type> X_space,
-                  SparseMatrix<Type> X_agetime, 
-                  SparseMatrix<Type> X_agespace,
-                  SparseMatrix<Type> X_spacetime, 
+    void calc_haz(density::SparseMatrix<Type> X_fixed, 
+                  density::SparseMatrix<Type> X_time,
+                  density::SparseMatrix<Type> X_age, 
+                  density::SparseMatrix<Type> X_space,
+                  density::SparseMatrix<Type> X_agetime, 
+                  density::SparseMatrix<Type> X_agespace,
+                  density::SparseMatrix<Type> X_spacetime, 
                   // parameters
                   vector<Type> u_fixed, 
                   vector<Type> u_age,
@@ -278,10 +397,10 @@ class Threemc {
     };
 
     // For TMC: 
-    void calc_haz(SparseMatrix<Type> X_fixed,
-                  SparseMatrix<Type> X_age, 
-                  SparseMatrix<Type> X_space,
-                  SparseMatrix<Type> X_agespace,
+    void calc_haz(density::SparseMatrix<Type> X_fixed,
+                  density::SparseMatrix<Type> X_age, 
+                  density::SparseMatrix<Type> X_space,
+                  density::SparseMatrix<Type> X_agespace,
                   // parameters
                   vector<Type> u_fixed,
                   vector<Type> u_age,
@@ -312,13 +431,13 @@ class Threemc {
 
     // for model with no type (so only MMC)
     // TODO: Repitition here from function for MMC, redesign (with template?) to avoid this
-    void calc_haz(SparseMatrix<Type> X_fixed, 
-                  SparseMatrix<Type> X_time,
-                  SparseMatrix<Type> X_age, 
-                  SparseMatrix<Type> X_space,
-                  SparseMatrix<Type> X_agetime, 
-                  SparseMatrix<Type> X_agespace,
-                  SparseMatrix<Type> X_spacetime, 
+    void calc_haz(density::SparseMatrix<Type> X_fixed, 
+                  density::SparseMatrix<Type> X_time,
+                  density::SparseMatrix<Type> X_age, 
+                  density::SparseMatrix<Type> X_space,
+                  density::SparseMatrix<Type> X_agetime, 
+                  density::SparseMatrix<Type> X_agespace,
+                  density::SparseMatrix<Type> X_spacetime, 
                   // Integration matrix
                   density::SparseMatrix<Type> IntMat1,
                   density::SparseMatrix<Type> IntMat2,
@@ -445,7 +564,7 @@ class Threemc {
     // Function to calculate likelihood
     // TODO: Can make an enum (or something?) pointer to iterate over for this
     // (will be different for each model)
-  void likelihood(density::SparseMatrix<Type> Mat,
+    void likelihood(density::SparseMatrix<Type> Mat,
                   vector<Type> report_val) {
       // Calculate likelihood for chosen circ pop with corresponding report vals
     nll -= (Mat * log(report_val)).sum();

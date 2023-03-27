@@ -3,38 +3,21 @@
 // #include "implementation.cpp"
 
 template<class Type>
-Type objective_function<Type>::operator() ()
-{
+Type objective_function<Type>::operator() () {
   
   using namespace density;
 
-  //////////////////////////
-  //// Data definitions ////
-  //////////////////////////
-  // Survival analysis matrices
-  DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting instantaneous hazard for medically circumcised pop
-  DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
-  DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
-  DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
-  DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
-  DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard 
-  DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard 
-  
-  // Design matrices 
-  DATA_SPARSE_MATRIX(X_fixed_mmc); // Design matrix for the fixed effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_time_mmc); // Design matrix for the temporal random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_age_mmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_space_mmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_agetime_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_agespace_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_spacetime_mmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_fixed_tmc); // Design matrix for the fixed effects in the traditional circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_age_tmc); // Design matrix for the stratification random effects in the traditional circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_space_tmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_agespace_tmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
- 
-  // Precision matrices 
-  DATA_SPARSE_MATRIX(Q_space); // Aggregation matrix for number of circumcisions performed
+
+  ////////////////////////
+  /// Data definitions ///
+  ////////////////////////
+
+  // indicators
+  // DATA_INTEGER(is_type); // Does the data for the modelled country include type information
+
+  // Define struct containing data matrices
+  // Threemc_data<Type> threemc_data(1);
+  DATA_STRUCT(threemc_data, Threemc_data);
 
   ////////////////////
   //// Parameters ////
@@ -134,24 +117,24 @@ Type objective_function<Type>::operator() ()
                          rho_tmc_age1);
 
   // prior on spatial random effects
-  // threemc.rand_eff_space_p(Q_space,
+  // threemc.rand_eff_space_p(threemc_data.Q_space,
   //                          u_space_mmc,
   //                          u_space_tmc,
   //                          logsigma_space_mmc,
   //                          sigma_space_mmc,
   //                          logsigma_space_tmc,
   //                          sigma_space_tmc);
-  threemc.rand_eff_space_p(Q_space,
+  threemc.rand_eff_space_p(threemc_data.Q_space,
                            u_space_mmc,
                            logsigma_space_mmc,
                            sigma_space_mmc);
-  threemc.rand_eff_space_p(Q_space,
+  threemc.rand_eff_space_p(threemc_data.Q_space,
                            u_space_tmc,
                            logsigma_space_tmc,
                            sigma_space_tmc);
 
   // prior on interaction random effects
-  threemc.rand_eff_interact_p(Q_space,
+  threemc.rand_eff_interact_p(threemc_data.Q_space,
                               u_agespace_mmc,
                               u_agetime_mmc,
                               u_spacetime_mmc,
@@ -169,7 +152,7 @@ Type objective_function<Type>::operator() ()
                               rho_mmc_time2,
                               logitrho_mmc_time3,
                               rho_mmc_time3);
-  threemc.rand_eff_interact_p(Q_space,
+  threemc.rand_eff_interact_p(threemc_data.Q_space,
                               u_agespace_tmc,
                               logsigma_agespace_tmc,
                               sigma_agespace_tmc,
@@ -178,14 +161,14 @@ Type objective_function<Type>::operator() ()
 
   //// Calculate report values (hazard, (cumulative) incidence) ////
   // TODO: come up with more informative function name?
-  // threemc.calc_report_vals(X_fixed_mmc, 
-  //                          X_time_mmc,
-  //                          X_age_mmc, 
-  //                          X_space_mmc,
-  //                          X_agetime_mmc, 
-  //                          X_agespace_mmc,
-  //                          X_spacetime_mmc, 
-  //                          IntMat1,
+  // threemc.calc_report_vals(threemc_data.X_fixed_mmc, 
+  //                          threemc_data.X_time_mmc,
+  //                          threemc_data.X_age_mmc, 
+  //                          threemc_data.X_space_mmc,
+  //                          threemc_data.X_agetime_mmc, 
+  //                          threemc_data.X_agespace_mmc,
+  //                          threemc_data.X_spacetime_mmc, 
+  //                          threemc_data.IntMat1,
   //                          u_fixed_mmc, 
   //                          u_fixed_tmc,
   //                          u_age_mmc,
@@ -202,13 +185,13 @@ Type objective_function<Type>::operator() ()
   //                          sigma_spacetime_mmc);
 
   // Calculate hazards
-  threemc.calc_haz(X_fixed_mmc, 
-                   X_time_mmc,
-                   X_age_mmc, 
-                   X_space_mmc,
-                   X_agetime_mmc, 
-                   X_agespace_mmc,
-                   X_spacetime_mmc, 
+  threemc.calc_haz(threemc_data.X_fixed_mmc, 
+                   threemc_data.X_time_mmc,
+                   threemc_data.X_age_mmc, 
+                   threemc_data.X_space_mmc,
+                   threemc_data.X_agetime_mmc, 
+                   threemc_data.X_agespace_mmc,
+                   threemc_data.X_spacetime_mmc, 
                    u_fixed_mmc, 
                    u_age_mmc,
                    u_time_mmc,
@@ -222,10 +205,10 @@ Type objective_function<Type>::operator() ()
                    sigma_agetime_mmc,
                    sigma_agespace_mmc,
                    sigma_spacetime_mmc);
-  threemc.calc_haz(X_fixed_tmc, 
-                   X_age_tmc, 
-                   X_space_tmc,
-                   X_agespace_tmc,
+  threemc.calc_haz(threemc_data.X_fixed_tmc, 
+                   threemc_data.X_age_tmc, 
+                   threemc_data.X_space_tmc,
+                   threemc_data.X_agespace_tmc,
                    u_fixed_tmc, 
                    u_age_tmc,
                    u_space_tmc, 
@@ -236,10 +219,10 @@ Type objective_function<Type>::operator() ()
   threemc.calc_haz();
 
   // calculate survival probabilities
-  threemc.calc_surv(IntMat1, IntMat2);
+  threemc.calc_surv(threemc_data.IntMat1, threemc_data.IntMat2);
 
   // calculate incidences and cumulative incidences
-  threemc.calc_inc(IntMat1, 1); // run where we have type
+  threemc.calc_inc(threemc_data.IntMat1, 1); // run where we have type
 
   //// Calculate likelihood ////
   // threemc.likelihood(A_mmc,
@@ -247,11 +230,11 @@ Type objective_function<Type>::operator() ()
   //                    A_mc,
   //                    B,
   //                    C); 
-  threemc.likelihood(A_mmc, threemc.get_inc_mmc()); // medical circumcisions
-  threemc.likelihood(A_tmc, threemc.get_inc_tmc()); // traditional circumcisions
-  threemc.likelihood(A_mc, threemc.get_inc());      // circs of unknown type
-  threemc.likelihood(B, threemc.get_surv());        // right censored (i.e. uncircumcised)
-  threemc.likelihood(C, threemc.get_leftcens());    // left censored (i.e. unknown circ age)
+  threemc.likelihood(threemc_data.A_mmc, threemc.get_inc_mmc()); // medical circumcisions
+  threemc.likelihood(threemc_data.A_tmc, threemc.get_inc_tmc()); // traditional circumcisions
+  threemc.likelihood(threemc_data.A_mc, threemc.get_inc());      // circs of unknown type
+  threemc.likelihood(threemc_data.B, threemc.get_surv());        // right censored (i.e. uncircumcised)
+  threemc.likelihood(threemc_data.C, threemc.get_leftcens());    // left censored (i.e. unknown circ age)
 
   //// report hazard rates, incidence and cumulative incidence ////
   REPORT(threemc.get_haz_mmc());     // Medical hazard rate
