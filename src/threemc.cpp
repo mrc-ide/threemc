@@ -12,11 +12,11 @@ Type objective_function<Type>::operator() ()
   //// Data definitions ////
   //////////////////////////
   // Survival analysis matrices
-  // DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting instantaneous hazard for medically circumcised pop
-  // DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
-  // DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
-  // DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
-  // DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
+  DATA_SPARSE_MATRIX(A_mmc); // Matrix selecting instantaneous hazard for medically circumcised pop
+  DATA_SPARSE_MATRIX(A_tmc); // Matrix selecting instantaneous hazard for traditionally circumcised pop
+  DATA_SPARSE_MATRIX(A_mc); // Matrix selecting instantaneous hazard for unknown circumcised pop
+  DATA_SPARSE_MATRIX(B); // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
+  DATA_SPARSE_MATRIX(C); // Matrix selecting relevant cumulative hazard entry for interval censored pop
   DATA_SPARSE_MATRIX(IntMat1); // Integration matrix for cumulative hazard 
   DATA_SPARSE_MATRIX(IntMat2); // Integration matrix for lagged cumulative hazard 
   
@@ -62,6 +62,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_ARRAY(u_agespace_tmc);
   
   // Standard deviations 
+  // TODO: Create member enum of Threemc for these so they can be accessed within functions
   PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
   PARAMETER(logsigma_time_mmc);      Type sigma_time_mmc      = exp(logsigma_time_mmc);
   PARAMETER(logsigma_space_mmc);     Type sigma_space_mmc     = exp(logsigma_space_mmc);
@@ -73,6 +74,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logsigma_agespace_tmc);  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
 
   // Autocorrelation parameters 
+  // TODO: Also create member enum of Threemc for these so they can be accessed within functions
   PARAMETER(logitrho_mmc_time1);
   Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
   PARAMETER(logitrho_mmc_time2);
@@ -98,7 +100,9 @@ Type objective_function<Type>::operator() ()
   //// Priors ////
   
   // Apply prior on fixed effects
-  threemc.fix_eff_p(u_fixed_mmc, u_fixed_tmc);
+  // threemc.fix_eff_p(u_fixed_mmc, u_fixed_tmc);
+  threemc.fix_eff_p(u_fixed_mmc);
+  threemc.fix_eff_p(u_fixed_tmc);
 
   // prior on temporal random effects
   threemc.rand_eff_time_p(u_time_mmc,
@@ -108,86 +112,146 @@ Type objective_function<Type>::operator() ()
                           rho_mmc_time1);
 
   // prior on the age random effects
+  // threemc.rand_eff_age_p(u_age_mmc,
+  //                        u_age_tmc,
+  //                        logsigma_age_mmc,
+  //                        sigma_age_mmc,
+  //                        logsigma_age_tmc,
+  //                        sigma_age_tmc,
+  //                        logitrho_mmc_age1,
+  //                        rho_mmc_age1,
+  //                        logitrho_tmc_age1,
+  //                        rho_tmc_age1);
   threemc.rand_eff_age_p(u_age_mmc,
-                         u_age_tmc,
                          logsigma_age_mmc,
                          sigma_age_mmc,
+                         logitrho_mmc_age1,
+                         rho_mmc_age1);
+  threemc.rand_eff_age_p(u_age_tmc,
                          logsigma_age_tmc,
                          sigma_age_tmc,
-                         logitrho_mmc_age1,
-                         rho_mmc_age1,
                          logitrho_tmc_age1,
                          rho_tmc_age1);
 
   // prior on spatial random effects
+  // threemc.rand_eff_space_p(Q_space,
+  //                          u_space_mmc,
+  //                          u_space_tmc,
+  //                          logsigma_space_mmc,
+  //                          sigma_space_mmc,
+  //                          logsigma_space_tmc,
+  //                          sigma_space_tmc);
   threemc.rand_eff_space_p(Q_space,
                            u_space_mmc,
-                           u_space_tmc,
                            logsigma_space_mmc,
-                           sigma_space_mmc,
+                           sigma_space_mmc);
+  threemc.rand_eff_space_p(Q_space,
+                           u_space_tmc,
                            logsigma_space_tmc,
                            sigma_space_tmc);
 
   // prior on interaction random effects
   threemc.rand_eff_interact_p(Q_space,
                               u_agespace_mmc,
-                              u_agespace_tmc,
                               u_agetime_mmc,
                               u_spacetime_mmc,
                               logsigma_agespace_mmc,
                               sigma_agespace_mmc,
-                              logsigma_agespace_tmc,
-                              sigma_agespace_tmc,
                               logsigma_agetime_mmc,
                               sigma_agetime_mmc,
                               logsigma_spacetime_mmc,
                               sigma_spacetime_mmc,
                               logitrho_mmc_age2,
                               rho_mmc_age2,
-                              logitrho_tmc_age2,
-                              rho_tmc_age2,
                               logitrho_mmc_age3,
                               rho_mmc_age3,
                               logitrho_mmc_time2,
                               rho_mmc_time2,
                               logitrho_mmc_time3,
                               rho_mmc_time3);
+  threemc.rand_eff_interact_p(Q_space,
+                              u_agespace_tmc,
+                              logsigma_agespace_tmc,
+                              sigma_agespace_tmc,
+                              logitrho_tmc_age2,
+                              rho_tmc_age2);
 
   //// Calculate report values (hazard, (cumulative) incidence) ////
   // TODO: come up with more informative function name?
-  threemc.calc_report_vals(X_fixed_mmc, 
-                           X_time_mmc,
-                           X_age_mmc, 
-                           X_space_mmc,
-                           X_agetime_mmc, 
-                           X_agespace_mmc,
-                           X_spacetime_mmc, 
-                           X_fixed_tmc,
-                           X_age_tmc, 
-                           X_space_tmc,
-                           X_agespace_tmc,
-                           IntMat1,
-                           IntMat2,
-                           u_fixed_mmc, 
-                           u_fixed_tmc,
-                           u_age_mmc,
-                           u_age_tmc,
-                           u_time_mmc,
-                           u_space_mmc, 
-                           u_space_tmc,
-                           u_agetime_mmc,
-                           u_agespace_mmc,
-                           u_spacetime_mmc,
-                           u_agespace_tmc,
-                           sigma_age_mmc,
-                           sigma_time_mmc,
-                           sigma_space_mmc,
-                           sigma_agetime_mmc,
-                           sigma_agespace_mmc,
-                           sigma_spacetime_mmc,
-                           sigma_age_tmc,
-                           sigma_space_tmc,
-                           sigma_agespace_tmc);
+  // threemc.calc_report_vals(X_fixed_mmc, 
+  //                          X_time_mmc,
+  //                          X_age_mmc, 
+  //                          X_space_mmc,
+  //                          X_agetime_mmc, 
+  //                          X_agespace_mmc,
+  //                          X_spacetime_mmc, 
+  //                          IntMat1,
+  //                          u_fixed_mmc, 
+  //                          u_fixed_tmc,
+  //                          u_age_mmc,
+  //                          u_time_mmc,
+  //                          u_space_mmc, 
+  //                          u_agetime_mmc,
+  //                          u_agespace_mmc,
+  //                          u_spacetime_mmc,
+  //                          sigma_age_mmc,
+  //                          sigma_time_mmc,
+  //                          sigma_space_mmc,
+  //                          sigma_agetime_mmc,
+  //                          sigma_agespace_mmc,
+  //                          sigma_spacetime_mmc);
+
+  // Calculate hazards
+  threemc.calc_haz(X_fixed_mmc, 
+                   X_time_mmc,
+                   X_age_mmc, 
+                   X_space_mmc,
+                   X_agetime_mmc, 
+                   X_agespace_mmc,
+                   X_spacetime_mmc, 
+                   u_fixed_mmc, 
+                   u_age_mmc,
+                   u_time_mmc,
+                   u_space_mmc, 
+                   u_agetime_mmc,
+                   u_agespace_mmc,
+                   u_spacetime_mmc,
+                   sigma_age_mmc,
+                   sigma_time_mmc,
+                   sigma_space_mmc,
+                   sigma_agetime_mmc,
+                   sigma_agespace_mmc,
+                   sigma_spacetime_mmc);
+  threemc.calc_haz(X_fixed_tmc, 
+                   X_age_tmc, 
+                   X_space_tmc,
+                   X_agespace_tmc,
+                   u_fixed_tmc, 
+                   u_age_tmc,
+                   u_space_tmc, 
+                   u_agespace_tmc,
+                   sigma_age_tmc,
+                   sigma_space_tmc,
+                   sigma_agespace_tmc);
+  threemc.calc_haz();
+
+  // calculate survival probabilities
+  threemc.calc_surv(IntMat1, IntMat2);
+
+  // calculate incidences and cumulative incidences
+  threemc.calc_inc(IntMat1, 1); // run where we have type
+
+  //// Calculate likelihood ////
+  // threemc.likelihood(A_mmc,
+  //                    A_tmc,
+  //                    A_mc,
+  //                    B,
+  //                    C); 
+  threemc.likelihood(A_mmc, threemc.get_inc_mmc()); // medical circumcisions
+  threemc.likelihood(A_tmc, threemc.get_inc_tmc()); // traditional circumcisions
+  threemc.likelihood(A_mc, threemc.get_inc());      // circs of unknown type
+  threemc.likelihood(B, threemc.get_surv());        // right censored (i.e. uncircumcised)
+  threemc.likelihood(C, threemc.get_leftcens());    // left censored (i.e. unknown circ age)
 
   //// report hazard rates, incidence and cumulative incidence ////
   REPORT(threemc.get_haz_mmc());     // Medical hazard rate
