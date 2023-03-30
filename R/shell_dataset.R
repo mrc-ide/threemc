@@ -60,11 +60,13 @@ create_shell_dataset <- function(survey_circumcision,
   stopifnot(nrow(survey_circumcision) > 0)
   stopifnot(nrow(populations) > 0)
   stopifnot(nrow(areas) > 0)
-  
+ 
   # check that populations and areas haven't been provided "backwards"!
   stopifnot("population" %in% names(populations))
   stopifnot("area_id" %in% names(areas))
   
+  # check that areas$space == 0:nrow(areas)
+  stopifnot(all(sort(areas$space) == seq_len(nrow(areas))))
 
   # check for area_ids with duplicated area_names
   pop_duplicates <- populations %>% 

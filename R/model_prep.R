@@ -69,6 +69,9 @@ threemc_prepare_model_data <- function(out,
     type_info <- FALSE
   }
 
+  # check that areas$space == 1:nrow(areas)
+  stopifnot(all(sort(areas$space) == seq_len(nrow(areas))))
+
   # Create design matrices for fixed effects and temporal, age, space and
   # interaction random effects
   design_matrices <- create_design_matrices(
