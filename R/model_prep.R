@@ -62,7 +62,7 @@ threemc_prepare_model_data <- function(out,
     )
     area_lev <- max(out$area_level, na.rm = TRUE)
   }
-  
+ 
   type_info <- TRUE
   if (all(out$obs_mmc == 0) && all(out$obs_tmc == 0)) {
     message("No circumcision type information present in `out`")
@@ -266,7 +266,10 @@ split_mmc_design_matrices_paed <- function(out,
                                            design_matrices,
                                            paed_age_cutoff = 10) {
 
-  # TODO: What order should these design matrices be in?
+
+  # ensure paed_age_cutoff has been provided correctly
+  stopifnot(is.null(paed_age_cutoff) || paed_age_cutoff < max(out$age))
+
   if (!is.null(paed_age_cutoff)) {
     # pull out for area level of interest
     out_spec_area_lev <- dplyr::filter(out, .data$area_level == area_lev)
