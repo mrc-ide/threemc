@@ -115,11 +115,24 @@ threemc_prepare_model_data <- function(out,
   )
 
   # Precision/Adjacency matrix for the spatial random effects
-  Q_space <- list(
-    "Q_space" = create_icar_prec_matrix(
-      sf_obj = areas, area_lev = area_lev, row.names = "space"
+  if (nrow(areas) == 1) {
+    # for only one area (like for national level), Q_space == 1
+    new(
+      "dgTMatrix", 
+      i = 0L, 
+      j = 0L, 
+      Dim = c(1L, 1L), 
+      Dimnames = list(NULL, NULL), 
+      x = 1, 
+      factors = list()
     )
-  )
+  } else {
+    Q_space <- list(
+      "Q_space" = create_icar_prec_matrix(
+        sf_obj = areas, row.names = "space"
+      )
+    )
+  }
 
   # returned list
   dat_tmb <- c(
@@ -924,7 +937,6 @@ create_hazard_matrix_agetime <- function(dat,
 #' @importFrom rlang .data
 #' @keywords internal
 create_icar_prec_matrix <- function(sf_obj = NULL,
-                                    area_lev = NULL,
                                     row.names = NULL) {
   if (is.null(area_lev)) {
     message(
@@ -936,8 +948,8 @@ create_icar_prec_matrix <- function(sf_obj = NULL,
   sf_obj <- sf_obj %>%
     dplyr::filter(.data$area_level == area_lev)
 
-  # if area_lev == 0, adjacency matrix will be a 1x1 matrix with single entry 0
-  if (area_lev > 0) {
+  # if nrow(sf_obj) == 1, adjacency matrix is a 1x1 matrix with single entry 0
+  if (nrow(sf_obj) > 1) {
     # Create neighbourhood structure
     Q_space <- spdep::poly2nb(sf_obj, row.names = sf_obj[, row.names])
     # Convert to adjacency matrix
@@ -973,7 +985,16 @@ scale_gmrf_precision <- function(
     A = matrix(1, ncol = ncol(Q)), 
     eps = sqrt(.Machine$double.eps)
   ) {
-  nb <- spdep::mat2listw(abs(Q), style = "B")$neighbours
+  
+  if (nrow(Q) > 1) {
+    nb <- spdep::mat2listw(abs(Q), style = "B")$neighbours
+  } else {
+    # if there is only one area, just have singular "neighbourhood structure"
+    nb <- structure(
+      list(0L), class = "nb", region.id = "1", call = NA, sym = TRUE
+    )
+  }
+  
   comp <- spdep::n.comp.nb(nb)
   for (k in seq_len(comp$nc)) {
     idx <- which(comp$comp.id == k)
