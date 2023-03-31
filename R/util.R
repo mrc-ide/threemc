@@ -240,6 +240,9 @@ combine_areas <- function(.data,
   area_levs <- seq_len(area_lev) - 1
   if (length(area_levs) == 0) area_levs <- -1
   
+  # if only modelling a single area, no need to disaggregate!
+  if (length(unique(.data$area_id)) == 1) area_levs <- area_lev
+  
   # columns to keep
   add_keep_cols <- c(add_keep_cols, names(.data)[grepl("samp_", names(.data))])
   if (length(add_keep_cols) == 0) add_keep_cols <- NULL
