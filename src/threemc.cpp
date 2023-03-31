@@ -23,141 +23,162 @@ Type objective_function<Type>::operator() () {
   //// Parameters ////
   ////////////////////
 
+  Threemc_pars<Type> threemc_pars(threemc_data.is_type, this);
+
   // Fixed Effects
-  PARAMETER_VECTOR(u_fixed_mmc);
-  PARAMETER_VECTOR(u_fixed_tmc);
+  // PARAMETER_VECTOR(u_fixed_mmc);
+  // PARAMETER_VECTOR(u_fixed_tmc);
 
-  // Age random effect
-  PARAMETER_VECTOR(u_age_mmc); 
-  PARAMETER_VECTOR(u_age_tmc); 
+  // // Age random effect
+  // PARAMETER_VECTOR(u_age_mmc); 
+  // PARAMETER_VECTOR(u_age_tmc); 
   
-  // Temporal random effects 
-  PARAMETER_VECTOR(u_time_mmc);
+  // // Temporal random effects 
+  // PARAMETER_VECTOR(u_time_mmc);
   
-  // Spatial random effects
-  PARAMETER_VECTOR(u_space_mmc);
-  PARAMETER_VECTOR(u_space_tmc);
+  // // Spatial random effects
+  // PARAMETER_VECTOR(u_space_mmc);
+  // PARAMETER_VECTOR(u_space_tmc);
   
-  // Interactions
-  PARAMETER_ARRAY(u_agetime_mmc);
-  PARAMETER_ARRAY(u_agespace_mmc);
-  PARAMETER_ARRAY(u_spacetime_mmc);
-  PARAMETER_ARRAY(u_agespace_tmc);
+  // // Interactions
+  // PARAMETER_ARRAY(u_agetime_mmc);
+  // PARAMETER_ARRAY(u_agespace_mmc);
+  // PARAMETER_ARRAY(u_spacetime_mmc);
+  // PARAMETER_ARRAY(u_agespace_tmc);
   
-  // Standard deviations 
-  // TODO: Create member enum of Threemc for these so they can be accessed within functions
-  PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
-  PARAMETER(logsigma_time_mmc);      Type sigma_time_mmc      = exp(logsigma_time_mmc);
-  PARAMETER(logsigma_space_mmc);     Type sigma_space_mmc     = exp(logsigma_space_mmc);
-  PARAMETER(logsigma_agetime_mmc);   Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
-  PARAMETER(logsigma_agespace_mmc);  Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
-  PARAMETER(logsigma_spacetime_mmc); Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
-  PARAMETER(logsigma_age_tmc);       Type sigma_age_tmc       = exp(logsigma_age_tmc);
-  PARAMETER(logsigma_space_tmc);     Type sigma_space_tmc     = exp(logsigma_space_tmc);
-  PARAMETER(logsigma_agespace_tmc);  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
+  // // Standard deviations 
+  // // TODO: Create member enum of Threemc for these so they can be accessed within functions
+  // PARAMETER(logsigma_age_mmc);       Type sigma_age_mmc       = exp(logsigma_age_mmc);
+  // PARAMETER(logsigma_time_mmc);      Type sigma_time_mmc      = exp(logsigma_time_mmc);
+  // PARAMETER(logsigma_space_mmc);     Type sigma_space_mmc     = exp(logsigma_space_mmc);
+  // PARAMETER(logsigma_agetime_mmc);   Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
+  // PARAMETER(logsigma_agespace_mmc);  Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
+  // PARAMETER(logsigma_spacetime_mmc); Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
+  // PARAMETER(logsigma_age_tmc);       Type sigma_age_tmc       = exp(logsigma_age_tmc);
+  // PARAMETER(logsigma_space_tmc);     Type sigma_space_tmc     = exp(logsigma_space_tmc);
+  // PARAMETER(logsigma_agespace_tmc);  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
 
-  // Autocorrelation parameters 
-  // TODO: Also create member enum of Threemc for these so they can be accessed within functions
-  PARAMETER(logitrho_mmc_time1);
-  Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_time2);
-  Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_time3);
-  Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_age1);
-  Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_age2);
-  Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_mmc_age3);
-  Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_tmc_age1);
-  Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
-  PARAMETER(logitrho_tmc_age2);
-  Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
+  // // Autocorrelation parameters 
+  // // TODO: Also create member enum of Threemc for these so they can be accessed within functions
+  // PARAMETER(logitrho_mmc_time1);
+  // Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
+  // PARAMETER(logitrho_mmc_time2);
+  // Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
+  // PARAMETER(logitrho_mmc_time3);
+  // Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
+  // PARAMETER(logitrho_mmc_age1);
+  // Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
+  // PARAMETER(logitrho_mmc_age2);
+  // Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
+  // PARAMETER(logitrho_mmc_age3);
+  // Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
+  // PARAMETER(logitrho_tmc_age1);
+  // Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
+  // PARAMETER(logitrho_tmc_age2);
+  // Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
 
   //// Calculate nll and report values ////
 
   // define object of class Threemc, which will store our negative log likelihood
   Threemc<Type> threemc;
 
-  //// Priors ////
+  //// priors ////
   
-  // Apply prior on fixed effects
+  // apply prior on fixed effects
   // threemc.fix_eff_p(u_fixed_mmc, u_fixed_tmc);
-  threemc.fix_eff_p(u_fixed_mmc);
-  threemc.fix_eff_p(u_fixed_tmc);
+  threemc.fix_eff_p(threemc_pars.u_fixed_mmc);
+  threemc.fix_eff_p(threemc_pars.u_fixed_tmc);
 
   // prior on temporal random effects
-  threemc.rand_eff_time_p(u_time_mmc,
-                          logsigma_time_mmc,
-                          sigma_time_mmc,
-                          logitrho_mmc_time1,
-                          rho_mmc_time1);
+  threemc.rand_eff_time_p(threemc_pars.u_time_mmc,
+                          threemc_pars.logsigma_time_mmc,
+                          // threemc_pars::sigma_time_mmc,
+                          // threemc_pars.sigmas["sigma_time_mmc"],
+                          threemc_pars.sigma_time_mmc,
+                          threemc_pars.logitrho_mmc_time1,
+                          // threemc_pars::rho_mmc_time1);
+                          // threemc_pars.rhos["rho_mmc_time1"]);
+                          threemc_pars.rho_mmc_time1);
 
   // prior on the age random effects
-  // threemc.rand_eff_age_p(u_age_mmc,
-  //                        u_age_tmc,
-  //                        logsigma_age_mmc,
+  // threemc.rand_eff_age_p(threemc_pars.u_age_mmc,
+  //                        threemc_pars.u_age_tmc,
+  //                        threemc_pars.logsigma_age_mmc,
   //                        sigma_age_mmc,
-  //                        logsigma_age_tmc,
+  //                        threemc_pars.logsigma_age_tmc,
   //                        sigma_age_tmc,
-  //                        logitrho_mmc_age1,
+  //                        threemc_pars.logitrho_mmc_age1,
   //                        rho_mmc_age1,
-  //                        logitrho_tmc_age1,
+  //                        threemc_pars.logitrho_tmc_age1,
   //                        rho_tmc_age1);
-  threemc.rand_eff_age_p(u_age_mmc,
-                         logsigma_age_mmc,
-                         sigma_age_mmc,
-                         logitrho_mmc_age1,
-                         rho_mmc_age1);
-  threemc.rand_eff_age_p(u_age_tmc,
-                         logsigma_age_tmc,
-                         sigma_age_tmc,
-                         logitrho_tmc_age1,
-                         rho_tmc_age1);
+  threemc.rand_eff_age_p(threemc_pars.u_age_mmc,
+                         threemc_pars.logsigma_age_mmc,
+                         // threemc_pars::sigma_age_mmc,
+                         threemc_pars.sigma_age_mmc,
+                         threemc_pars.logitrho_mmc_age1,
+                         // threemc_pars::rho_mmc_age1);
+                         threemc_pars.rho_mmc_age1);
+  threemc.rand_eff_age_p(threemc_pars.u_age_tmc,
+                         threemc_pars.logsigma_age_tmc,
+                         // threemc_pars::sigma_age_tmc,
+                          threemc_pars.sigma_age_tmc,
+                         threemc_pars.logitrho_tmc_age1,
+                         // threemc_pars::rho_tmc_age1);
+                         threemc_pars.rho_tmc_age1);
 
   // prior on spatial random effects
   // threemc.rand_eff_space_p(threemc_data.Q_space,
-  //                          u_space_mmc,
-  //                          u_space_tmc,
-  //                          logsigma_space_mmc,
+  //                          threemc_pars.u_space_mmc,
+  //                          threemc_pars.u_space_tmc,
+  //                          threemc_pars.logsigma_space_mmc,
   //                          sigma_space_mmc,
-  //                          logsigma_space_tmc,
+  //                          threemc_pars.logsigma_space_tmc,
   //                          sigma_space_tmc);
   threemc.rand_eff_space_p(threemc_data.Q_space,
-                           u_space_mmc,
-                           logsigma_space_mmc,
-                           sigma_space_mmc);
+                           threemc_pars.u_space_mmc,
+                           threemc_pars.logsigma_space_mmc,
+                           // threemc_pars::sigma_space_mmc);
+                           threemc_pars.sigma_space_mmc);
   threemc.rand_eff_space_p(threemc_data.Q_space,
-                           u_space_tmc,
-                           logsigma_space_tmc,
-                           sigma_space_tmc);
+                           threemc_pars.u_space_tmc,
+                           threemc_pars.logsigma_space_tmc,
+                           // threemc_pars::sigma_space_tmc);
+                           threemc_pars.sigma_space_tmc);
 
   // prior on interaction random effects
   threemc.rand_eff_interact_p(threemc_data.Q_space,
-                              u_agespace_mmc,
-                              u_agetime_mmc,
-                              u_spacetime_mmc,
-                              logsigma_agespace_mmc,
-                              sigma_agespace_mmc,
-                              logsigma_agetime_mmc,
-                              sigma_agetime_mmc,
-                              logsigma_spacetime_mmc,
-                              sigma_spacetime_mmc,
-                              logitrho_mmc_age2,
-                              rho_mmc_age2,
-                              logitrho_mmc_age3,
-                              rho_mmc_age3,
-                              logitrho_mmc_time2,
-                              rho_mmc_time2,
-                              logitrho_mmc_time3,
-                              rho_mmc_time3);
+                              threemc_pars.u_agespace_mmc,
+                              threemc_pars.u_agetime_mmc,
+                              threemc_pars.u_spacetime_mmc,
+                              threemc_pars.logsigma_agespace_mmc,
+                              // threemc_pars::sigma_agespace_mmc,
+                              threemc_pars.sigma_agespace_mmc,
+                              threemc_pars.logsigma_agetime_mmc,
+                              // threemc_pars::sigma_agetime_mmc,
+                              threemc_pars.sigma_agetime_mmc,
+                              threemc_pars.logsigma_spacetime_mmc,
+                              // threemc_pars::sigma_spacetime_mmc,
+                              threemc_pars.sigma_spacetime_mmc,
+                              threemc_pars.logitrho_mmc_age2,
+                              // threemc_pars::rho_mmc_age2,
+                              threemc_pars.rho_mmc_age2,
+                              threemc_pars.logitrho_mmc_age3,
+                              // threemc_pars::rho_mmc_age3,
+                              threemc_pars.rho_mmc_age3,
+                              threemc_pars.logitrho_mmc_time2,
+                              // threemc_pars::rho_mmc_time2,
+                              threemc_pars.rho_mmc_time2,
+                              threemc_pars.logitrho_mmc_time3,
+                              // threemc_pars::rho_mmc_time3);
+                              threemc_pars.rho_mmc_time3);
   threemc.rand_eff_interact_p(threemc_data.Q_space,
-                              u_agespace_tmc,
-                              logsigma_agespace_tmc,
-                              sigma_agespace_tmc,
-                              logitrho_tmc_age2,
-                              rho_tmc_age2);
+                              threemc_pars.u_agespace_tmc,
+                              threemc_pars.logsigma_agespace_tmc,
+                              // threemc_pars::sigma_agespace_tmc,
+                              threemc_pars.sigma_agespace_tmc,
+                              threemc_pars.logitrho_tmc_age2,
+                              // threemc_pars::rho_tmc_age2);
+                              threemc_pars.rho_tmc_age2);
 
   //// Calculate report values (hazard, (cumulative) incidence) ////
   // TODO: come up with more informative function name?
@@ -169,14 +190,14 @@ Type objective_function<Type>::operator() () {
   //                          threemc_data.X_agespace_mmc,
   //                          threemc_data.X_spacetime_mmc, 
   //                          threemc_data.IntMat1,
-  //                          u_fixed_mmc, 
-  //                          u_fixed_tmc,
-  //                          u_age_mmc,
-  //                          u_time_mmc,
-  //                          u_space_mmc, 
-  //                          u_agetime_mmc,
-  //                          u_agespace_mmc,
-  //                          u_spacetime_mmc,
+  //                          threemc_pars.u_fixed_mmc, 
+  //                          threemc_pars.u_fixed_tmc,
+  //                          threemc_pars.u_age_mmc,
+  //                          threemc_pars.u_time_mmc,
+  //                          threemc_pars.u_space_mmc, 
+  //                          threemc_pars.u_agetime_mmc,
+  //                          threemc_pars.u_agespace_mmc,
+  //                          threemc_pars.u_spacetime_mmc,
   //                          sigma_age_mmc,
   //                          sigma_time_mmc,
   //                          sigma_space_mmc,
@@ -192,30 +213,42 @@ Type objective_function<Type>::operator() () {
                    threemc_data.X_agetime_mmc, 
                    threemc_data.X_agespace_mmc,
                    threemc_data.X_spacetime_mmc, 
-                   u_fixed_mmc, 
-                   u_age_mmc,
-                   u_time_mmc,
-                   u_space_mmc, 
-                   u_agetime_mmc,
-                   u_agespace_mmc,
-                   u_spacetime_mmc,
-                   sigma_age_mmc,
-                   sigma_time_mmc,
-                   sigma_space_mmc,
-                   sigma_agetime_mmc,
-                   sigma_agespace_mmc,
-                   sigma_spacetime_mmc);
+                   threemc_pars.u_fixed_mmc, 
+                   threemc_pars.u_age_mmc,
+                   threemc_pars.u_time_mmc,
+                   threemc_pars.u_space_mmc, 
+                   threemc_pars.u_agetime_mmc,
+                   threemc_pars.u_agespace_mmc,
+                   threemc_pars.u_spacetime_mmc,
+                   // threemc_pars::sigma_age_mmc,
+                   // threemc_pars::sigma_time_mmc,
+                   // threemc_pars::sigma_space_mmc,
+                   // threemc_pars::sigma_agetime_mmc,
+                   // threemc_pars::sigma_agespace_mmc,
+                   // threemc_pars::sigma_spacetime_mmc);
+                   threemc_pars.sigma_age_mmc,
+                   threemc_pars.sigma_time_mmc,
+                   threemc_pars.sigma_space_mmc,
+                   threemc_pars.sigma_agetime_mmc,
+                   threemc_pars.sigma_agespace_mmc,
+                   threemc_pars.sigma_spacetime_mmc);
+
+
   threemc.calc_haz(threemc_data.X_fixed_tmc, 
                    threemc_data.X_age_tmc, 
                    threemc_data.X_space_tmc,
                    threemc_data.X_agespace_tmc,
-                   u_fixed_tmc, 
-                   u_age_tmc,
-                   u_space_tmc, 
-                   u_agespace_tmc,
-                   sigma_age_tmc,
-                   sigma_space_tmc,
-                   sigma_agespace_tmc);
+                   threemc_pars.u_fixed_tmc, 
+                   threemc_pars.u_age_tmc,
+                   threemc_pars.u_space_tmc, 
+                   threemc_pars.u_agespace_tmc,
+                   // threemc_pars::sigma_age_tmc,
+                   // threemc_pars::sigma_space_tmc,
+                   // threemc_pars::sigma_agespace_tmc);
+                   threemc_pars.sigma_age_tmc,
+                   threemc_pars.sigma_space_tmc,
+                   threemc_pars.sigma_agespace_tmc);
+
   threemc.calc_haz();
 
   // calculate survival probabilities

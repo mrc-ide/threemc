@@ -1,13 +1,36 @@
 #include <TMB.hpp>
+
 // #include "utils.h"
 
 /* Utility Functions (perhaps move to the end? Or their own header?) */
 
 // TODO: Make wrapper functions for overloaded functions
 
+// /** \brief Get parameter vector from R and declare it as vector<Type> 
+//     \ingroup macros*/
+// #define PARAMETER_VECTOR(name)                                          \
+// name = vector<Type>(TMB_OBJECTIVE_PTR -> fillShape(                       \
+// asVector<Type>(TMB_OBJECTIVE_PTR -> getShape(#name, &Rf_isNumeric)),    \
+// #name));
+
+// /** \brief Get parameter scalar from R and declare it as Type
+//     \ingroup macros */
+// #define PARAMETER(name)                                                 \
+// name = Type(TMB_OBJECTIVE_PTR -> fillShape(                               \
+// asVector<Type>(TMB_OBJECTIVE_PTR -> getShape(#name,&isNumericScalar)),  \
+// #name)[0]);
+
+// /** \brief Get parameter array from R and declare it as array<Type>
+//     \ingroup macros */
+// #define PARAMETER_ARRAY(name)                                           \
+// name = tmbutils::array<Type>(TMB_OBJECTIVE_PTR -> fillShape(              \
+// tmbutils::asArray<Type>(TMB_OBJECTIVE_PTR -> getShape(                  \
+// #name, &Rf_isArray)), #name));
+
 // /// @file utils.h
 // #pragma once
 
+//// Parameter Macros ////
 /***************************************************/
 /* Function to inverse logit transform for vectors */
 /***************************************************/
@@ -30,7 +53,9 @@ Type geninvlogit(Type x, Type a, Type b){
 
 // Data Struct //
 template<class Type>
-struct Threemc_data {
+class Threemc_data { // : objective_function<Type> {
+
+public:
 
   // indicators
   int is_type; // Does the data for the modelled country include type information
@@ -87,6 +112,7 @@ struct Threemc_data {
     // is_type = asInt(getListElement(x, "is_type"));
     // is_type = Rcpp::as<int>(getListElement(x, "is_type"));
     is_type = CppAD::Integer(asVector<Type>(getListElement(x, "is_type"))[0]);  
+
     A_mc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_mc"));
     B       = tmbutils::asSparseMatrix<Type>(getListElement(x, "B"));
     C       = tmbutils::asSparseMatrix<Type>(getListElement(x, "C"));
@@ -147,6 +173,306 @@ struct Threemc_data {
     }
   }
 };
+
+/// Parameter Struct ///
+
+#undef TMB_OBJECTIVE_PTR
+#define TMB_OBJECTIVE_PTR obj
+template<class Type> 
+struct Threemc_pars {
+
+  // Fixed Effects
+  vector<Type> u_fixed_mmc;
+  vector<Type> u_fixed_tmc;
+  vector<Type> u_fixed;
+  
+  // Age random effect
+  vector<Type> u_age_mmc; 
+  vector<Type> u_age_tmc; 
+  vector<Type> u_age; 
+  
+  // Temporal random effects 
+  vector<Type> u_time_mmc;
+  vector<Type> u_time;
+  
+  // Spatial random effects
+  vector<Type> u_space_mmc;
+  vector<Type> u_space_tmc;
+  vector<Type> u_space;
+  
+  // Interactions
+  array<Type> u_agetime_mmc;
+  array<Type> u_agespace_mmc;
+  array<Type> u_spacetime_mmc;
+  array<Type> u_agespace_tmc;
+  array<Type> u_agetime;
+  array<Type> u_agespace;
+  array<Type> u_spacetime;
+  
+  // Standard deviations 
+  Type logsigma_age_mmc;       
+  Type logsigma_time_mmc;      
+  Type logsigma_space_mmc;     
+  Type logsigma_agetime_mmc;   
+  Type logsigma_agespace_mmc;  
+  Type logsigma_spacetime_mmc; 
+  Type logsigma_age_tmc;       
+  Type logsigma_space_tmc;     
+  Type logsigma_agespace_tmc;  
+  // transformed
+  Type sigma_age_mmc;
+  Type sigma_time_mmc;
+  Type sigma_space_mmc;
+  Type sigma_agetime_mmc;
+  Type sigma_agespace_mmc;
+  Type sigma_spacetime_mmc;
+  Type sigma_age_tmc;
+  Type sigma_space_tmc;
+  Type sigma_agespace_tmc;
+  // for model with no type
+  Type logsigma_age;       
+  Type logsigma_time;      
+  Type logsigma_space;     
+  Type logsigma_agetime;   
+  Type logsigma_agespace;  
+  Type logsigma_spacetime; 
+  // transformed
+  Type sigma_age;
+  Type sigma_time;
+  Type sigma_space;
+  Type sigma_agetime;
+  Type sigma_agespace;
+  Type sigma_spacetime;
+  
+  // Autocorrelation parameters 
+  Type logitrho_mmc_time1;  
+  Type logitrho_mmc_time2;  
+  Type logitrho_mmc_time3;  
+  Type logitrho_mmc_age1;   
+  Type logitrho_mmc_age2;   
+  Type logitrho_mmc_age3;   
+  Type logitrho_tmc_age1;   
+  Type logitrho_tmc_age2;   
+  // transformed
+  Type rho_mmc_time1;
+  Type rho_mmc_time2;
+  Type rho_mmc_time3;
+  Type rho_mmc_age1;
+  Type rho_mmc_age2;
+  Type rho_mmc_age3;
+  Type rho_tmc_age1;
+  Type rho_tmc_age2;
+  // for model with no type
+  Type logitrho_time1;  
+  Type logitrho_time2;  
+  Type logitrho_time3;  
+  Type logitrho_age1;   
+  Type logitrho_age2;   
+  Type logitrho_age3;   
+  // transformed
+  Type rho_time1;
+  Type rho_time2;
+  Type rho_time3;
+  Type rho_age1;
+  Type rho_age2;
+  Type rho_age3;
+
+  // Constructor
+  Threemc_pars(int is_type, objective_function<Type>* obj) {
+
+    if (is_type == 1) {
+
+      // Fixed Effects
+      PARAMETER_VECTOR(u_fixed_mmc);
+      PARAMETER_VECTOR(u_fixed_tmc);
+      
+      // Age random effect
+      PARAMETER_VECTOR(u_age_mmc); 
+      PARAMETER_VECTOR(u_age_tmc); 
+      
+      // Temporal random effects 
+      PARAMETER_VECTOR(u_time_mmc);
+      
+      // Spatial random effects
+      PARAMETER_VECTOR(u_space_mmc);
+      PARAMETER_VECTOR(u_space_tmc);
+      
+      // Interactions
+      PARAMETER_ARRAY(u_agetime_mmc);
+      PARAMETER_ARRAY(u_agespace_mmc);
+      PARAMETER_ARRAY(u_spacetime_mmc);
+      PARAMETER_ARRAY(u_agespace_tmc);
+      
+      // Standard deviations 
+      PARAMETER(logsigma_age_mmc);       
+      PARAMETER(logsigma_time_mmc);      
+      PARAMETER(logsigma_space_mmc);     
+      PARAMETER(logsigma_agetime_mmc);   
+      PARAMETER(logsigma_agespace_mmc);  
+      PARAMETER(logsigma_spacetime_mmc); 
+      PARAMETER(logsigma_age_tmc);       
+      PARAMETER(logsigma_space_tmc);     
+      PARAMETER(logsigma_agespace_tmc);  
+      
+      // Autocorrelation parameters 
+      PARAMETER(logitrho_mmc_time1);  
+      PARAMETER(logitrho_mmc_time2);  
+      PARAMETER(logitrho_mmc_time3);  
+      PARAMETER(logitrho_mmc_age1);   
+      PARAMETER(logitrho_mmc_age2);   
+      PARAMETER(logitrho_mmc_age3);   
+      PARAMETER(logitrho_tmc_age1);   
+      PARAMETER(logitrho_tmc_age2);   
+ 
+      set_sigmas(logsigma_age_mmc,
+                 logsigma_time_mmc,
+                 logsigma_space_mmc,
+                 logsigma_agetime_mmc,     
+                 logsigma_agespace_mmc,
+                 logsigma_spacetime_mmc,   
+                 logsigma_age_tmc,
+                 logsigma_space_tmc,
+                 logsigma_agespace_tmc);
+
+      set_rhos(logitrho_mmc_time1,
+               logitrho_mmc_time2,
+               logitrho_mmc_time3,
+               logitrho_mmc_age1,
+               logitrho_mmc_age2,
+               logitrho_mmc_age3,
+               logitrho_tmc_age1,
+               logitrho_tmc_age2);
+
+    } else {
+      
+      // fixed effects
+      PARAMETER_VECTOR(u_fixed);
+
+	    // age random effects
+      PARAMETER_VECTOR(u_age);
+
+      // temporal random effects
+      PARAMETER_VECTOR(u_time);
+
+      // spatial random effects
+      PARAMETER_VECTOR(u_space);
+
+      // interaction random effects
+      PARAMETER_ARRAY(u_agetime);
+      PARAMETER_ARRAY(u_agespace);
+      PARAMETER_ARRAY(u_spacetime);
+
+	     // standard deviations
+      PARAMETER(logsigma_age);       
+      PARAMETER(logsigma_time);      
+      PARAMETER(logsigma_space);     
+      PARAMETER(logsigma_agetime);   
+      PARAMETER(logsigma_agespace);  
+      PARAMETER(logsigma_spacetime); 
+
+	    // autocorrelation parameters
+      PARAMETER(logitrho_time1); 
+      PARAMETER(logitrho_time2); 
+      PARAMETER(logitrho_time3); 
+      PARAMETER(logitrho_age1);  
+      PARAMETER(logitrho_age2);  
+      PARAMETER(logitrho_age3);  
+
+      set_sigmas(logsigma_age,
+                 logsigma_time,
+                 logsigma_space,
+                 logsigma_agetime,     
+                 logsigma_agespace,
+                 logsigma_spacetime);
+      
+      set_rhos(logitrho_time1,
+               logitrho_time2,
+               logitrho_time3,
+               logitrho_age1,
+               logitrho_age2,
+               logitrho_age3);
+    }
+  }
+
+  // setter for sigmas
+  // where type is included
+  // TODO: May be able to change this to just iterate over all logsigma parameters
+  // TODO: Could also just have this map for logsigmas, and create sigmas by iteration 
+  void set_sigmas(Type logsigma_age_mmc,
+                  Type logsigma_time_mmc,
+                  Type logsigma_space_mmc,
+                  Type logsigma_agetime_mmc,     
+                  Type logsigma_agespace_mmc,
+                  Type logsigma_spacetime_mmc,   
+                  Type logsigma_age_tmc,
+                  Type logsigma_space_tmc,
+                  Type logsigma_agespace_tmc) {
+
+    sigma_age_mmc       = exp(logsigma_age_mmc);
+    sigma_time_mmc      = exp(logsigma_time_mmc);
+    sigma_space_mmc     = exp(logsigma_space_mmc);
+    sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
+    sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
+    sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
+    sigma_age_tmc       = exp(logsigma_age_tmc);
+    sigma_space_tmc     = exp(logsigma_space_tmc);
+    sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
+  };
+
+  // for no type model
+  void set_sigmas(Type logsigma_age,
+                  Type logsigma_time,
+                  Type logsigma_space,
+                  Type logsigma_agetime,     
+                  Type logsigma_agespace,
+                  Type logsigma_spacetime) {
+
+    sigma_age       = exp(logsigma_age);
+    sigma_time      = exp(logsigma_time);
+    sigma_space     = exp(logsigma_space);
+    sigma_agetime   = exp(logsigma_agetime);
+    sigma_agespace  = exp(logsigma_agespace);
+    sigma_spacetime = exp(logsigma_spacetime);
+  };
+
+  // setter for rhos
+  // where type is included
+  void set_rhos(Type logitrho_mmc_time1,
+                Type logitrho_mmc_time2,
+                Type logitrho_mmc_time3,
+                Type logitrho_mmc_age1,
+                Type logitrho_mmc_age2,
+                Type logitrho_mmc_age3,
+                Type logitrho_tmc_age1,
+                Type logitrho_tmc_age2) {
+
+    rho_time1 = geninvlogit(logitrho_time1, Type(-1.0), Type(1.0));
+    rho_time2 = geninvlogit(logitrho_time2, Type(-1.0), Type(1.0));
+    rho_time3 = geninvlogit(logitrho_time3, Type(-1.0), Type(1.0));
+    rho_age1  = geninvlogit(logitrho_age1,  Type(-1.0), Type(1.0));
+    rho_age2  = geninvlogit(logitrho_age2,  Type(-1.0), Type(1.0));
+    rho_age3  = geninvlogit(logitrho_age3,  Type(-1.0), Type(1.0));
+  };
+
+  // for no type
+  void set_rhos(Type logitrho_time1,
+                Type logitrho_time2,
+                Type logitrho_time3,
+                Type logitrho_age1,
+                Type logitrho_age2,
+                Type logitrho_age3) {
+
+    rho_time1 = geninvlogit(logitrho_time1, Type(-1.0), Type(1.0));
+    rho_time2 = geninvlogit(logitrho_time2, Type(-1.0), Type(1.0));
+    rho_time3 = geninvlogit(logitrho_time3, Type(-1.0), Type(1.0));
+    rho_age1  = geninvlogit(logitrho_age1,  Type(-1.0), Type(1.0));
+    rho_age2  = geninvlogit(logitrho_age2,  Type(-1.0), Type(1.0));
+    rho_age3  = geninvlogit(logitrho_age3,  Type(-1.0), Type(1.0));
+  };
+};
+
+#undef TMB_OBJECTIVE_PTR
+#define TMB_OBJECTIVE_PTR this
 
 
 /*******************************************************************/
