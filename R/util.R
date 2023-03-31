@@ -138,6 +138,28 @@ add_area_id <- function(df,
   area_lev_select_id <- paste0("area_id", par$area_lev_select)
   area_lev_select_name <- paste0("area_name", par$area_lev_select)
   
+  # fix for when we don't want to aggregate fully to country level
+  # choose consecutively higher area levels until we find one with shapefiles
+  i <- 1
+  area_lev_select_name_orig <- area_lev_select_name
+  while (!area_lev_select_id %in% names(df_areas_wide)) {
+    area_lev_select_id <- names(df_areas_wide)[i]
+    area_lev_select_name <- paste0("area_name", i)
+    i <- i + 1
+  }
+  if (i != 1) {
+    paste0(
+      "!(", 
+      area_lev_select_name_orig, 
+      " %in% names(df_areas_wide)), ", 
+      "using ",
+      area_lev_select_name, 
+      " (i.e. aggregating to area level ", 
+      i - 1,
+      ")"
+    )
+  }
+  
   # only select columns in our dataframe ("model" may be missing,
   # and `age` and `age_group` are interchangable)
   select_cols <- c("year", "age", "age_group", "population", "type", "model")
