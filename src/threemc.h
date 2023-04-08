@@ -28,7 +28,7 @@ Type geninvlogit(Type x, Type a, Type b){
 
 // Data Struct //
 template<class Type>
-struct Threemc_data { // : objective_function<Type> {
+struct Threemc_data {
 
   // Survival analysis matrices
   density::SparseMatrix<Type> A_mmc; // Matrix selecting instantaneous hazard for medically circumcised pop
@@ -93,7 +93,7 @@ struct Threemc_data { // : objective_function<Type> {
     X_age_tmc      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_tmc")); 
     X_space_tmc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_tmc")); 
     X_agespace_tmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_tmc"));
-  };
+  }
 };
 
 
@@ -399,20 +399,20 @@ class Threemc {
     void calc_inc(density::SparseMatrix<Type> IntMat1, int is_type) {
 
       // Incidence
-      if (is_type == 1) {
+      // if (is_type == 1) {
         inc_mmc = haz_mmc * surv_lag;
         inc_tmc = haz_tmc * surv_lag;
-      }
+      // }
       inc = haz * surv_lag; // TODO: Ask Matt why this isn't inc_mmc + inc_tmc for model w/ type??
 
       // Cumulative incidence
-      if (is_type == 1) {
+      // if (is_type == 1) {
         cum_inc_mmc = IntMat1 * inc_mmc;
         cum_inc_tmc = IntMat1 * inc_tmc;
         cum_inc     = cum_inc_tmc + cum_inc_mmc;
-      } else {
-        cum_inc = IntMat1 * inc;
-      }
+      // } else {
+      //   cum_inc = IntMat1 * inc;
+      // }
     }
 
     // Function to calculate likelihood
