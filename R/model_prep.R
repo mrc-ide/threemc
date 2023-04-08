@@ -129,7 +129,7 @@ threemc_prepare_model_data <- function(out,
   } else {
     Q_space <- list(
       "Q_space" = create_icar_prec_matrix(
-        sf_obj = areas, row.names = "space"
+        sf_obj = areas, area_lev = area_lev, row.names = "space"
       )
     )
   }
@@ -936,7 +936,8 @@ create_hazard_matrix_agetime <- function(dat,
 #' @importFrom dplyr %>%
 #' @importFrom rlang .data
 #' @keywords internal
-create_icar_prec_matrix <- function(sf_obj = NULL,
+create_icar_prec_matrix <- function(sf_obj    = NULL,
+                                    area_lev  = NULL
                                     row.names = NULL) {
   if (is.null(area_lev)) {
     message(
