@@ -151,9 +151,10 @@ threemc_fit_model <- function(fit = NULL,
   }
   
   if (verbose) message("Creating TMB object with `TMB::MakeADFun`...")
+  
   # Create TMB object
   obj <- TMB::MakeADFun(
-    dat_tmb,
+    list("threemc_data" = dat_tmb),
     parameters,
     random = randoms,
     map = maps,
