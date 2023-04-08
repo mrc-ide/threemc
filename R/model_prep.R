@@ -937,7 +937,7 @@ create_hazard_matrix_agetime <- function(dat,
 #' @importFrom rlang .data
 #' @keywords internal
 create_icar_prec_matrix <- function(sf_obj    = NULL,
-                                    area_lev  = NULL
+                                    area_lev  = NULL,
                                     row.names = NULL) {
   if (is.null(area_lev)) {
     message(
