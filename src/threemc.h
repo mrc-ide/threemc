@@ -3,8 +3,6 @@
 
 /* Utility Functions (perhaps move to the end? Or their own header?) */
 
-
-
 // /// @file utils.h
 // #pragma once
 
@@ -28,6 +26,77 @@ Type geninvlogit(Type x, Type a, Type b){
   return y;
 }
 
+// Data Struct //
+template<class Type>
+struct Threemc_data {
+
+  // Survival analysis matrices
+  density::SparseMatrix<Type> A_mmc; // Matrix selecting instantaneous hazard for medically circumcised pop
+  density::SparseMatrix<Type> A_tmc; // Matrix selecting instantaneous hazard for traditionally circumcised pop
+  density::SparseMatrix<Type> A_mc; // Matrix selecting instantaneous hazard for unknown circumcised pop
+  density::SparseMatrix<Type> B; // Matrix selecting relevant cumulative hazard entry for observed and right censored pop
+  density::SparseMatrix<Type> C; // Matrix selecting relevant cumulative hazard entry for interval censored pop
+
+  // Integeration matrices
+  density::SparseMatrix<Type> IntMat1;
+  density::SparseMatrix<Type> IntMat2;
+
+  // Design Matrices
+  density::SparseMatrix<Type> X_fixed_mmc; // Design matrix for the fixed effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_time_mmc; // Design matrix for the temporal random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_age_mmc; // Design matrix for the stratification random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_space_mmc; // Design matrix for the stratification random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_agetime_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_agespace_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_spacetime_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_fixed_tmc; // Design matrix for the fixed effects in the traditional circumcision hazard rate
+  density::SparseMatrix<Type> X_age_tmc; // Design matrix for the stratification random effects in the traditional circumcision hazard rate
+  density::SparseMatrix<Type> X_space_tmc; // Design matrix for the stratification random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_agespace_tmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+
+  // for model with no type
+  density::SparseMatrix<Type> X_fixed;    // Design matrix for the fixed effects
+  density::SparseMatrix<Type> X_time;     // Design matrix for the temporal random effects
+  density::SparseMatrix<Type> X_age;      // Design matrix for the stratification random effects
+  density::SparseMatrix<Type> X_space;    // Design matrix for the stratification random effects
+  density::SparseMatrix<Type> X_agetime;  // Design matrix for the age-time interaction random effects
+  density::SparseMatrix<Type> X_agespace; // Design matrix for the age-space interaction random effects
+  density::SparseMatrix<Type> X_spacetime; // Design matrix for the age-space interaction random effects
+ 
+  // Precision Matrix
+  density::SparseMatrix<Type> Q_space; // Aggregation matrix for number of circumcisions performed
+
+  // Constructor, which conditionally uses data macros to assign values to declared matrices
+  // Threemc_data(int is_type) {
+  Threemc_data(SEXP x) {
+
+    // common to all
+    A_mc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_mc"));
+    B       = tmbutils::asSparseMatrix<Type>(getListElement(x, "B"));
+    C       = tmbutils::asSparseMatrix<Type>(getListElement(x, "C"));
+    IntMat1 = tmbutils::asSparseMatrix<Type>(getListElement(x, "IntMat1"));
+    IntMat2 = tmbutils::asSparseMatrix<Type>(getListElement(x, "IntMat2"));
+
+    Q_space = tmbutils::asSparseMatrix<Type>(getListElement(x, "Q_space"));
+
+    A_mmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_mmc"));
+    A_tmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_tmc"));
+
+    X_fixed_mmc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed_mmc"));
+    X_time_mmc     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time_mmc")); 
+    X_age_mmc      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_mmc")); 
+    X_space_mmc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_mmc")); 
+    X_agetime_mmc  = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agetime_mmc")); 
+    X_agespace_mmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_mmc")); 
+    X_spacetime_mmc= tmbutils::asSparseMatrix<Type>(getListElement(x, "X_spacetime_mmc"));
+    X_fixed_tmc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed_tmc")); 
+    X_age_tmc      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_tmc")); 
+    X_space_tmc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_tmc")); 
+    X_agespace_tmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_tmc"));
+  }
+};
+
+
 /*******************************************************************/
 /*   Class to calculate negative log likelihood in threemc model   */
 /*******************************************************************/
@@ -40,8 +109,7 @@ using namespace density;
 // TODO: Move implementation to separate file
 template <class Type>
 class Threemc {
-  // private:
-  public:
+  private:
     // negative log likelihood
     Type nll; 
     // report values (hazard rates, incidence and cumulative incidence)
@@ -61,7 +129,7 @@ class Threemc {
 
     // also add report values here (??)
 
-  // public:
+  public:
     // Default Constructor
     Threemc() {
       Type nll = Type(0); // initialise nll to 0
@@ -331,20 +399,20 @@ class Threemc {
     void calc_inc(density::SparseMatrix<Type> IntMat1, int is_type) {
 
       // Incidence
-      if (is_type == 1) {
+      // if (is_type == 1) {
         inc_mmc = haz_mmc * surv_lag;
         inc_tmc = haz_tmc * surv_lag;
-      }
+      // }
       inc = haz * surv_lag; // TODO: Ask Matt why this isn't inc_mmc + inc_tmc for model w/ type??
 
       // Cumulative incidence
-      if (is_type == 1) {
+      // if (is_type == 1) {
         cum_inc_mmc = IntMat1 * inc_mmc;
         cum_inc_tmc = IntMat1 * inc_tmc;
         cum_inc     = cum_inc_tmc + cum_inc_mmc;
-      } else {
-        cum_inc = IntMat1 * inc;
-      }
+      // } else {
+      //   cum_inc = IntMat1 * inc;
+      // }
     }
 
     // Function to calculate likelihood
