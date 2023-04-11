@@ -63,6 +63,161 @@ Threemc<Type>::Threemc() {
   Type nll = Type(0);
 }
 
+// Fixed effects for circumcision rate
+template<class Type> 
+void Threemc<Type>::fix_eff_p(vector<Type> u_fixed) {
+  nll -= dnorm(u_fixed, Type(0), Type(5), true).sum();
+}
+
+// Prior on temporal random effects
+// This function works for both type and no type specifications (just with different inputs)
+template<class Type> 
+void Threemc<Type>::rand_eff_time_p(vector<Type> u_time,
+                                    Type logsigma_time,
+                                    Type sigma_time,
+                                    Type logitrho_time1,
+                                    Type rho_time1) {
+
+  // density::AR1 Process
+  nll += density::AR1(rho_time1)(u_time);
+
+  // Sum to zero constraint
+  nll -= dnorm(u_time.sum(), Type(0), Type(0.001) * u_time.size(), true);
+
+  // Prior on the standard deviation for the temporal random effects
+  nll -= dexp(sigma_time, Type(1), true) + logsigma_time;
+
+  // Prior on the logit autocorrelation parameters
+  nll -= dnorm(logitrho_time1, Type(3), Type(3), true);
+}
+
+// Prior on the age random effects
+// TODO: Will change in model where there is a paediatric-adult age split
+template<class Type>
+void Threemc<Type>::rand_eff_age_p(vector<Type> u_age,
+                                   Type logsigma_age,
+                                   Type sigma_age,
+                                   Type logitrho_age1,
+                                   Type rho_age1) {
+
+  // density::AR1 processes
+  nll += density::AR1(rho_age1)(u_age);
+
+  // sum to zero constraint
+  nll -= dnorm(u_age.sum(), Type(0), Type(0.001) * u_age.size(), true);
+
+  // prior on the standard deviation for the age random effects
+  nll -= dexp(sigma_age, Type(1), true) + logsigma_age;
+
+  // prior on the logit autocorrelation parameters
+  nll -= dnorm(logitrho_age1, Type(3), Type(2), true);
+}
+
+// Prior on the spatial random effects
+template<class Type>
+void Threemc<Type>::rand_eff_space_p(density::SparseMatrix<Type> Q_space,
+                                     vector<Type> u_space,
+                                     Type logsigma_space,
+                                     Type sigma_space) {
+
+  // Gaussian markov random field with prespecified precision matrix
+  nll += density::GMRF(Q_space)(u_space);
+
+  // Sum to zero constraints
+  nll -= dnorm(u_space.sum(), Type(0), Type(0.001) * u_space.size(), true);
+
+  // Prior on the standard deviation for the spatial random effects
+  nll -= dexp(sigma_space, Type(1), true) + logsigma_space;
+}
+
+// Prior on the interaction random effects for either MMC or MC (for model w/ no type)
+template<class Type>
+void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
+                                        array<Type> u_agespace,
+                                        array<Type> u_agetime,
+                                        array<Type> u_spacetime,
+                                        Type logsigma_agespace,
+                                        Type sigma_agespace,
+                                        Type logsigma_agetime,
+                                        Type sigma_agetime,
+                                        Type logsigma_spacetime,
+                                        Type sigma_spacetime,
+                                        Type logitrho_age2,
+                                        Type rho_age2,
+                                        Type logitrho_age3,
+                                        Type rho_age3,
+                                        Type logitrho_time2,
+                                        Type rho_time2,
+                                        Type logitrho_time3,
+                                        Type rho_time3) {
+
+  // Interactions: space-time (density::GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x density::GMRF)
+  nll += SEPARABLE(density::AR1(rho_time2), density::AR1(rho_age2))(u_agetime);
+  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_age3))(u_agespace);
+  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_time3))(u_spacetime);
+  
+  // Sum-to-zero constraint
+  // TODO: Iterate over map of these
+  for (int i = 0; i < u_agespace.cols(); i++) {
+    nll -= dnorm(u_agespace.col(i).sum(),
+                 Type(0),
+                 Type(0.001) * u_agespace.col(i).size(),
+                 true);
+  } 
+  for (int i = 0; i < u_agetime.cols(); i++) {
+    nll -= dnorm(u_agetime.col(i).sum(),
+                 Type(0),
+                 Type(0.001) * u_agetime.col(i).size(),
+                 true);
+  }  
+  for (int i = 0; i < u_spacetime.cols(); i++) {
+    nll -= dnorm(u_spacetime.col(i).sum(),
+                 Type(0),
+                 Type(0.001) * u_spacetime.col(i).size(),
+                 true);
+  }  
+  
+  // Prior on the standard deviation for the interaction random effects
+  // TODO: Can rewrite this using a pointer map or something to iterate over
+  nll -= dexp(sigma_agespace,  Type(1), true) + logsigma_agespace;
+  nll -= dexp(sigma_agetime,   Type(1), true) + logsigma_agetime;
+  nll -= dexp(sigma_spacetime, Type(1), true) + logsigma_spacetime;
+
+  // Prior on the logit autocorrelation parameters
+  // TODO: Can also iterate over these so we don't need to overload this function
+  nll -= dnorm(logitrho_time2, Type(3), Type(2), true);
+  nll -= dnorm(logitrho_age2,  Type(3), Type(2), true);
+  nll -= dnorm(logitrho_time3, Type(3), Type(2), true);
+  nll -= dnorm(logitrho_age3,  Type(3), Type(2), true);
+}
+
+// Overload prior on the interaction random effects for just TMC
+template<class Type>
+void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
+                                        array<Type> u_agespace_tmc,
+                                        Type logsigma_agespace_tmc,
+                                        Type sigma_agespace_tmc,
+                                        Type logitrho_tmc_age2,
+                                        Type rho_tmc_age2) {
+
+  // Interactions: space-time (density::GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x density::GMRF)
+  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_tmc_age2))(u_agespace_tmc);
+  
+  // Sum-to-zero constraints
+  for (int i = 0; i < u_agespace_tmc.cols(); i++) {
+    nll -= dnorm(u_agespace_tmc.col(i).sum(),
+                 Type(0),
+                 Type(0.001) * u_agespace_tmc.col(i).size(),
+                 true);
+  }
+  
+  // Prior on the standard deviation for the interaction random effects
+  nll -= dexp(sigma_agespace_tmc,  Type(1), true) + logsigma_agespace_tmc;
+
+  // Prior on the logit autocorrelation parameters
+  nll -= dnorm(logitrho_tmc_age2,  Type(3), Type(2), true);
+}
+
 // Function to calculate report values 
 // Need to just overload this function
 // TODO: Can definitely design this function better to avoid repitition
@@ -150,12 +305,100 @@ void Threemc<Type>::calc_haz() {
   
   // Total hazard rate
   haz = haz_mmc + haz_tmc;
-};
+}
 
+// // for model with no type (so only MMC)
+// // TODO: Repitition here from function for MMC, redesign (with template?) to avoid this
+// template<Type>
+// void Threemc<Type>::calc_haz(density::SparseMatrix<Type> X_fixed, 
+//                              density::SparseMatrix<Type> X_time,
+//                              density::SparseMatrix<Type> X_age, 
+//                              density::SparseMatrix<Type> X_space,
+//                              density::SparseMatrix<Type> X_agetime, 
+//                              density::SparseMatrix<Type> X_agespace,
+//                              density::SparseMatrix<Type> X_spacetime, 
+//                              // Integration matrix
+//                              density::SparseMatrix<Type> IntMat1,
+//                              density::SparseMatrix<Type> IntMat2,
+//                              // parameters
+//                              vector<Type> u_fixed, 
+//                              vector<Type> u_age,
+//                              vector<Type> u_time,
+//                              vector<Type> u_space, 
+//                              array<Type> u_agetime,
+//                              array<Type> u_agespace,
+//                              array<Type> u_spacetime,
+//                              Type sigma_age,
+//                              Type sigma_time,
+//                              Type sigma_space,
+//                              Type sigma_agetime,
+//                              Type sigma_agespace,
+//                              Type sigma_spacetime) {
 
+//   // Vector the interaction terms
+//   vector<Type> u_agespace_v(u_agespace);
+//   vector<Type> u_agetime_v(u_agetime);
+//   vector<Type> u_spacetime_v(u_spacetime);
 
+//   /// Estimate hazard rate ///
+//   /// TODO: Break this down into functions as well!
+//   // Medical hazard rate
+//   haz = X_fixed * u_fixed +
+//     X_age * u_age * sigma_age +
+//     X_space * u_space * sigma_space +
+// 		X_time * u_time * sigma_time +
+// 		X_agetime * u_agetime_v * sigma_agetime +
+// 		X_agespace * u_agespace_v * sigma_agespace +
+// 		X_spacetime * u_spacetime_v * sigma_spacetime;
 
+//   // Rates on [0,1] scale
+//   haz = invlogit_vec(haz);
+// }
 
+// function to calculate survival probabilities
+template<class Type>
+void Threemc<Type>::calc_surv(// Integration matrices
+                              density::SparseMatrix<Type> IntMat1,
+                              density::SparseMatrix<Type> IntMat2) {
+
+    logprob  = log(Type(1.0) - haz);
+    surv     = exp(IntMat1 * logprob);
+    surv_lag = exp(IntMat2 * logprob);
+    leftcens = Type(1.0) - surv;
+}
+
+// Function to calculate incidence & cumulative incidence
+// TODO: This code is reused, find a way to change e.g inc_mmc while referring to inc here
+// Actually works well here with if statement, but may not scale well with more models
+template<class Type>
+void Threemc<Type>::calc_inc(density::SparseMatrix<Type> IntMat1, int is_type) {
+
+  // Incidence
+  if (is_type == 1) {
+    inc_mmc = haz_mmc * surv_lag;
+    inc_tmc = haz_tmc * surv_lag;
+  }
+  inc = haz * surv_lag; // TODO: Ask Matt why this isn't inc_mmc + inc_tmc for model w/ type??
+
+  // Cumulative incidence
+  if (is_type == 1) {
+    cum_inc_mmc = IntMat1 * inc_mmc;
+    cum_inc_tmc = IntMat1 * inc_tmc;
+    cum_inc     = cum_inc_tmc + cum_inc_mmc;
+  } else {
+    cum_inc = IntMat1 * inc;
+  }
+}
+
+// Function to calculate likelihood
+// TODO: Can make an enum (or something?) pointer to iterate over for this
+// (will be different for each model)
+template<class Type> 
+void Threemc<Type>::likelihood(density::SparseMatrix<Type> Mat,
+                               vector<Type> report_val) {
+  // Calculate likelihood for chosen circ pop with corresponding report vals
+  nll -= (Mat * log(report_val)).sum();
+}
 
 // redefine TMB_OBJECTIVE_PTR so that members can access parameters
 #undef TMB_OBJECTIVE_PTR
