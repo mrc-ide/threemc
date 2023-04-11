@@ -107,12 +107,113 @@ struct Threemc_data {
 using namespace density;
 
 // TODO: Move implementation to separate file
+// redefine TMB_OBJECTIVE_PTR so that members can access parameters
+#undef TMB_OBJECTIVE_PTR
+#define TMB_OBJECTIVE_PTR obj
 template <class Type>
 class Threemc {
   private:
+  // public:
     // negative log likelihood
     Type nll; 
-    // report values (hazard rates, incidence and cumulative incidence)
+
+    // parameters
+    // fixed effects
+    // vector<Type> u_fixed_mmc;
+    // vector<Type> u_fixed_tmc;
+
+    // // Age random effects
+    // vector<Type> u_age_mmc; 
+    // vector<Type> u_age_tmc; 
+    // vector<Type> u_age; 
+  
+    // // Temporal random effects 
+    // vector<Type> u_time_mmc;
+    // vector<Type> u_time;
+  
+    // // Spatial random effects
+    // vector<Type> u_space_mmc;
+    // vector<Type> u_space_tmc;
+    // vector<Type> u_space;
+  
+    // // Interactions
+    // array<Type> u_agetime_mmc;
+    // array<Type> u_agespace_mmc;
+    // array<Type> u_spacetime_mmc;
+    // array<Type> u_agespace_tmc;
+    // array<Type> u_agetime;
+    // array<Type> u_agespace;
+    // array<Type> u_spacetime;
+  
+    // // Standard deviations 
+    // Type logsigma_age_mmc;       
+    // Type logsigma_time_mmc;      
+    // Type logsigma_space_mmc;     
+    // Type logsigma_agetime_mmc;   
+    // Type logsigma_agespace_mmc;  
+    // Type logsigma_spacetime_mmc; 
+    // Type logsigma_age_tmc;       
+    // Type logsigma_space_tmc;     
+    // Type logsigma_agespace_tmc;  
+    // // transformed
+    // Type sigma_age_mmc;
+    // Type sigma_time_mmc;
+    // Type sigma_space_mmc;
+    // Type sigma_agetime_mmc;
+    // Type sigma_agespace_mmc;
+    // Type sigma_spacetime_mmc;
+    // Type sigma_age_tmc;
+    // Type sigma_space_tmc;
+    // Type sigma_agespace_tmc;
+    // // for model with no type
+    // Type logsigma_age;       
+    // Type logsigma_time;      
+    // Type logsigma_space;     
+    // Type logsigma_agetime;   
+    // Type logsigma_agespace;  
+    // Type logsigma_spacetime; 
+    // // transformed
+    // Type sigma_age;
+    // Type sigma_time;
+    // Type sigma_space;
+    // Type sigma_agetime;
+    // Type sigma_agespace;
+    // Type sigma_spacetime;
+  
+    // // Autocorrelation parameters 
+    // Type logitrho_mmc_time1;  
+    // Type logitrho_mmc_time2;  
+    // Type logitrho_mmc_time3;  
+    // Type logitrho_mmc_age1;   
+    // Type logitrho_mmc_age2;   
+    // Type logitrho_mmc_age3;   
+    // Type logitrho_tmc_age1;   
+    // Type logitrho_tmc_age2;   
+    // // transformed
+    // Type rho_mmc_time1;
+    // Type rho_mmc_time2;
+    // Type rho_mmc_time3;
+    // Type rho_mmc_age1;
+    // Type rho_mmc_age2;
+    // Type rho_mmc_age3;
+    // Type rho_tmc_age1;
+    // Type rho_tmc_age2;
+    // // for model with no type
+    // Type logitrho_time1;  
+    // Type logitrho_time2;  
+    // Type logitrho_time3;  
+    // Type logitrho_age1;   
+    // Type logitrho_age2;   
+    // Type logitrho_age3;   
+    // // transformed
+    // Type rho_time1;
+    // Type rho_time2;
+    // Type rho_time3;
+    // Type rho_age1;
+    // Type rho_age2;
+    // Type rho_age3;
+  
+    // // report values (hazard rates, incidence and cumulative incidence)
     vector<Type> haz_mmc;     // Medical hazard rate
     vector<Type> haz_tmc;     // Traditional hazard rate
     vector<Type> haz;         // Total hazard rate
@@ -132,9 +233,77 @@ class Threemc {
   public:
     // Default Constructor
     Threemc() {
+
       Type nll = Type(0); // initialise nll to 0
       // TODO: also intitialise report values here
+
+      // // Parameters
+
+      // // Fixed Effects
+      // PARAMETER_VECTOR(u_fixed_mmc);
+      // PARAMETER_VECTOR(u_fixed_tmc);
+
+      // // Age random effect
+      // PARAMETER_VECTOR(u_age_mmc); 
+      // PARAMETER_VECTOR(u_age_tmc); 
+      
+      // // Temporal random effects 
+      // PARAMETER_VECTOR(u_time_mmc);
+      
+      // // Spatial random effects
+      // PARAMETER_VECTOR(u_space_mmc);
+      // PARAMETER_VECTOR(u_space_tmc);
+      
+      // // Interactions
+      // PARAMETER_ARRAY(u_agetime_mmc);
+      // PARAMETER_ARRAY(u_agespace_mmc);
+      // PARAMETER_ARRAY(u_spacetime_mmc);
+      // PARAMETER_ARRAY(u_agespace_tmc);
+      
+      // // Standard deviations 
+      // PARAMETER(logsigma_age_mmc);       
+      // PARAMETER(logsigma_time_mmc);      
+      // PARAMETER(logsigma_space_mmc);     
+      // PARAMETER(logsigma_agetime_mmc);   
+      // PARAMETER(logsigma_agespace_mmc);  
+      // PARAMETER(logsigma_spacetime_mmc); 
+      // PARAMETER(logsigma_age_tmc);       
+      // PARAMETER(logsigma_space_tmc);     
+      // PARAMETER(logsigma_agespace_tmc);  
+
+      // Type sigma_age_mmc       = exp(logsigma_age_mmc);
+      // Type sigma_time_mmc      = exp(logsigma_time_mmc);
+      // Type sigma_space_mmc     = exp(logsigma_space_mmc);
+      // Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
+      // Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
+      // Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
+      // Type sigma_age_tmc       = exp(logsigma_age_tmc);
+      // Type sigma_space_tmc     = exp(logsigma_space_tmc);
+      // Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
+
+      // // Autocorrelation parameters 
+      // PARAMETER(logitrho_mmc_time1);
+      // PARAMETER(logitrho_mmc_time2);
+      // PARAMETER(logitrho_mmc_time3);
+      // PARAMETER(logitrho_mmc_age1);
+      // PARAMETER(logitrho_mmc_age2);
+      // PARAMETER(logitrho_mmc_age3);
+      // PARAMETER(logitrho_tmc_age1);
+      // PARAMETER(logitrho_tmc_age2);
+
+      // Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
+      // Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
+      // Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
+      // Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
+      // Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
+      // Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
+      // Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
+      // Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
     };
+
+    // Friend function to load parameters and apply member functions (could just make a member?)
+    // template<class Type>
+    // friend Type calc_nll(Threemc threemc, objective_function<Type>* obj);
 
     // TODO: Write constructor with more arguments?
 
@@ -142,138 +311,142 @@ class Threemc {
     // ~Threemc() {
     // };
 
-    // Prior on fixed effects (won't need second version until implementing no type version)
-    void fix_eff_p(vector<Type> u_fixed_mmc, vector<Type> u_fixed_tmc) {
-      // fixed effects for the medical circumcision rate
-      nll -= dnorm(u_fixed_mmc, Type(0), Type(5), true).sum();
-      // fixed effects for the traditional circumcision rate
-      nll -= dnorm(u_fixed_tmc, Type(0), Type(5), true).sum();
+    void fix_eff_p(vector<Type> u_fixed) {
+	    // Fixed effects for circumcision rate
+      nll -= dnorm(u_fixed, Type(0), Type(5), true).sum();
     };
 
     // Prior on temporal random effects
-    // TODO: This will become a wrapper (?) for other functions when other models are implemented
-    void rand_eff_time_p(vector<Type> u_time_mmc,
-                         Type logsigma_time_mmc,
-                         Type sigma_time_mmc,
-                         Type logitrho_mmc_time1,
-                         Type rho_mmc_time1) {
+    // This function works for both type and no type specifications (just with different inputs)
+    void rand_eff_time_p(vector<Type> u_time,
+                         Type logsigma_time,
+                         Type sigma_time,
+                         Type logitrho_time1,
+                         Type rho_time1) {
 
-      // AR1 Process
-      nll += AR1(rho_mmc_time1)(u_time_mmc);
+      // density::AR1 Process
+      nll += density::AR1(rho_time1)(u_time);
 
       // Sum to zero constraint
-      nll -= dnorm(u_time_mmc.sum(), Type(0), Type(0.001) * u_time_mmc.size(), TRUE);
+      nll -= dnorm(u_time.sum(), Type(0), Type(0.001) * u_time.size(), true);
 
       // Prior on the standard deviation for the temporal random effects
-      nll -= dexp(sigma_time_mmc, Type(1), TRUE) + logsigma_time_mmc;
+      nll -= dexp(sigma_time, Type(1), true) + logsigma_time;
 
       // Prior on the logit autocorrelation parameters
-      nll -= dnorm(logitrho_mmc_time1, Type(3), Type(3), TRUE);
+      nll -= dnorm(logitrho_time1, Type(3), Type(3), true);
     };
 
 
     // Prior on the age random effects
     // TODO: Will change in model where there is a paediatric-adult age split
-    void rand_eff_age_p(vector<Type> u_age_mmc,
-                        vector<Type> u_age_tmc,
-                        Type logsigma_age_mmc,
-                        Type sigma_age_mmc,
-                        Type logsigma_age_tmc,
-                        Type sigma_age_tmc,
-                        Type logitrho_mmc_age1,
-                        Type rho_mmc_age1,
-                        Type logitrho_tmc_age1,
-                        Type rho_tmc_age1) {
+    void rand_eff_age_p(vector<Type> u_age,
+                        Type logsigma_age,
+                        Type sigma_age,
+                        Type logitrho_age1,
+                        Type rho_age1) {
 
-      // AR1 processes
-      nll += AR1(rho_mmc_age1)(u_age_mmc);
-      nll += AR1(rho_tmc_age1)(u_age_tmc);
+      // density::AR1 processes
+      nll += density::AR1(rho_age1)(u_age);
 
       // sum to zero constraint
-      nll -= dnorm(u_age_mmc.sum(), Type(0), Type(0.001) * u_age_mmc.size(), true);
-      nll -= dnorm(u_age_tmc.sum(), Type(0), Type(0.001) * u_age_tmc.size(), true);
+      nll -= dnorm(u_age.sum(), Type(0), Type(0.001) * u_age.size(), true);
 
       // prior on the standard deviation for the age random effects
-      nll -= dexp(sigma_age_mmc, Type(1), true) + logsigma_age_mmc;
-      nll -= dexp(sigma_age_tmc, Type(1), true) + logsigma_age_tmc;
+      nll -= dexp(sigma_age, Type(1), true) + logsigma_age;
 
       // prior on the logit autocorrelation parameters
-      nll -= dnorm(logitrho_mmc_age1, Type(3), Type(2), true);
-      nll -= dnorm(logitrho_tmc_age1, Type(3), Type(2), true);
+      nll -= dnorm(logitrho_age1, Type(3), Type(2), true);
     };
 
     // Prior on the spatial random effects
-    void rand_eff_space_p(SparseMatrix<Type> Q_space,
-                          vector<Type> u_space_mmc,
-                          vector<Type> u_space_tmc,
-                          Type logsigma_space_mmc,
-                          Type sigma_space_mmc,
-                          Type logsigma_space_tmc,
-                          Type sigma_space_tmc) {
+    void rand_eff_space_p(density::SparseMatrix<Type> Q_space,
+                          vector<Type> u_space,
+                          Type logsigma_space,
+                          Type sigma_space) {
 
       // Gaussian markov random field with prespecified precision matrix
-      nll += GMRF(Q_space)(u_space_mmc);
-      nll += GMRF(Q_space)(u_space_tmc);
+      nll += density::GMRF(Q_space)(u_space);
 
       // Sum to zero constraints
-      nll -= dnorm(u_space_mmc.sum(), Type(0), Type(0.001) * u_space_mmc.size(), TRUE);
-      nll -= dnorm(u_space_tmc.sum(), Type(0), Type(0.001) * u_space_tmc.size(), TRUE);
+      nll -= dnorm(u_space.sum(), Type(0), Type(0.001) * u_space.size(), true);
 
       // Prior on the standard deviation for the spatial random effects
-      nll -= dexp(sigma_space_mmc, Type(1), TRUE) + logsigma_space_mmc;
-      nll -= dexp(sigma_space_tmc, Type(1), TRUE) + logsigma_space_tmc;
+      nll -= dexp(sigma_space, Type(1), true) + logsigma_space;
     };
 
-    // Prior on the interaction random effects
-    void rand_eff_interact_p(SparseMatrix<Type> Q_space,
-                             array<Type> u_agespace_mmc,
-                             array<Type> u_agespace_tmc,
-                             array<Type> u_agetime_mmc,
-                             array<Type> u_spacetime_mmc,
-                             Type logsigma_agespace_mmc,
-                             Type sigma_agespace_mmc,
-                             Type logsigma_agespace_tmc,
-                             Type sigma_agespace_tmc,
-                             Type logsigma_agetime_mmc,
-                             Type sigma_agetime_mmc,
-                             Type logsigma_spacetime_mmc,
-                             Type sigma_spacetime_mmc,
-                             Type logitrho_mmc_age2,
-                             Type rho_mmc_age2,
-                             Type logitrho_tmc_age2,
-                             Type rho_tmc_age2,
-                             Type logitrho_mmc_age3,
-                             Type rho_mmc_age3,
-                             Type logitrho_mmc_time2,
-                             Type rho_mmc_time2,
-                             Type logitrho_mmc_time3,
-                             Type rho_mmc_time3) {
+    // Prior on the interaction random effects for either MMC or MC (for model w/ no type)
+    void rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
+                             array<Type> u_agespace,
+                             array<Type> u_agetime,
+                             array<Type> u_spacetime,
+                             Type logsigma_agespace,
+                             Type sigma_agespace,
+                             Type logsigma_agetime,
+                             Type sigma_agetime,
+                             Type logsigma_spacetime,
+                             Type sigma_spacetime,
+                             Type logitrho_age2,
+                             Type rho_age2,
+                             Type logitrho_age3,
+                             Type rho_age3,
+                             Type logitrho_time2,
+                             Type rho_time2,
+                             Type logitrho_time3,
+                             Type rho_time3) {
 
-      // Interactions: space-time (GMRF x AR1), age-time (AR1 x AR1) and age-space (AR1 x GMRF)
-      nll += SEPARABLE(AR1(rho_mmc_time2), AR1(rho_mmc_age2))(u_agetime_mmc);
-      nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_age3))(u_agespace_mmc);
-      nll += SEPARABLE(GMRF(Q_space), AR1(rho_mmc_time3))(u_spacetime_mmc);
-      nll += SEPARABLE(GMRF(Q_space), AR1(rho_tmc_age2))(u_agespace_tmc);
+      // Interactions: space-time (density::GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x density::GMRF)
+      nll += SEPARABLE(density::AR1(rho_time2), density::AR1(rho_age2))(u_agetime);
+      nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_age3))(u_agespace);
+      nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_time3))(u_spacetime);
       
-      // Sum-to-zero constraints
-      for (int i = 0; i < u_agespace_mmc.cols(); i++) {
-        nll -= dnorm(u_agespace_mmc.col(i).sum(),
+      // Sum-to-zero constraint
+      // TODO: Iterate over map of these
+      for (int i = 0; i < u_agespace.cols(); i++) {
+        nll -= dnorm(u_agespace.col(i).sum(),
                      Type(0),
-                     Type(0.001) * u_agespace_mmc.col(i).size(),
+                     Type(0.001) * u_agespace.col(i).size(),
                      true);
       } 
-      for (int i = 0; i < u_agetime_mmc.cols(); i++) {
-        nll -= dnorm(u_agetime_mmc.col(i).sum(),
+      for (int i = 0; i < u_agetime.cols(); i++) {
+        nll -= dnorm(u_agetime.col(i).sum(),
                      Type(0),
-                     Type(0.001) * u_agetime_mmc.col(i).size(),
+                     Type(0.001) * u_agetime.col(i).size(),
                      true);
       }  
-      for (int i = 0; i < u_spacetime_mmc.cols(); i++) {
-        nll -= dnorm(u_spacetime_mmc.col(i).sum(),
+      for (int i = 0; i < u_spacetime.cols(); i++) {
+        nll -= dnorm(u_spacetime.col(i).sum(),
                      Type(0),
-                     Type(0.001) * u_spacetime_mmc.col(i).size(),
+                     Type(0.001) * u_spacetime.col(i).size(),
                      true);
       }  
+      
+      // Prior on the standard deviation for the interaction random effects
+      // TODO: Can rewrite this using a pointer map or something to iterate over
+      nll -= dexp(sigma_agespace,  Type(1), true) + logsigma_agespace;
+      nll -= dexp(sigma_agetime,   Type(1), true) + logsigma_agetime;
+      nll -= dexp(sigma_spacetime, Type(1), true) + logsigma_spacetime;
+
+      // Prior on the logit autocorrelation parameters
+      // TODO: Can also iterate over these so we don't need to overload this function
+      nll -= dnorm(logitrho_time2, Type(3), Type(2), true);
+      nll -= dnorm(logitrho_age2,  Type(3), Type(2), true);
+      nll -= dnorm(logitrho_time3, Type(3), Type(2), true);
+      nll -= dnorm(logitrho_age3,  Type(3), Type(2), true);
+    };
+
+    // Overload prior on the interaction random effects for just TMC
+    void rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
+                             array<Type> u_agespace_tmc,
+                             Type logsigma_agespace_tmc,
+                             Type sigma_agespace_tmc,
+                             Type logitrho_tmc_age2,
+                             Type rho_tmc_age2) {
+
+      // Interactions: space-time (density::GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x density::GMRF)
+      nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_tmc_age2))(u_agespace_tmc);
+      
+      // Sum-to-zero constraints
       for (int i = 0; i < u_agespace_tmc.cols(); i++) {
         nll -= dnorm(u_agespace_tmc.col(i).sum(),
                      Type(0),
@@ -282,18 +455,12 @@ class Threemc {
       }
       
       // Prior on the standard deviation for the interaction random effects
-      nll -= dexp(sigma_agespace_mmc,  Type(1), TRUE) + logsigma_agespace_mmc;
-      nll -= dexp(sigma_agetime_mmc,   Type(1), TRUE) + logsigma_agetime_mmc;
-      nll -= dexp(sigma_spacetime_mmc, Type(1), TRUE) + logsigma_spacetime_mmc;
-      nll -= dexp(sigma_agespace_tmc,  Type(1), TRUE) + logsigma_agespace_tmc;
+      nll -= dexp(sigma_agespace_tmc,  Type(1), true) + logsigma_agespace_tmc;
 
       // Prior on the logit autocorrelation parameters
-      nll -= dnorm(logitrho_mmc_time2, Type(3), Type(2), TRUE);
-      nll -= dnorm(logitrho_mmc_age2,  Type(3), Type(2), TRUE);
-      nll -= dnorm(logitrho_mmc_time3, Type(3), Type(2), TRUE);
-      nll -= dnorm(logitrho_mmc_age3,  Type(3), Type(2), TRUE);
-      nll -= dnorm(logitrho_tmc_age2,  Type(3), Type(2), TRUE);
+      nll -= dnorm(logitrho_tmc_age2,  Type(3), Type(2), true);
     };
+
 
     // Function to calculate report values 
     // TODO: This will change depending on whether type information is included
@@ -370,6 +537,65 @@ class Threemc {
       haz_tmc = invlogit_vec(haz_tmc);
     };
 
+    // for model with no type (so only MMC)
+    // TODO: Repitition here from function for MMC, redesign (with template?) to avoid this
+    // void calc_haz(density::SparseMatrix<Type> X_fixed, 
+    //               density::SparseMatrix<Type> X_time,
+    //               density::SparseMatrix<Type> X_age, 
+    //               density::SparseMatrix<Type> X_space,
+    //               density::SparseMatrix<Type> X_agetime, 
+    //               density::SparseMatrix<Type> X_agespace,
+    //               density::SparseMatrix<Type> X_spacetime, 
+    //               // Integration matrix
+    //               density::SparseMatrix<Type> IntMat1,
+    //               density::SparseMatrix<Type> IntMat2,
+    //               // parameters
+    //               vector<Type> u_fixed, 
+    //               vector<Type> u_age,
+    //               vector<Type> u_time,
+    //               vector<Type> u_space, 
+    //               array<Type> u_agetime,
+    //               array<Type> u_agespace,
+    //               array<Type> u_spacetime,
+    //               Type sigma_age,
+    //               Type sigma_time,
+    //               Type sigma_space,
+    //               Type sigma_agetime,
+    //               Type sigma_agespace,
+    //               Type sigma_spacetime) {
+
+    //   // Vector the interaction terms
+    //   vector<Type> u_agespace_v(u_agespace);
+    //   vector<Type> u_agetime_v(u_agetime);
+    //   vector<Type> u_spacetime_v(u_spacetime);
+
+    //   /// Estimate hazard rate ///
+    //   /// TODO: Break this down into functions as well!
+    //   // Medical hazard rate
+    //   haz = X_fixed * u_fixed +
+    //     X_age * u_age * sigma_age +
+    //     X_space * u_space * sigma_space +
+		// 		X_time * u_time * sigma_time +
+		// 		X_agetime * u_agetime_v * sigma_agetime +
+		// 		X_agespace * u_agespace_v * sigma_agespace +
+		// 		X_spacetime * u_spacetime_v * sigma_spacetime;
+
+    //   // Rates on [0,1] scale
+    //   haz = invlogit_vec(haz);
+
+    //   // Survival probabilities (TODO: These only need to be calculated once!)
+	  //   // vector<Type> logprob  = log(Type(1.0) - haz);
+	  //   // vector<Type> surv     = exp(IntMat1 * logprob);
+	  //   // vector<Type> surv_lag = exp(IntMat2 * logprob);
+	  //   // leftcens              = Type(1.0) - surv;
+
+    //   // Incidence
+    //   // inc = haz * surv_lag;
+
+    //   // Cumulative incidence
+    //   // cum_inc = IntMat1 * inc;
+    // };
+
     // final calculation of total report vals (e.g. haz = haz_mmc + haz_tmc)
     void calc_haz() {
 
@@ -382,16 +608,16 @@ class Threemc {
       haz = haz_mmc + haz_tmc;
     };
 
-  // function to calculate survival probabilities
-  void calc_surv(// Integration matrices
-                  density::SparseMatrix<Type> IntMat1,
-                  density::SparseMatrix<Type> IntMat2) {
+    // function to calculate survival probabilities
+    void calc_surv(// Integration matrices
+                    density::SparseMatrix<Type> IntMat1,
+                    density::SparseMatrix<Type> IntMat2) {
 
-      logprob  = log(Type(1.0) - haz);
-	    surv     = exp(IntMat1 * logprob);
-	    surv_lag = exp(IntMat2 * logprob);
-	    leftcens = Type(1.0) - surv;
-  }
+        logprob  = log(Type(1.0) - haz);
+	      surv     = exp(IntMat1 * logprob);
+	      surv_lag = exp(IntMat2 * logprob);
+	      leftcens = Type(1.0) - surv;
+    };
 
     // Function to calculate incidence & cumulative incidence
     // TODO: This code is reused, find a way to change e.g inc_mmc while referring to inc here
@@ -399,21 +625,21 @@ class Threemc {
     void calc_inc(density::SparseMatrix<Type> IntMat1, int is_type) {
 
       // Incidence
-      // if (is_type == 1) {
+      if (is_type == 1) {
         inc_mmc = haz_mmc * surv_lag;
         inc_tmc = haz_tmc * surv_lag;
-      // }
+      }
       inc = haz * surv_lag; // TODO: Ask Matt why this isn't inc_mmc + inc_tmc for model w/ type??
 
       // Cumulative incidence
-      // if (is_type == 1) {
+      if (is_type == 1) {
         cum_inc_mmc = IntMat1 * inc_mmc;
         cum_inc_tmc = IntMat1 * inc_tmc;
         cum_inc     = cum_inc_tmc + cum_inc_mmc;
-      // } else {
-      //   cum_inc = IntMat1 * inc;
-      // }
-    }
+      } else {
+        cum_inc = IntMat1 * inc;
+      }
+    };
 
     // Function to calculate likelihood
     // TODO: Can make an enum (or something?) pointer to iterate over for this
@@ -421,8 +647,201 @@ class Threemc {
     void likelihood(density::SparseMatrix<Type> Mat,
                   vector<Type> report_val) {
       // Calculate likelihood for chosen circ pop with corresponding report vals
-    nll -= (Mat * log(report_val)).sum();
+      nll -= (Mat * log(report_val)).sum();
     };
+
+    void calc_nll(struct Threemc_data<Type> threemc_data, objective_function<Type>* obj) {
+      // Parameters
+
+      // Fixed Effects
+      PARAMETER_VECTOR(u_fixed_mmc);
+      PARAMETER_VECTOR(u_fixed_tmc);
+
+      // Age random effect
+      PARAMETER_VECTOR(u_age_mmc); 
+      PARAMETER_VECTOR(u_age_tmc); 
+      
+      // Temporal random effects 
+      PARAMETER_VECTOR(u_time_mmc);
+      
+      // Spatial random effects
+      PARAMETER_VECTOR(u_space_mmc);
+      PARAMETER_VECTOR(u_space_tmc);
+      
+      // Interactions
+      PARAMETER_ARRAY(u_agetime_mmc);
+      PARAMETER_ARRAY(u_agespace_mmc);
+      PARAMETER_ARRAY(u_spacetime_mmc);
+      PARAMETER_ARRAY(u_agespace_tmc);
+      
+      // Standard deviations 
+      PARAMETER(logsigma_age_mmc);       
+      PARAMETER(logsigma_time_mmc);      
+      PARAMETER(logsigma_space_mmc);     
+      PARAMETER(logsigma_agetime_mmc);   
+      PARAMETER(logsigma_agespace_mmc);  
+      PARAMETER(logsigma_spacetime_mmc); 
+      PARAMETER(logsigma_age_tmc);       
+      PARAMETER(logsigma_space_tmc);     
+      PARAMETER(logsigma_agespace_tmc);  
+
+      Type sigma_age_mmc       = exp(logsigma_age_mmc);
+      Type sigma_time_mmc      = exp(logsigma_time_mmc);
+      Type sigma_space_mmc     = exp(logsigma_space_mmc);
+      Type sigma_agetime_mmc   = exp(logsigma_agetime_mmc);
+      Type sigma_agespace_mmc  = exp(logsigma_agespace_mmc);
+      Type sigma_spacetime_mmc = exp(logsigma_spacetime_mmc);
+      Type sigma_age_tmc       = exp(logsigma_age_tmc);
+      Type sigma_space_tmc     = exp(logsigma_space_tmc);
+      Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
+
+      // // Autocorrelation parameters 
+      PARAMETER(logitrho_mmc_time1);
+      PARAMETER(logitrho_mmc_time2);
+      PARAMETER(logitrho_mmc_time3);
+      PARAMETER(logitrho_mmc_age1);
+      PARAMETER(logitrho_mmc_age2);
+      PARAMETER(logitrho_mmc_age3);
+      PARAMETER(logitrho_tmc_age1);
+      PARAMETER(logitrho_tmc_age2);
+
+      Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
+      Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
+      Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
+      Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
+      Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
+      Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
+      Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
+      Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
+
+      //// Priors ////
+    
+      // Apply prior on fixed effects
+      fix_eff_p(u_fixed_mmc);
+      fix_eff_p(u_fixed_tmc);
+
+      // prior on temporal random effects
+      rand_eff_time_p(u_time_mmc,
+                      logsigma_time_mmc,
+                      sigma_time_mmc,
+                      logitrho_mmc_time1,
+                      rho_mmc_time1);
+
+      // // // prior on the age random effects
+      rand_eff_age_p(u_age_mmc,
+                     logsigma_age_mmc,
+                     sigma_age_mmc,
+                     logitrho_mmc_age1,
+                     rho_mmc_age1);
+      rand_eff_age_p(u_age_tmc,
+                     logsigma_age_tmc,
+                     sigma_age_tmc,
+                     logitrho_tmc_age1,
+                     rho_tmc_age1);
+
+      // // prior on spatial random effects
+      rand_eff_space_p(threemc_data.Q_space,
+                       u_space_mmc,
+                       logsigma_space_mmc,
+                       sigma_space_mmc);
+      rand_eff_space_p(threemc_data.Q_space,
+                       u_space_tmc,
+                       logsigma_space_tmc,
+                       sigma_space_tmc);
+
+      // // prior on interaction random effects
+      rand_eff_interact_p(threemc_data.Q_space,
+                          u_agespace_mmc,
+                          u_agetime_mmc,
+                          u_spacetime_mmc,
+                          logsigma_agespace_mmc,
+                          sigma_agespace_mmc,
+                          logsigma_agetime_mmc,
+                          sigma_agetime_mmc,
+                          logsigma_spacetime_mmc,
+                          sigma_spacetime_mmc,
+                          logitrho_mmc_age2,
+                          rho_mmc_age2,
+                          logitrho_mmc_age3,
+                          rho_mmc_age3,
+                          logitrho_mmc_time2,
+                          rho_mmc_time2,
+                          logitrho_mmc_time3,
+                          rho_mmc_time3);
+      rand_eff_interact_p(threemc_data.Q_space,
+                          u_agespace_tmc,
+                          logsigma_agespace_tmc,
+                          sigma_agespace_tmc,
+                          logitrho_tmc_age2,
+                          rho_tmc_age2);
+
+      //// Calculate report values (hazard, (cumulative) incidence) ////
+
+      // Calculate hazards
+      calc_haz(threemc_data.X_fixed_mmc, 
+               threemc_data.X_time_mmc,
+               threemc_data.X_age_mmc, 
+               threemc_data.X_space_mmc,
+               threemc_data.X_agetime_mmc, 
+               threemc_data.X_agespace_mmc,
+               threemc_data.X_spacetime_mmc, 
+               u_fixed_mmc, 
+               u_age_mmc,
+               u_time_mmc,
+               u_space_mmc, 
+               u_agetime_mmc,
+               u_agespace_mmc,
+               u_spacetime_mmc,
+               sigma_age_mmc,
+               sigma_time_mmc,
+               sigma_space_mmc,
+               sigma_agetime_mmc,
+               sigma_agespace_mmc,
+               sigma_spacetime_mmc);
+
+      calc_haz(threemc_data.X_fixed_tmc, 
+               threemc_data.X_age_tmc, 
+               threemc_data.X_space_tmc,
+               threemc_data.X_agespace_tmc,
+               u_fixed_tmc, 
+               u_age_tmc,
+               u_space_tmc, 
+               u_agespace_tmc,
+               sigma_age_tmc,
+               sigma_space_tmc,
+               sigma_agespace_tmc);
+
+      calc_haz();
+
+      // calculate survival probabilities
+      calc_surv(threemc_data.IntMat1, threemc_data.IntMat2);
+
+      // calculate incidences and cumulative incidences
+      calc_inc(threemc_data.IntMat1, 1); // run where we have type
+
+      // // //// Calculate likelihood ////
+      likelihood(threemc_data.A_mmc, inc_mmc); // medical circumcisions
+      likelihood(threemc_data.A_tmc, inc_tmc); // traditional circumcisions
+      likelihood(threemc_data.A_mc, inc);      // circs of unknown type
+      likelihood(threemc_data.B, surv);        // right censored (i.e. uncircumcised)
+      likelihood(threemc_data.C, leftcens);    // left censored (i.e. unknown circ age)
+
+      // //// report hazard rates, incidence and cumulative incidence ////
+      REPORT(haz_mmc);     // Medical hazard rate
+      REPORT(haz_tmc);     // Traditional hazard rate
+      REPORT(haz);         // Total hazard rate
+      REPORT(inc_mmc);     // Medical circumcision incidence rate
+      REPORT(inc_tmc);     // Traditional circumcision incidence rate
+      REPORT(inc);         // Total circumcision incidence rate
+      REPORT(cum_inc_mmc); // Medical circumcision cumulative incidence rate
+      REPORT(cum_inc_tmc); // Traditional circumcision cumulative incidence rate
+      REPORT(cum_inc);     // Total circumcision cumulative incidence rate
+      REPORT(surv);        // Survival probabilities
+ 
+      // return 
+      // return nll;
+    };
+
 
     //// Getter Functions ////
    
@@ -470,8 +889,11 @@ class Threemc {
     vector<Type> get_leftcens() {
       return leftcens;
     };
-
 };
+
+// redefine TMB_OBJECTIVE_PTR so parameters can be accessed in main function
+#undef TMB_OBJECTIVE_PTR
+#define TMB_OBJECTIVE_PTR this
 
 #endif
 
