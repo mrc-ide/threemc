@@ -54,7 +54,10 @@ class Threemc {
     vector<Type> cum_inc_tmc; // Traditional circumcision cumulative incidence rate
     vector<Type> cum_inc_mmc; // Medical circumcision cumulative incidence rate
     vector<Type> cum_inc;     // Total circumcision cumulative incidence rate
+    vector<Type> logprob;     // ?
     vector<Type> surv;        // Survival probabilities
+    vector<Type> surv_lag;    // Lagged survival probabilities
+    vector<Type> leftcens;    // left censored incidence rate
 
     // also add report values here (??)
 
@@ -224,99 +227,134 @@ class Threemc {
       nll -= dnorm(logitrho_tmc_age2,  Type(3), Type(2), TRUE);
     };
 
-    // Function to calculate report values
+    // Function to calculate report values 
     // TODO: This will change depending on whether type information is included
-    void calc_report_vals(SparseMatrix<Type> X_fixed_mmc, 
-                          SparseMatrix<Type> X_time_mmc,
-                          SparseMatrix<Type> X_age_mmc, 
-                          SparseMatrix<Type> X_space_mmc,
-                          SparseMatrix<Type> X_agetime_mmc, 
-                          SparseMatrix<Type> X_agespace_mmc,
-                          SparseMatrix<Type> X_spacetime_mmc, 
-                          // TMC terms
-                          SparseMatrix<Type> X_fixed_tmc,
-                          SparseMatrix<Type> X_age_tmc, 
-                          SparseMatrix<Type> X_space_tmc,
-                          SparseMatrix<Type> X_agespace_tmc,
-                          // Integration matrices
-                          density::SparseMatrix<Type> IntMat1,
-                          density::SparseMatrix<Type> IntMat2,
-                          // parameters
-                          vector<Type> u_fixed_mmc, 
-                          vector<Type> u_fixed_tmc,
-                          vector<Type> u_age_mmc,
-                          vector<Type> u_age_tmc,
-                          vector<Type> u_time_mmc,
-                          vector<Type> u_space_mmc, 
-                          vector<Type> u_space_tmc,
-                          array<Type> u_agetime_mmc,
-                          array<Type> u_agespace_mmc,
-                          array<Type> u_spacetime_mmc,
-                          array<Type> u_agespace_tmc,
-                          Type sigma_age_mmc,
-                          Type sigma_time_mmc,
-                          Type sigma_space_mmc,
-                          Type sigma_agetime_mmc,
-                          Type sigma_agespace_mmc,
-                          Type sigma_spacetime_mmc,
-                          Type sigma_age_tmc,
-                          Type sigma_space_tmc,
-                          Type sigma_agespace_tmc) {
-       
+    // Need to just overload this function
+    // TODO: Can definitely design this function better to avoid repitition
+    // For MMC: 
+    void calc_haz(density::SparseMatrix<Type> X_fixed, 
+                  density::SparseMatrix<Type> X_time,
+                  density::SparseMatrix<Type> X_age, 
+                  density::SparseMatrix<Type> X_space,
+                  density::SparseMatrix<Type> X_agetime, 
+                  density::SparseMatrix<Type> X_agespace,
+                  density::SparseMatrix<Type> X_spacetime, 
+                  // parameters
+                  vector<Type> u_fixed, 
+                  vector<Type> u_age,
+                  vector<Type> u_time,
+                  vector<Type> u_space, 
+                  array<Type> u_agetime,
+                  array<Type> u_agespace,
+                  array<Type> u_spacetime,
+                  Type sigma_age,
+                  Type sigma_time,
+                  Type sigma_space,
+                  Type sigma_agetime,
+                  Type sigma_agespace,
+                  Type sigma_spacetime) {
+
       // Vector the interaction terms
-      vector<Type> u_agespace_mmc_v(u_agespace_mmc);
-      vector<Type> u_agetime_mmc_v(u_agetime_mmc);
-      vector<Type> u_spacetime_mmc_v(u_spacetime_mmc);
-      vector<Type> u_agespace_tmc_v(u_agespace_tmc);
+      vector<Type> u_agespace_v(u_agespace);
+      vector<Type> u_agetime_v(u_agetime);
+      vector<Type> u_spacetime_v(u_spacetime);
 
       /// Estimate hazard rate ///
       /// TODO: Break this down into functions as well!
       // Medical hazard rate
-      haz_mmc = X_fixed_mmc * u_fixed_mmc +
-        X_time_mmc * u_time_mmc * sigma_time_mmc +
-        X_space_mmc * u_space_mmc * sigma_space_mmc +
-        X_age_mmc * u_age_mmc * sigma_age_mmc +
-        X_agetime_mmc * u_agetime_mmc_v * sigma_agetime_mmc +
-        X_agespace_mmc * u_agespace_mmc_v * sigma_agespace_mmc +
-        X_spacetime_mmc * u_spacetime_mmc_v * sigma_spacetime_mmc;
+      // TODO: How to change haz_mmc to haz, but effect haz_mmc member??
+      haz_mmc = X_fixed * u_fixed +
+        X_time * u_time * sigma_time +
+        X_space * u_space * sigma_space +
+        X_age * u_age * sigma_age +
+        X_agetime * u_agetime_v * sigma_agetime +
+        X_agespace * u_agespace_v * sigma_agespace +
+        X_spacetime * u_spacetime_v * sigma_spacetime;
 
-      // Traditional hazard rate
-      haz_tmc = X_fixed_tmc * u_fixed_tmc +
-        X_space_tmc * u_space_tmc * sigma_space_tmc +
-        X_age_tmc * u_age_tmc * sigma_age_tmc +
-        X_agespace_tmc * u_agespace_tmc_v * sigma_agespace_tmc;
+      // Rates on [0,1] scale
+      haz_mmc = invlogit_vec(haz_mmc);
+    };
+
+    // For TMC: 
+    void calc_haz(density::SparseMatrix<Type> X_fixed,
+                  density::SparseMatrix<Type> X_age, 
+                  density::SparseMatrix<Type> X_space,
+                  density::SparseMatrix<Type> X_agespace,
+                  // parameters
+                  vector<Type> u_fixed,
+                  vector<Type> u_age,
+                  vector<Type> u_space,
+                  array<Type> u_agespace,
+                  Type sigma_age,
+                  Type sigma_space,
+                  Type sigma_agespace) {
+
+      // Vectorise interaction terms
+      vector<Type> u_agespace_v(u_agespace);
+
+      /// Estimate hazard rate ///
+      haz_tmc = X_fixed * u_fixed +
+        X_space * u_space * sigma_space +
+        X_age * u_age * sigma_age +
+        X_agespace * u_agespace_v * sigma_agespace;
 
       // Rates on [0,1] scale
       haz_tmc = invlogit_vec(haz_tmc);
-      haz_mmc = invlogit_vec(haz_mmc);
-
-      // Adjustment such that \lambda_mmc + \lambda_tmc \in [0,1]
-      // Medical rate to only take from the remaining proportion
-      // not taken through traditional circumcision (1 - \lambda_tmc)
-      haz_mmc = haz_mmc * (1 - haz_tmc);
-
-      // Total hazard rate
-      haz = haz_mmc + haz_tmc;
-
-      // Survival probabilities
-      vector<Type> logprob  = log(Type(1.0) - haz);
-      surv     = exp(IntMat1 * logprob);
-      vector<Type> surv_lag = exp(IntMat2 * logprob);
-      vector<Type> leftcens = Type(1.0) - surv;
-
-      // Incidence
-      inc_tmc = haz_tmc * surv_lag;
-      inc_mmc = haz_mmc * surv_lag;
-      inc = haz * surv_lag;
-
-      // Cumulative incidence
-      cum_inc_tmc = IntMat1 * inc_tmc;
-      cum_inc_mmc = IntMat1 * inc_mmc;
-      cum_inc = cum_inc_tmc + cum_inc_mmc;
     };
 
-    // Function
-    // likelihood() {};
+    // final calculation of total report vals (e.g. haz = haz_mmc + haz_tmc)
+    void calc_haz() {
+
+      // Adjustment such that \lambda_mmc + \lambda_tmc \in [0,1]  
+      // Medical rate to only take from the remaining proportion 
+      // not taken through traditional circumcision (1 - \lambda_tmc)
+      haz_mmc = haz_mmc * (1 - haz_tmc);
+      
+      // Total hazard rate
+      haz = haz_mmc + haz_tmc;
+    };
+
+  // function to calculate survival probabilities
+  void calc_surv(// Integration matrices
+                  density::SparseMatrix<Type> IntMat1,
+                  density::SparseMatrix<Type> IntMat2) {
+
+      logprob  = log(Type(1.0) - haz);
+	    surv     = exp(IntMat1 * logprob);
+	    surv_lag = exp(IntMat2 * logprob);
+	    leftcens = Type(1.0) - surv;
+  }
+
+    // Function to calculate incidence & cumulative incidence
+    // TODO: This code is reused, find a way to change e.g inc_mmc while referring to inc here
+    // Actually works well here with if statement, but may not scale well with more models
+    void calc_inc(density::SparseMatrix<Type> IntMat1, int is_type) {
+
+      // Incidence
+      if (is_type == 1) {
+        inc_mmc = haz_mmc * surv_lag;
+        inc_tmc = haz_tmc * surv_lag;
+      }
+      inc = haz * surv_lag; // TODO: Ask Matt why this isn't inc_mmc + inc_tmc for model w/ type??
+
+      // Cumulative incidence
+      if (is_type == 1) {
+        cum_inc_mmc = IntMat1 * inc_mmc;
+        cum_inc_tmc = IntMat1 * inc_tmc;
+        cum_inc     = cum_inc_tmc + cum_inc_mmc;
+      } else {
+        cum_inc = IntMat1 * inc;
+      }
+    }
+
+    // Function to calculate likelihood
+    // TODO: Can make an enum (or something?) pointer to iterate over for this
+    // (will be different for each model)
+    void likelihood(density::SparseMatrix<Type> Mat,
+                  vector<Type> report_val) {
+      // Calculate likelihood for chosen circ pop with corresponding report vals
+    nll -= (Mat * log(report_val)).sum();
+    };
 
     //// Getter Functions ////
    
@@ -352,9 +390,19 @@ class Threemc {
     vector<Type> get_cum_inc() {
       return cum_inc;
     };
+    vector<Type> get_logprob() {
+      return logprob;
+    };
     vector<Type> get_surv() {
       return surv;
     };
+    vector<Type> get_surv_lag() {
+      return surv_lag;
+    };
+    vector<Type> get_leftcens() {
+      return leftcens;
+    };
+
 };
 
 #endif
