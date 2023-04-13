@@ -1,3 +1,11 @@
+# threemc 0.1.41
+
+- Use `tmb.ad.framework = "TMBad"`, rather than the default "CPPad". This 
+framework performs sparse hessian compression, which leads to significantly 
+lower memory usage (particularly in the "spike" experienced at the "optimising 
+tape..." optimisation stage) during model fit. 
+
+
 # threemc 0.1.40
 
 - Remove dependencies on non-CRAN packages (i.e. `naomi`), by adding necessary 
