@@ -117,7 +117,7 @@ threemc_prepare_model_data <- function(out,
   # Precision/Adjacency matrix for the spatial random effects
   if (nrow(areas) == 1) {
     # for only one area (like for national level), Q_space == 1
-    new(
+    Q_space = list("Q_space" = new(
       "dgTMatrix", 
       i = 0L, 
       j = 0L, 
@@ -125,7 +125,7 @@ threemc_prepare_model_data <- function(out,
       Dimnames = list(NULL, NULL), 
       x = 1, 
       factors = list()
-    )
+    ))
   } else {
     Q_space <- list(
       "Q_space" = create_icar_prec_matrix(
