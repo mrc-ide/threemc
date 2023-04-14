@@ -23,8 +23,7 @@ Type geninvlogit(Type x, Type a, Type b){
 /* Objective function to specify model and to optimize model parameters */
 /************************************************************************/
 template<class Type>
-Type objective_function<Type>::operator() ()
-{
+Type objective_function<Type>::operator() () {
   using namespace density;
   
   ////////////////////////
@@ -52,7 +51,7 @@ Type objective_function<Type>::operator() ()
   DATA_SPARSE_MATRIX(X_space_tmc); // Design matrix for the stratification random effects in the medical circumcision hazard rate
   DATA_SPARSE_MATRIX(X_time_tmc); // Design matrix for the temporal random effects in the traditional circumcision hazard rate
   DATA_SPARSE_MATRIX(X_agespace_tmc); // Design matrix for the interaction random effects in the medical circumcision hazard rate
-  DATA_SPARSE_MATRIX(X_spacetime_mmc); // Design matrix for the interaction random effects in the traditional circumcision hazard rate
+  DATA_SPARSE_MATRIX(X_spacetime_tmc); // Design matrix for the interaction random effects in the traditional circumcision hazard rate
   
   // Precision matrices 
   DATA_SPARSE_MATRIX(Q_space); // Aggregation matrix for number of circumcisions performed
