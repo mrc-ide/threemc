@@ -118,8 +118,14 @@ threemc_fit_model <- function(fit = NULL,
     # if (dat_tmb$type_info == TRUE && "u_time_tmc" %in% param_names) {
     cond <- dat_tmb$type_info == TRUE
     if (length(cond) == 0) cond <- "u_time_tmc" %in% param_names
-    cond <- cond && "u_time_tmc" %in% param_names
-    if (cond) {
+    # TODO: Change this for aggregating, logic is wrong
+    cond_time <- cond && "u_time_tmc" %in% param_names
+    
+    # do the same for spacetime
+    cond_spacetime <- cond && "u_spacetime_tmc" %in% param_names
+    if (cond_spacetime) {
+      mod <- paste0(mod, "3")
+    } else if (cond_time) {
       mod <- paste0(mod, "2")
     }
     
@@ -383,8 +389,11 @@ threemc_initial_pars <- function(dat_tmb,
                                  rw_order = NULL,
                                  rw_order_tmc_ar = FALSE,
                                  paed_age_cutoff = NULL,
-                                 inc_time_tmc = FALSE) {
+                                 inc_time_tmc = FALSE,
+                                 inc_spacetime_tmc = FALSE) {
 
+  # fail if inc_spacetime_tmc == TRUE but inc_time_tmc == FALSE
+  stopifnot(inc_time_tmc == inc_spacetime_tmc || (inc_time_tmc == TRUE))
 
   # Create dummy matrices if not in dat_tmb for particular model specification:
 
@@ -400,6 +409,7 @@ threemc_initial_pars <- function(dat_tmb,
   }
 
   # dummy time TMC matrices
+  # TODO: Functionalise!
   if (inc_time_tmc == FALSE) {
     if ("X_time_tmc" %in% names(dat_tmb)) {
       stop(
@@ -408,6 +418,15 @@ threemc_initial_pars <- function(dat_tmb,
       )
     }
     X_time_tmc <- data.frame(0)
+  }
+  if (inc_spacetime_tmc == FALSE) {
+    if ("X_spacetime_tmc" %in% names(dat_tmb)) {
+      stop(
+        "inc_spacetime_tmc = FALSE but dat_tmb$X_spacetime_tmc exists, ",
+        " please recheck threemc_prepare_model_data arguments"
+      )
+    }
+    X_spacetime_tmc <- data.frame(0)
   }
 
   # Initial values
@@ -441,6 +460,9 @@ threemc_initial_pars <- function(dat_tmb,
       ),
       # Interactions for TMC
       "u_agespace_tmc"         = matrix(0, ncol(X_age_tmc), ncol(X_space_tmc)),
+      "u_spacetime_tmc"        = matrix(
+        0, ncol(X_time_tmc), ncol(X_space_tmc)
+      ),
       # Autocorrelation parameters for priors
       # Variance
       "logsigma_age_mmc"            = 0,
@@ -456,6 +478,7 @@ threemc_initial_pars <- function(dat_tmb,
       "logsigma_time_tmc"           = 0,
       "logsigma_space_tmc"          = 0,
       "logsigma_agespace_tmc"       = 0,
+      "logsigma_spacetime_tmc"      = 0,
       # Mean
       "logitrho_mmc_time1"          = 2,
       "logitrho_mmc_time2"          = 2,
@@ -466,6 +489,7 @@ threemc_initial_pars <- function(dat_tmb,
       "logitrho_mmc_paed_age2"      = 2,
       "logitrho_mmc_age3"           = 2,
       "logitrho_tmc_time1"          = 2,
+      "logitrho_tmc_time3"          = 2,
       "logitrho_tmc_age1"           = 2,
       "logitrho_tmc_age2"           = 2
     )
@@ -507,6 +531,14 @@ threemc_initial_pars <- function(dat_tmb,
       )
     ]
   }
+  if (inc_spacetime_tmc == FALSE) {
+    parameters <- parameters[
+      !names(parameters) %in% c(
+        "u_spacetime_tmc", "logsigma_spacetime_tmc", "logitrho_spacetmc_time3"
+      )
+    ]
+  }
+  
 
   # Allow for any custom changes to parameter values
   if (!is.null(custom_init)) {

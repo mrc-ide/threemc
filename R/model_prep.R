@@ -25,6 +25,9 @@
 #' Default: NULL
 #' @param inc_time_tmc Indicator variable which decides whether to include
 #' temporal random effects for TMC as well as MMC, Default: FALSE
+#' @param inc_spacetime_tmc Indicator variable which decides whether to include
+#' spatio-temporal interaction random effects for TMC as well as MMC, 
+#' Default: FALSE
 #' @param ... Additional arguments to be passed to functions which create
 #' matrices.
 #' @return \code{list} of data required for model fitting, including:
@@ -55,6 +58,7 @@ threemc_prepare_model_data <- function(out,
                                        paed_age_cutoff = NULL,
                                        rw_order = NULL,
                                        inc_time_tmc = FALSE,
+                                       inc_spacetime_tmc = FALSE,
                                        ...) {
   if (is.null(area_lev)) {
     message(
@@ -62,6 +66,9 @@ threemc_prepare_model_data <- function(out,
     )
     area_lev <- max(out$area_level, na.rm = TRUE)
   }
+  
+  # fail if inc_spacetime_tmc == TRUE but inc_time_tmc == FALSE
+  stopifnot(inc_time_tmc == inc_spacetime_tmc || (inc_time_tmc == TRUE))
  
   type_info <- TRUE
   if (all(out$obs_mmc == 0) && all(out$obs_tmc == 0)) {
@@ -75,11 +82,12 @@ threemc_prepare_model_data <- function(out,
   # Create design matrices for fixed effects and temporal, age, space and
   # interaction random effects
   design_matrices <- create_design_matrices(
-    dat          = out, 
-    area_lev     = area_lev, 
-    k_dt_age     = k_dt_age, 
-    k_dt_time    = k_dt_time, 
-    inc_time_tmc = inc_time_tmc
+    dat               = out, 
+    area_lev          = area_lev, 
+    k_dt_age          = k_dt_age, 
+    k_dt_time         = k_dt_time, 
+    inc_time_tmc      = inc_time_tmc,
+    inc_spacetime_tmc = inc_spacetime_tmc
   )
 
   # Have piecewise mmc design matrices for paediatric and non-paediatric pops
@@ -119,12 +127,12 @@ threemc_prepare_model_data <- function(out,
     # for only one area (like for national level), Q_space == 1
     Q_space = list("Q_space" = new(
       "dgTMatrix", 
-      i = 0L, 
-      j = 0L, 
-      Dim = c(1L, 1L), 
+      i        = 0L, 
+      j        = 0L, 
+      Dim      = c(1L, 1L), 
       Dimnames = list(NULL, NULL), 
-      x = 1, 
-      factors = list()
+      x        = 1, 
+      factors  = list()
     ))
   } else {
     Q_space <- list(
@@ -185,7 +193,8 @@ create_design_matrices <- function(dat,
                                    area_lev = NULL,
                                    k_dt_age = 5,
                                    k_dt_time = 5,
-                                   inc_time_tmc = FALSE) {
+                                   inc_time_tmc = FALSE,
+                                   inc_spacetime_tmc = FALSE) {
   if (is.null(area_lev)) {
     message(
       "area_lev arg missing, taken as maximum area level in shell dataset"
@@ -255,10 +264,16 @@ create_design_matrices <- function(dat,
     "X_agetime_mmc"   = X_agetime,
     "X_agespace_mmc"  = X_agespace,
     "X_agespace_tmc"  = X_agespace,
-    "X_spacetime_mmc" = X_spacetime
+    "X_spacetime_mmc" = X_spacetime,
+    "X_spacetime_tmc" = X_spacetime
   )
 
-  if (inc_time_tmc == FALSE) output <- output[names(output) != "X_time_tmc"]
+  if (inc_time_tmc == FALSE) {
+    output <- output[!names(output) %in% c("X_time_tmc", "_spacetime_tmc")]
+  }
+  if (inc_spacetime_tmc == FALSE) {
+    output <- output[names(output) != "X_spacetime_tmc"]
+  }
 
   return(output)
 }
@@ -394,7 +409,7 @@ create_integration_matrices <- function(out,
     )
     area_lev <- max(out$area_level, na.rm = TRUE)
   }
-
+  
   # Only doing the matrices on the specified aggregation
   out <- shell_data_spec_area(out, area_lev)
 
