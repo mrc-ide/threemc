@@ -15,6 +15,7 @@ threemc_prepare_model_data(
   paed_age_cutoff = NULL,
   rw_order = NULL,
   inc_time_tmc = FALSE,
+  inc_spacetime_tmc = FALSE,
   ...
 )
 }
@@ -50,6 +51,10 @@ Default: NULL}
 
 \item{inc_time_tmc}{Indicator variable which decides whether to include
 temporal random effects for TMC as well as MMC, Default: FALSE}
+
+\item{inc_spacetime_tmc}{Indicator variable which decides whether to include
+spatio-temporal interaction random effects for TMC as well as MMC,
+Default: FALSE}
 
 \item{...}{Additional arguments to be passed to functions which create
 matrices.}

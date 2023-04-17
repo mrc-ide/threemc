@@ -9,7 +9,8 @@ create_design_matrices(
   area_lev = NULL,
   k_dt_age = 5,
   k_dt_time = 5,
-  inc_time_tmc = FALSE
+  inc_time_tmc = FALSE,
+  inc_spacetime_tmc = FALSE
 )
 }
 \arguments{
@@ -27,6 +28,10 @@ disable temporal splines, Default: NULL}
 
 \item{inc_time_tmc}{Indicator variable which decides whether to include
 temporal random effects for TMC as well as MMC, Default: FALSE}
+
+\item{inc_spacetime_tmc}{Indicator variable which decides whether to include
+spatio-temporal interaction random effects for TMC as well as MMC,
+Default: FALSE}
 }
 \value{
 List of design matrices for fixed and random effects for medical

@@ -10,7 +10,8 @@ threemc_initial_pars(
   rw_order = NULL,
   rw_order_tmc_ar = FALSE,
   paed_age_cutoff = NULL,
-  inc_time_tmc = FALSE
+  inc_time_tmc = FALSE,
+  inc_spacetime_tmc = FALSE
 )
 }
 \arguments{
@@ -47,6 +48,10 @@ over time. Set to NULL if not desired, Default: NULL}
 
 \item{inc_time_tmc}{Indicator variable which decides whether to include
 temporal random effects for TMC as well as MMC, Default: FALSE}
+
+\item{inc_spacetime_tmc}{Indicator variable which decides whether to include
+spatio-temporal interaction random effects for TMC as well as MMC,
+Default: FALSE}
 }
 \value{
 Named \code{list} of intial (hyper)parameters for
