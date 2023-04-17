@@ -8,6 +8,9 @@
 template<class Type>
 struct Threemc_data {
 
+  // indicators
+  int is_type; // Model with type (MMC/TMC) split, or without?
+
   // Survival analysis matrices
   density::SparseMatrix<Type> A_mmc; // Matrix selecting instantaneous hazard for medically circumcised pop
   density::SparseMatrix<Type> A_tmc; // Matrix selecting instantaneous hazard for traditionally circumcised pop
@@ -60,14 +63,16 @@ struct Threemc_data {
 
 using namespace density;
 
-// TODO: Move implementation to separate file
+// Model with type (MMC/TMC) split, no paed age cutoff or time TMC effect
 template <class Type>
 class Threemc {
-  private:
+
+  protected:
+
     // negative log likelihood
     Type nll; 
   
-    // // report values (hazard rates, incidence and cumulative incidence)
+    // report values (hazard rates, incidence and cumulative incidence)
     vector<Type> haz_mmc;     // Medical hazard rate
     vector<Type> haz_tmc;     // Traditional hazard rate
     vector<Type> haz;         // Total hazard rate
@@ -77,12 +82,12 @@ class Threemc {
     vector<Type> cum_inc_tmc; // Traditional circumcision cumulative incidence rate
     vector<Type> cum_inc_mmc; // Medical circumcision cumulative incidence rate
     vector<Type> cum_inc;     // Total circumcision cumulative incidence rate
-    vector<Type> logprob;     // ?
     vector<Type> surv;        // Survival probabilities
     vector<Type> surv_lag;    // Lagged survival probabilities
     vector<Type> leftcens;    // left censored incidence rate
 
   public:
+
     // Default Constructor
     Threemc();
 
@@ -181,33 +186,6 @@ class Threemc {
     // final calculation of total report vals (e.g. haz = haz_mmc + haz_tmc)
     void calc_haz();
 
-    // // for model with no type (so only MMC)
-    // // TODO: Repitition here from function for MMC, redesign (with template?) to avoid this
-    // void calc_haz(density::SparseMatrix<Type> X_fixed, 
-    //               density::SparseMatrix<Type> X_time,
-    //               density::SparseMatrix<Type> X_age, 
-    //               density::SparseMatrix<Type> X_space,
-    //               density::SparseMatrix<Type> X_agetime, 
-    //               density::SparseMatrix<Type> X_agespace,
-    //               density::SparseMatrix<Type> X_spacetime, 
-    //               // Integration matrix
-    //               density::SparseMatrix<Type> IntMat1,
-    //               density::SparseMatrix<Type> IntMat2,
-    //               // parameters
-    //               vector<Type> u_fixed, 
-    //               vector<Type> u_age,
-    //               vector<Type> u_time,
-    //               vector<Type> u_space, 
-    //               array<Type> u_agetime,
-    //               array<Type> u_agespace,
-    //               array<Type> u_spacetime,
-    //               Type sigma_age,
-    //               Type sigma_time,
-    //               Type sigma_space,
-    //               Type sigma_agetime,
-    //               Type sigma_agespace,
-    //               Type sigma_spacetime);
-
     // function to calculate survival probabilities
     void calc_surv(density::SparseMatrix<Type> IntMat1,
                    density::SparseMatrix<Type> IntMat2);
@@ -229,6 +207,75 @@ class Threemc {
     Type get_nll() {
       return nll;
     };
+};
+#endif
+
+#ifndef THREEMC_NT_DEF
+#define THREEMC_NT_DEF
+
+// Model with no type split, no paed age cutoff or time TMC effect
+template<class Type>
+class Threemc_nt : public Threemc<Type> {
+
+  protected:
+
+  //   // report values
+  //   vector<Type> haz;      // Total hazard rate
+  //   vector<Type> inc;      // Total circumcision incidence rate
+  //   vector<Type> cum_inc;  // Cumulative circumcision incidence
+  //   vector<Type> surv;     // Survival probabilities
+  //   vector<Type> surv_lag; // Lagged survival probabilities
+  //   vector<Type> leftcens; // left censored incidence rate
+
+    using Threemc<Type>::nll;
+    using Threemc<Type>::haz;
+    using Threemc<Type>::inc;
+    using Threemc<Type>::cum_inc;
+    using Threemc<Type>::surv;
+    using Threemc<Type>::surv_lag;
+    using Threemc<Type>::leftcens;
+ 
+  public:
+
+    using Threemc<Type>::fix_eff_p;
+    using Threemc<Type>::rand_eff_time_p;
+    using Threemc<Type>::rand_eff_age_p;
+    using Threemc<Type>::rand_eff_space_p;
+    using Threemc<Type>::rand_eff_interact_p;
+    using Threemc<Type>::calc_surv;
+    using Threemc<Type>::calc_inc;
+    using Threemc<Type>::likelihood;
+    using Threemc<Type>::get_nll;
+ 
+
+    // TODO: Repitition here from function for MMC, redesign (with template?) to avoid this
+    void calc_haz(density::SparseMatrix<Type> X_fixed, 
+                  density::SparseMatrix<Type> X_time,
+                  density::SparseMatrix<Type> X_age, 
+                  density::SparseMatrix<Type> X_space,
+                  density::SparseMatrix<Type> X_agetime, 
+                  density::SparseMatrix<Type> X_agespace,
+                  density::SparseMatrix<Type> X_spacetime, 
+                  // Integration matrix
+                  density::SparseMatrix<Type> IntMat1,
+                  density::SparseMatrix<Type> IntMat2,
+                  // parameters
+                  vector<Type> u_fixed, 
+                  vector<Type> u_age,
+                  vector<Type> u_time,
+                  vector<Type> u_space, 
+                  array<Type> u_agetime,
+                  array<Type> u_agespace,
+                  array<Type> u_spacetime,
+                  Type sigma_age,
+                  Type sigma_time,
+                  Type sigma_space,
+                  Type sigma_agetime,
+                  Type sigma_agespace,
+                  Type sigma_spacetime);
+
+    void calc_nll(struct Threemc_data<Type> threemc_data,
+                  objective_function<Type>* obj);
 };
 
 #endif
