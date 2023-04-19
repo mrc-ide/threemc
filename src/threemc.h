@@ -91,6 +91,9 @@ class Threemc {
     // Default Constructor
     Threemc();
 
+    // Default virtual Destructor
+    virtual ~Threemc();
+
 	  // Fixed effects for circumcision rate
     void fix_eff_p(vector<Type> u_fixed);
 
@@ -194,6 +197,8 @@ class Threemc {
     // TODO: This code is reused, find a way to change e.g inc_mmc while referring to inc here
     // Actually works well here with if statement, but may not scale well with more models
     void calc_inc(density::SparseMatrix<Type> IntMat1, int is_type);
+    // void calc_inc(density::SparseMatrix<Type> IntMat1);
+    // void calc_inc(density::SparseMatrix<Type> IntMat1, int is_type);
 
     // Function to calculate likelihood
     // TODO: Can make an enum (or something?) pointer to iterate over for this
@@ -237,6 +242,13 @@ class Threemc_nt : public Threemc<Type> {
  
   public:
 
+    // Default Constructor
+    Threemc_nt();
+
+    // Default virtual Destructor
+    virtual ~Threemc_nt();
+
+    // Base functions
     using Threemc<Type>::fix_eff_p;
     using Threemc<Type>::rand_eff_time_p;
     using Threemc<Type>::rand_eff_age_p;
