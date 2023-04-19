@@ -133,7 +133,6 @@ threemc_fit_model <- function(fit = NULL,
     dat_tmb <- remove_type_distinction(
       dat_tmb[!names(dat_tmb) %chin% c("A_mmc", "A_tmc")]
     )
-    names(dat_tmb)[names(dat_tmb) == "A_mc"] <- "A"
     
     parameters <- remove_type_distinction(parameters)
     randoms <- unique(stringr::str_remove(randoms, "_tmc|_mmc"))
