@@ -28,7 +28,6 @@
 #' @param maps \code{list} of factors with value NA, the names of which
 #' indicate parameters to be kept fixed at their initial value throughout the
 #' optimisation process.
-#' @param randoms \code{vector} of random effects.
 #' @param mod TMB model, one of either
 #' "Surv_SpaceAgeTime_ByType_withUnknownType" or "Surv_SpaceAgeTime" if the
 #' surveys for the country in question make no distinction between circumcision
@@ -52,12 +51,6 @@ threemc_fit_model <- function(fit = NULL,
                               mod = NULL,
                               parameters = NULL,
                               maps = NULL,
-                              randoms = c(
-                                "u_time_mmc", "u_age_mmc", "u_space_mmc",
-                                "u_agetime_mmc", "u_agespace_mmc",
-                                "u_spacetime_mmc", "u_age_tmc",
-                                "u_space_tmc", "u_agespace_tmc"
-                              ),
                               sample = TRUE,
                               smaller_fit_obj = FALSE,
                               sdreport = FALSE,
@@ -65,6 +58,15 @@ threemc_fit_model <- function(fit = NULL,
                               verbose = TRUE,
                               ...) {
 
+  
+  # random effects (some may be remove due to model choice)
+  randoms <- c(
+    "u_time_mmc", "u_age_mmc", "u_space_mmc",
+    "u_agetime_mmc", "u_agespace_mmc", "u_spacetime_mmc", 
+    "u_age_mmc_paed", "u_agespace_mmc_paed",
+    "u_time_tmc", "u_age_tmc", "u_space_tmc", 
+    "u_agespace_tmc"
+  )
   
   # If model is not specified, allow function to choose based on dat_tmb
   # This also abstracts esoteric model specification from the user

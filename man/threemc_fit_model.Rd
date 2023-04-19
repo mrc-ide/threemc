@@ -11,8 +11,6 @@ threemc_fit_model(
   mod = NULL,
   parameters = NULL,
   maps = NULL,
-  randoms = c("u_time_mmc", "u_age_mmc", "u_space_mmc", "u_agetime_mmc",
-    "u_agespace_mmc", "u_spacetime_mmc", "u_age_tmc", "u_space_tmc", "u_agespace_tmc"),
   sample = TRUE,
   smaller_fit_obj = FALSE,
   sdreport = FALSE,
@@ -52,8 +50,6 @@ type (i.e whether they were performed in a medical or traditional setting).}
 \item{maps}{\code{list} of factors with value NA, the names of which
 indicate parameters to be kept fixed at their initial value throughout the
 optimisation process.}
-
-\item{randoms}{\code{vector} of random effects.}
 
 \item{sample}{If set to TRUE, has function also return N samples for
 medical, traditional and total circumcisions, Default: TRUE}
