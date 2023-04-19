@@ -147,7 +147,7 @@ create_shell_dataset <- function(survey_circumcision,
     ) %>%
     # Sort dataset
     dplyr::arrange(.data$space, .data$age, .data$time)
-  n <- nrow(out)
+  n <- nrow(out) # pull n rows for later testing
   
   # Add population data on to merge
   out <- out %>% 
@@ -210,9 +210,6 @@ create_shell_dataset <- function(survey_circumcision,
       dplyr::select(-.data$missing_pops)
   }
    
-  # give error if there are NAs in populations
-  stopifnot(all(!is.na(out$population))) 
-  
   # give warning about duplicated rows from left_join
   if (n != nrow(out)) {
     message(paste0(
@@ -279,6 +276,13 @@ create_shell_dataset <- function(survey_circumcision,
     )
   })
   agetime_hazard_matrices <- lapply(agetime_hazard_matrices, Matrix::colSums)
+  
+  if (all(unlist(agetime_hazard_matrices[1:3]) == 0)) {
+    stop(paste0(
+      "No uncensored circumcisions present in surveys, check for valid ",
+      "circ_status and/or circ_age"
+    ))
+  }
 
   # add to out:
   out[, empirical_circ_cols] <- agetime_hazard_matrices
