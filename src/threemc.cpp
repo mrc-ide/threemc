@@ -33,10 +33,17 @@ Type objective_function<Type>::operator() ()
      }
     // class for model with no type
   } else if (threemc_data.is_type == 0) {
-    Threemc_nt<Type> threemc;
-    // std::cout << "Message about model selection" << std::endl;
-    threemc.calc_nll(threemc_data, this);
-    nll = threemc.get_nll();
+    if (threemc_data.rw_order == 1) {
+      Threemc_nt_rw<Type> threemc;
+    //   // std::cout << "Message about model selection" << std::endl;
+      threemc.calc_nll(threemc_data, this);
+      nll = threemc.get_nll();
+    } else {
+      Threemc_nt<Type> threemc;
+      // std::cout << "Message about model selection" << std::endl;
+      threemc.calc_nll(threemc_data, this);
+      nll = threemc.get_nll();
+    }
   }
   return nll;
 }

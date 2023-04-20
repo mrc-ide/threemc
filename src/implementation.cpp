@@ -71,7 +71,7 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
     X_spacetime = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_spacetime"));
   }
 
-  if (is_type == 1) {
+  if (rw_order == 1) {
     Q_time = tmbutils::asSparseMatrix<Type>(getListElement(x, "Q_time"));
   }
 }
@@ -451,6 +451,7 @@ void Threemc_nt<Type>::calc_haz(density::SparseMatrix<Type> X_fixed,
 
 
 //// Threemc_rw class, Threemc with RW temporal prior ////
+
 // Constructor
 template<class Type> 
 Threemc_rw<Type>::Threemc_rw() {
@@ -508,10 +509,10 @@ void Threemc_rw<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
                                            // Type logitrho_time3,
                                            // Type rho_time3) {
 
+  
   // Interactions: space-time (GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x GMRF)
   nll += SEPARABLE(GMRF(Q_time), density::AR1(rho_age2))(u_agetime);
   nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_age3))(u_agespace);
-  // nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_time3))(u_spacetime);
   nll += SEPARABLE(GMRF(Q_space), GMRF(Q_time))(u_spacetime);
   
   // Sum-to-zero constraint
@@ -534,7 +535,7 @@ void Threemc_rw<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
                  Type(0.001) * u_spacetime.col(i).size(),
                  true);
   }  
-  
+ 
   // Prior on the standard deviation for the interaction random effects
   // TODO: Can rewrite this using a pointer map or something to iterate over
   nll -= dexp(sigma_agespace,  Type(1), true) + logsigma_agespace;
@@ -543,10 +544,21 @@ void Threemc_rw<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
 
   // Prior on the logit autocorrelation parameters
   // TODO: Can also iterate over these so we don't need to overload this function
-  // nll -= dnorm(logitrho_time2, Type(3), Type(2), true);
   nll -= dnorm(logitrho_age2,  Type(3), Type(2), true);
-  // nll -= dnorm(logitrho_time3, Type(3), Type(2), true);
   nll -= dnorm(logitrho_age3,  Type(3), Type(2), true);
+}
+
+//// Threemc_nw_rw class, Threemc with no type split & RW temporal prior ////
+
+// Constructor
+template<class Type> 
+Threemc_nt_rw<Type>::Threemc_nt_rw() {
+  Type nll = Type(0);
+}
+
+// Destructor
+template<class Type> 
+Threemc_nt_rw<Type>::~Threemc_nt_rw() {
 }
 
 
@@ -1074,6 +1086,138 @@ void Threemc_nt<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   likelihood(threemc_data.C, leftcens);  // left censored (i.e. unknown circ age)
     
   //// report hazard rates, incidence and cumulative incidence ////
+  REPORT(haz);         // Total hazard rate
+  REPORT(inc);         // Total circumcision incidence rate
+  REPORT(cum_inc);     // Total circumcision cumulative incidence rate
+  REPORT(surv);        // Survival probabilities
+}
+
+template<class Type>
+void Threemc_nt_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
+                                   objective_function<Type>* obj) {
+
+  // Parameters
+    
+  // Fixed Effects
+  PARAMETER_VECTOR(u_fixed);
+    
+  // // Age random effect
+  PARAMETER_VECTOR(u_age); 
+ 
+  // Temporal random effects 
+  PARAMETER_VECTOR(u_time);
+
+  // Spatial random effects
+  PARAMETER_VECTOR(u_space);
+
+  // Interactions
+  PARAMETER_ARRAY(u_agetime);
+  PARAMETER_ARRAY(u_agespace);
+  PARAMETER_ARRAY(u_spacetime);
+
+  // // Standard deviations 
+  PARAMETER(logsigma_age);       
+  PARAMETER(logsigma_time);      
+  PARAMETER(logsigma_space);     
+  PARAMETER(logsigma_agetime);   
+  PARAMETER(logsigma_agespace);  
+  PARAMETER(logsigma_spacetime); 
+
+  Type sigma_age       = exp(logsigma_age);
+  Type sigma_time      = exp(logsigma_time);
+  Type sigma_space     = exp(logsigma_space);
+  Type sigma_agetime   = exp(logsigma_agetime);
+  Type sigma_agespace  = exp(logsigma_agespace);
+  Type sigma_spacetime = exp(logsigma_spacetime);
+
+  // Autocorrelation parameters 
+  PARAMETER(logitrho_age1);
+  PARAMETER(logitrho_age2);
+  PARAMETER(logitrho_age3);
+
+  Type rho_age1 = geninvlogit(logitrho_age1,  Type(-1.0), Type(1.0));
+  Type rho_age2 = geninvlogit(logitrho_age2,  Type(-1.0), Type(1.0));
+  Type rho_age3 = geninvlogit(logitrho_age3,  Type(-1.0), Type(1.0));
+
+  //// Priors ////
+
+  // Apply prior on fixed effects
+  fix_eff_p(u_fixed);
+
+  // prior on temporal random effects
+  rand_eff_time_p(threemc_data.Q_time,
+                  u_time,
+                  logsigma_time,
+                  sigma_time);
+
+  // prior on the age random effects
+  rand_eff_age_p(u_age,
+                 logsigma_age,
+                 sigma_age,
+                 logitrho_age1,
+                 rho_age1);
+  
+  // prior on spatial random effects
+  rand_eff_space_p(threemc_data.Q_space,
+                   u_space,
+                   logsigma_space,
+                   sigma_space);
+
+  // prior on interaction random effects
+  rand_eff_interact_p(threemc_data.Q_space,
+                      threemc_data.Q_time,
+                      u_agespace,
+                      u_agetime,
+                      u_spacetime,
+                      logsigma_agespace,
+                      sigma_agespace,
+                      logsigma_agetime,
+                      sigma_agetime,
+                      logsigma_spacetime,
+                      sigma_spacetime,
+                      logitrho_age2,
+                      rho_age2,
+                      logitrho_age3,
+                      rho_age3);
+
+  //// Calculate report values (hazard, (cumulative) incidence) ////
+   
+  // Calculate hazards
+  calc_haz(threemc_data.X_fixed, 
+           threemc_data.X_time,
+           threemc_data.X_age, 
+           threemc_data.X_space,
+           threemc_data.X_agetime, 
+           threemc_data.X_agespace,
+           threemc_data.X_spacetime, 
+           threemc_data.IntMat1,
+           threemc_data.IntMat2,
+           u_fixed, 
+           u_age,
+           u_time,
+           u_space, 
+           u_agetime,
+           u_agespace,
+           u_spacetime,
+           sigma_age,
+           sigma_time,
+           sigma_space,
+           sigma_agetime,
+           sigma_agespace,
+           sigma_spacetime);
+
+  // calculate survival probabilities
+  calc_surv(threemc_data.IntMat1, threemc_data.IntMat2);
+  
+  // calculate incidences and cumulative incidences
+  calc_inc(threemc_data.IntMat1, threemc_data.is_type);
+   
+  //// Calculate likelihood ////
+  likelihood(threemc_data.A_mc, inc);    // circs of unknown type
+  likelihood(threemc_data.B, surv);      // right censored (i.e. uncircumcised)
+  likelihood(threemc_data.C, leftcens);  // left censored (i.e. unknown circ age)
+   
+  // //// report hazard rates, incidence and cumulative incidence ////
   REPORT(haz);         // Total hazard rate
   REPORT(inc);         // Total circumcision incidence rate
   REPORT(cum_inc);     // Total circumcision cumulative incidence rate

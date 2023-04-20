@@ -224,7 +224,7 @@ class Threemc {
 
 // Model with no type split, no paed age cutoff or time TMC effect
 template<class Type>
-class Threemc_rw : public Threemc<Type> {
+class Threemc_rw : virtual public Threemc<Type> {
 
   protected:
 
@@ -253,7 +253,6 @@ class Threemc_rw : public Threemc<Type> {
     // Base functions
     // TODO: Remove functions we overload here!
     using Threemc<Type>::fix_eff_p;
-    // using Threemc<Type>::rand_eff_time_p;
     using Threemc<Type>::rand_eff_age_p;
     using Threemc<Type>::rand_eff_space_p;
     using Threemc<Type>::rand_eff_interact_p;
@@ -290,23 +289,14 @@ class Threemc_rw : public Threemc<Type> {
 
 #endif
 
-
 #ifndef THREEMC_NT_DEF
 #define THREEMC_NT_DEF
 
 // Model with no type split, no paed age cutoff or time TMC effect
 template<class Type>
-class Threemc_nt : public Threemc<Type> {
+class Threemc_nt : virtual public Threemc<Type> {
 
   protected:
-
-  //   // report values
-  //   vector<Type> haz;      // Total hazard rate
-  //   vector<Type> inc;      // Total circumcision incidence rate
-  //   vector<Type> cum_inc;  // Cumulative circumcision incidence
-  //   vector<Type> surv;     // Survival probabilities
-  //   vector<Type> surv_lag; // Lagged survival probabilities
-  //   vector<Type> leftcens; // left censored incidence rate
 
     using Threemc<Type>::nll;
     using Threemc<Type>::haz;
@@ -361,6 +351,50 @@ class Threemc_nt : public Threemc<Type> {
                   Type sigma_agetime,
                   Type sigma_agespace,
                   Type sigma_spacetime);
+
+    void calc_nll(struct Threemc_data<Type> threemc_data,
+                  objective_function<Type>* obj);
+};
+
+#endif
+
+#ifndef THREEMC_NT_RW_DEF
+#define THREEMC_NT_RW_DEF
+
+// Model with no type split which uses a RW temporal prior
+template<class Type>
+class Threemc_nt_rw : public Threemc_nt<Type>, public Threemc_rw<Type> {
+
+  protected:
+
+    using Threemc<Type>::nll;
+    using Threemc<Type>::haz;
+    using Threemc<Type>::inc;
+    using Threemc<Type>::cum_inc;
+    using Threemc<Type>::surv;
+    using Threemc<Type>::surv_lag;
+    using Threemc<Type>::leftcens;
+ 
+  public:
+
+    // Default Constructor
+    Threemc_nt_rw();
+
+    // Default virtual Destructor
+    virtual ~Threemc_nt_rw();
+
+    // Base functions
+    using Threemc<Type>::fix_eff_p;
+    using Threemc<Type>::rand_eff_time_p;
+    using Threemc_rw<Type>::rand_eff_time_p;
+    using Threemc<Type>::rand_eff_age_p;
+    using Threemc<Type>::rand_eff_space_p;
+    using Threemc_rw<Type>::rand_eff_interact_p;
+    using Threemc_nt<Type>::calc_haz;
+    using Threemc<Type>::calc_surv;
+    using Threemc<Type>::calc_inc;
+    using Threemc<Type>::likelihood;
+    using Threemc<Type>::get_nll;
 
     void calc_nll(struct Threemc_data<Type> threemc_data,
                   objective_function<Type>* obj);
