@@ -148,7 +148,7 @@ void Threemc<Type>::rand_eff_space_p(density::SparseMatrix<Type> Q_space,
                                      Type sigma_space) {
 
   // Gaussian markov random field with prespecified precision matrix
-  nll += density::GMRF(Q_space)(u_space);
+  nll += GMRF(Q_space)(u_space);
 
   // Sum to zero constraints
   nll -= dnorm(u_space.sum(), Type(0), Type(0.001) * u_space.size(), true);
@@ -178,10 +178,10 @@ void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
                                         Type logitrho_time3,
                                         Type rho_time3) {
 
-  // Interactions: space-time (density::GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x density::GMRF)
+  // Interactions: space-time (GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x GMRF)
   nll += SEPARABLE(density::AR1(rho_time2), density::AR1(rho_age2))(u_agetime);
-  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_age3))(u_agespace);
-  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_time3))(u_spacetime);
+  nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_age3))(u_agespace);
+  nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_time3))(u_spacetime);
   
   // Sum-to-zero constraint
   // TODO: Iterate over map of these
@@ -227,8 +227,8 @@ void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
                                         Type logitrho_tmc_age2,
                                         Type rho_tmc_age2) {
 
-  // Interactions: space-time (density::GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x density::GMRF)
-  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_tmc_age2))(u_agespace_tmc);
+  // Interactions: space-time (GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x GMRF)
+  nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_tmc_age2))(u_agespace_tmc);
   
   // Sum-to-zero constraints
   for (int i = 0; i < u_agespace_tmc.cols(); i++) {
@@ -508,12 +508,11 @@ void Threemc_rw<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
                                            // Type logitrho_time3,
                                            // Type rho_time3) {
 
-  // Interactions: space-time (density::GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x density::GMRF)
-  // nll += SEPARABLE(density::AR1(rho_time2), density::AR1(rho_age2))(u_agetime);
-  nll += SEPARABLE(density::GMRF(Q_time), density::AR1(rho_age2))(u_agetime);
-  nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_age3))(u_agespace);
-  // nll += SEPARABLE(density::GMRF(Q_space), density::AR1(rho_time3))(u_spacetime);
-  nll += SEPARABLE(density::GMRF(Q_space), density::GMRF(Q_time)(u_spacetime));
+  // Interactions: space-time (GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x GMRF)
+  nll += SEPARABLE(GMRF(Q_time), density::AR1(rho_age2))(u_agetime);
+  nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_age3))(u_agespace);
+  // nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_time3))(u_spacetime);
+  nll += SEPARABLE(GMRF(Q_space), GMRF(Q_time))(u_spacetime);
   
   // Sum-to-zero constraint
   // TODO: Iterate over map of these
@@ -867,6 +866,7 @@ void Threemc_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
                       rho_mmc_age2,
                       logitrho_mmc_age3,
                       rho_mmc_age3);
+
   rand_eff_interact_p(threemc_data.Q_space,
                       u_agespace_tmc,
                       logsigma_agespace_tmc,
@@ -1018,23 +1018,23 @@ void Threemc_nt<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
     
   // prior on interaction random effects
   rand_eff_interact_p(threemc_data.Q_space,
-                               u_agespace,
-                               u_agetime,
-                               u_spacetime,
-                               logsigma_agespace,
-                               sigma_agespace,
-                               logsigma_agetime,
-                               sigma_agetime,
-                               logsigma_spacetime,
-                               sigma_spacetime,
-                               logitrho_age2,
-                               rho_age2,
-                               logitrho_age3,
-                               rho_age3,
-                               logitrho_time2,
-                               rho_time2,
-                               logitrho_time3,
-                               rho_time3);
+                      u_agespace,
+                      u_agetime,
+                      u_spacetime,
+                      logsigma_agespace,
+                      sigma_agespace,
+                      logsigma_agetime,
+                      sigma_agetime,
+                      logsigma_spacetime,
+                      sigma_spacetime,
+                      logitrho_age2,
+                      rho_age2,
+                      logitrho_age3,
+                      rho_age3,
+                      logitrho_time2,
+                      rho_time2,
+                      logitrho_time3,
+                      rho_time3);
   
   //// Calculate report values (hazard, (cumulative) incidence) ////
     
