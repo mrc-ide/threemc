@@ -31,7 +31,8 @@ Type geninvlogit(Type x, Type a, Type b){
 template<class Type>
 Threemc_data<Type>::Threemc_data(SEXP x) {
 
-  is_type = CppAD::Integer(asVector<Type>(getListElement(x, "is_type"))[0]);
+  is_type  = CppAD::Integer(asVector<Type>(getListElement(x, "is_type"))[0]);
+  rw_order = CppAD::Integer(asVector<Type>(getListElement(x, "rw_order"))[0]);
   
   // common to all
   A_mc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_mc"));
@@ -68,6 +69,10 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
     X_agetime   = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agetime")); 
     X_agespace  = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace")); 
     X_spacetime = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_spacetime"));
+  }
+
+  if (is_type == 1) {
+    Q_time = tmbutils::asSparseMatrix<Type>(getListElement(x, "Q_time"));
   }
 }
 

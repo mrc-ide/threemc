@@ -9,7 +9,8 @@ template<class Type>
 struct Threemc_data {
 
   // indicators
-  int is_type; // Model with type (MMC/TMC) split, or without?
+  int is_type;  // Model with type (MMC/TMC) split, or without?
+  int rw_order; // Use model with AR1 or RW temporal prior?
 
   // Survival analysis matrices
   density::SparseMatrix<Type> A_mmc; // Matrix selecting instantaneous hazard for medically circumcised pop
@@ -44,8 +45,9 @@ struct Threemc_data {
   density::SparseMatrix<Type> X_agespace; // Design matrix for the age-space interaction random effects
   density::SparseMatrix<Type> X_spacetime; // Design matrix for the age-space interaction random effects
  
-  // Precision Matrix
-  density::SparseMatrix<Type> Q_space; // Aggregation matrix for number of circumcisions performed
+  // Aggr mat for # circs (if RW, precision mat for spatial REs)
+  density::SparseMatrix<Type> Q_space; 
+  density::SparseMatrix<Type> Q_time;  // Precision matrix for spatial process (only for RW model)
 
   // Constructor
   Threemc_data(SEXP x);
