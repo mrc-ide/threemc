@@ -166,6 +166,14 @@ void Threemc<Type>::rand_eff_space_p(density::SparseMatrix<Type> Q_space,
   nll -= dexp(sigma_space, Type(1), true) + logsigma_space;
 }
 
+// sum-to-zero constraints
+template<class Type>
+void Threemc<Type>::sum_to_zero(array<Type> u_interact) {
+  for (int i = 0; i < u_interact.cols(); i++) {
+    nll -= dnorm(u_interact.col(i).sum(), Type(0), Type(0.001) * u_interact.col(i).size(), true);
+  }  
+}
+
 // Prior on the interaction random effects for either MMC or MC (for model w/ no type)
 template<class Type>
 void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
@@ -193,25 +201,10 @@ void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
   nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_time3))(u_spacetime);
   
   // Sum-to-zero constraint
-  // TODO: Iterate over map of these
-  for (int i = 0; i < u_agespace.cols(); i++) {
-    nll -= dnorm(u_agespace.col(i).sum(),
-                 Type(0),
-                 Type(0.001) * u_agespace.col(i).size(),
-                 true);
-  } 
-  for (int i = 0; i < u_agetime.cols(); i++) {
-    nll -= dnorm(u_agetime.col(i).sum(),
-                 Type(0),
-                 Type(0.001) * u_agetime.col(i).size(),
-                 true);
-  }  
-  for (int i = 0; i < u_spacetime.cols(); i++) {
-    nll -= dnorm(u_spacetime.col(i).sum(),
-                 Type(0),
-                 Type(0.001) * u_spacetime.col(i).size(),
-                 true);
-  }  
+  // TODO: Iterate over map of these (or make these a function!)
+  sum_to_zero(u_agespace);
+  sum_to_zero(u_agetime);
+  sum_to_zero(u_spacetime);
   
   // Prior on the standard deviation for the interaction random effects
   // TODO: Can rewrite this using a pointer map or something to iterate over
@@ -230,28 +223,23 @@ void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
 // Overload prior on the interaction random effects for just TMC
 template<class Type>
 void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
-                                        array<Type> u_agespace_tmc,
-                                        Type logsigma_agespace_tmc,
-                                        Type sigma_agespace_tmc,
-                                        Type logitrho_tmc_age2,
-                                        Type rho_tmc_age2) {
+                                        array<Type> u_agespace,
+                                        Type logsigma_agespace,
+                                        Type sigma_agespace,
+                                        Type logitrho_age2,
+                                        Type rho_age2) {
 
   // Interactions: space-time (GMRF x density::AR1), age-time (density::AR1 x density::AR1) and age-space (density::AR1 x GMRF)
-  nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_tmc_age2))(u_agespace_tmc);
+  nll += SEPARABLE(GMRF(Q_space), density::AR1(rho_age2))(u_agespace);
   
   // Sum-to-zero constraints
-  for (int i = 0; i < u_agespace_tmc.cols(); i++) {
-    nll -= dnorm(u_agespace_tmc.col(i).sum(),
-                 Type(0),
-                 Type(0.001) * u_agespace_tmc.col(i).size(),
-                 true);
-  }
+  sum_to_zero(u_agespace);
   
   // Prior on the standard deviation for the interaction random effects
-  nll -= dexp(sigma_agespace_tmc,  Type(1), true) + logsigma_agespace_tmc;
+  nll -= dexp(sigma_agespace,  Type(1), true) + logsigma_agespace;
 
   // Prior on the logit autocorrelation parameters
-  nll -= dnorm(logitrho_tmc_age2,  Type(3), Type(2), true);
+  nll -= dnorm(logitrho_age2,  Type(3), Type(2), true);
 }
 
 // Function to calculate report values 
@@ -526,24 +514,9 @@ void Threemc_rw<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
   
   // Sum-to-zero constraint
   // TODO: Iterate over map of these
-  for (int i = 0; i < u_agespace.cols(); i++) {
-    nll -= dnorm(u_agespace.col(i).sum(),
-                 Type(0),
-                 Type(0.001) * u_agespace.col(i).size(),
-                 true);
-  } 
-  for (int i = 0; i < u_agetime.cols(); i++) {
-    nll -= dnorm(u_agetime.col(i).sum(),
-                 Type(0),
-                 Type(0.001) * u_agetime.col(i).size(),
-                 true);
-  }  
-  for (int i = 0; i < u_spacetime.cols(); i++) {
-    nll -= dnorm(u_spacetime.col(i).sum(),
-                 Type(0),
-                 Type(0.001) * u_spacetime.col(i).size(),
-                 true);
-  }  
+  sum_to_zero(u_agespace);
+  sum_to_zero(u_agetime);
+  sum_to_zero(u_spacetime);
  
   // Prior on the standard deviation for the interaction random effects
   // TODO: Can rewrite this using a pointer map or something to iterate over

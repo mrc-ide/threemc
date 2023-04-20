@@ -126,6 +126,9 @@ class Threemc {
                           Type logsigma_space,
                           Type sigma_space);
 
+    // Sum to zero constraints
+    void sum_to_zero(array<Type> u_interact);
+
     // Prior on the interaction random effects for either MMC or MC (for model w/ no type)
     void rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
                              array<Type> u_agespace,
@@ -262,6 +265,7 @@ class Threemc_rw : virtual public Threemc<Type> {
     using Threemc<Type>::fix_eff_p;
     using Threemc<Type>::rand_eff_age_p;
     using Threemc<Type>::rand_eff_space_p;
+    using Threemc<Type>::sum_to_zero;
     using Threemc<Type>::rand_eff_interact_p;
     using Threemc<Type>::calc_haz;
     using Threemc<Type>::calc_surv;
@@ -334,6 +338,7 @@ class Threemc_rw : virtual public Threemc<Type> {
 //     using Threemc<Type>::fix_eff_p;
 //     using Threemc<Type>::rand_eff_age_p;
 //     using Threemc<Type>::rand_eff_space_p;
+//     using Threemc<Type>::sum_to_zero;
 //     using Threemc<Type>::rand_eff_interact_p;
 //     using Threemc<Type>::calc_haz;
 //     using Threemc<Type>::calc_surv;
@@ -399,6 +404,7 @@ class Threemc_nt : virtual public Threemc<Type> {
     using Threemc<Type>::rand_eff_time_p;
     using Threemc<Type>::rand_eff_age_p;
     using Threemc<Type>::rand_eff_space_p;
+    using Threemc<Type>::sum_to_zero;
     using Threemc<Type>::rand_eff_interact_p;
     using Threemc<Type>::calc_surv;
     using Threemc<Type>::calc_inc;
@@ -469,6 +475,7 @@ class Threemc_nt_rw : public Threemc_nt<Type>, public Threemc_rw<Type> {
     using Threemc_rw<Type>::rand_eff_time_p;
     using Threemc<Type>::rand_eff_age_p;
     using Threemc<Type>::rand_eff_space_p;
+    using Threemc<Type>::sum_to_zero;
     using Threemc_rw<Type>::rand_eff_interact_p;
     using Threemc_nt<Type>::calc_haz;
     using Threemc<Type>::calc_surv;
