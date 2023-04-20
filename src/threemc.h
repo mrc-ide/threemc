@@ -9,7 +9,8 @@ template<class Type>
 struct Threemc_data {
 
   // indicators
-  int is_type; // Model with type (MMC/TMC) split, or without?
+  int is_type;  // Model with type (MMC/TMC) split, or without?
+  int rw_order; // Use model with AR1 or RW temporal prior?
 
   // Survival analysis matrices
   density::SparseMatrix<Type> A_mmc; // Matrix selecting instantaneous hazard for medically circumcised pop
@@ -44,8 +45,9 @@ struct Threemc_data {
   density::SparseMatrix<Type> X_agespace; // Design matrix for the age-space interaction random effects
   density::SparseMatrix<Type> X_spacetime; // Design matrix for the age-space interaction random effects
  
-  // Precision Matrix
-  density::SparseMatrix<Type> Q_space; // Aggregation matrix for number of circumcisions performed
+  // Aggr mat for # circs (if RW, precision mat for spatial REs)
+  density::SparseMatrix<Type> Q_space; 
+  density::SparseMatrix<Type> Q_time;  // Precision matrix for spatial process (only for RW model)
 
   // Constructor
   Threemc_data(SEXP x);
@@ -215,22 +217,86 @@ class Threemc {
 };
 #endif
 
+// Model with type split and random walk (not autoregressive) temporal prior
+
+#ifndef THREEMC_RW_DEF
+#define THREEMC_RW_DEF
+
+// Model with no type split, no paed age cutoff or time TMC effect
+template<class Type>
+class Threemc_rw : virtual public Threemc<Type> {
+
+  protected:
+
+    using Threemc<Type>::nll;
+    using Threemc<Type>::haz_mmc;
+    using Threemc<Type>::haz_tmc;
+    using Threemc<Type>::haz;
+    using Threemc<Type>::inc_mmc;
+    using Threemc<Type>::inc_tmc;
+    using Threemc<Type>::inc;
+    using Threemc<Type>::cum_inc_mmc;
+    using Threemc<Type>::cum_inc_tmc;
+    using Threemc<Type>::cum_inc;
+    using Threemc<Type>::surv;
+    using Threemc<Type>::surv_lag;
+    using Threemc<Type>::leftcens;
+ 
+  public:
+
+    // Default Constructor
+    Threemc_rw();
+
+    // Default virtual Destructor
+    virtual ~Threemc_rw();
+
+    // Base functions
+    // TODO: Remove functions we overload here!
+    using Threemc<Type>::fix_eff_p;
+    using Threemc<Type>::rand_eff_age_p;
+    using Threemc<Type>::rand_eff_space_p;
+    using Threemc<Type>::rand_eff_interact_p;
+    using Threemc<Type>::calc_haz;
+    using Threemc<Type>::calc_surv;
+    using Threemc<Type>::calc_inc;
+    using Threemc<Type>::likelihood;
+    using Threemc<Type>::get_nll;
+
+    void rand_eff_time_p(density::SparseMatrix<Type> Q_time,
+                         vector<Type> u_time,
+                         Type logsigma_time,
+                         Type sigma_time);
+
+    void rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
+                             density::SparseMatrix<Type> Q_time,
+                             array<Type> u_agespace,
+                             array<Type> u_agetime,
+                             array<Type> u_spacetime,
+                             Type logsigma_agespace,
+                             Type sigma_agespace,
+                             Type logsigma_agetime,
+                             Type sigma_agetime,
+                             Type logsigma_spacetime,
+                             Type sigma_spacetime,
+                             Type logitrho_age2,
+                             Type rho_age2,
+                             Type logitrho_age3,
+                             Type rho_age3);
+
+    void calc_nll(struct Threemc_data<Type> threemc_data,
+                  objective_function<Type>* obj);
+};
+
+#endif
+
 #ifndef THREEMC_NT_DEF
 #define THREEMC_NT_DEF
 
 // Model with no type split, no paed age cutoff or time TMC effect
 template<class Type>
-class Threemc_nt : public Threemc<Type> {
+class Threemc_nt : virtual public Threemc<Type> {
 
   protected:
-
-  //   // report values
-  //   vector<Type> haz;      // Total hazard rate
-  //   vector<Type> inc;      // Total circumcision incidence rate
-  //   vector<Type> cum_inc;  // Cumulative circumcision incidence
-  //   vector<Type> surv;     // Survival probabilities
-  //   vector<Type> surv_lag; // Lagged survival probabilities
-  //   vector<Type> leftcens; // left censored incidence rate
 
     using Threemc<Type>::nll;
     using Threemc<Type>::haz;
@@ -285,6 +351,50 @@ class Threemc_nt : public Threemc<Type> {
                   Type sigma_agetime,
                   Type sigma_agespace,
                   Type sigma_spacetime);
+
+    void calc_nll(struct Threemc_data<Type> threemc_data,
+                  objective_function<Type>* obj);
+};
+
+#endif
+
+#ifndef THREEMC_NT_RW_DEF
+#define THREEMC_NT_RW_DEF
+
+// Model with no type split which uses a RW temporal prior
+template<class Type>
+class Threemc_nt_rw : public Threemc_nt<Type>, public Threemc_rw<Type> {
+
+  protected:
+
+    using Threemc<Type>::nll;
+    using Threemc<Type>::haz;
+    using Threemc<Type>::inc;
+    using Threemc<Type>::cum_inc;
+    using Threemc<Type>::surv;
+    using Threemc<Type>::surv_lag;
+    using Threemc<Type>::leftcens;
+ 
+  public:
+
+    // Default Constructor
+    Threemc_nt_rw();
+
+    // Default virtual Destructor
+    virtual ~Threemc_nt_rw();
+
+    // Base functions
+    using Threemc<Type>::fix_eff_p;
+    using Threemc<Type>::rand_eff_time_p;
+    using Threemc_rw<Type>::rand_eff_time_p;
+    using Threemc<Type>::rand_eff_age_p;
+    using Threemc<Type>::rand_eff_space_p;
+    using Threemc_rw<Type>::rand_eff_interact_p;
+    using Threemc_nt<Type>::calc_haz;
+    using Threemc<Type>::calc_surv;
+    using Threemc<Type>::calc_inc;
+    using Threemc<Type>::likelihood;
+    using Threemc<Type>::get_nll;
 
     void calc_nll(struct Threemc_data<Type> threemc_data,
                   objective_function<Type>* obj);
