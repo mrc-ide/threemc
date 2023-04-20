@@ -9,8 +9,9 @@ template<class Type>
 struct Threemc_data {
 
   // indicators
-  int is_type;  // Model with type (MMC/TMC) split, or without?
-  int rw_order; // Use model with AR1 or RW temporal prior?
+  int is_type;         // Model with type (MMC/TMC) split, or without?
+  int rw_order;        // Model with AR1 or RW temporal prior?
+  int paed_age_cutoff; // Model with paedaitric age cutoff for medical circumcisions?
 
   // Survival analysis matrices
   density::SparseMatrix<Type> A_mmc; // Matrix selecting instantaneous hazard for medically circumcised pop
@@ -29,12 +30,18 @@ struct Threemc_data {
   density::SparseMatrix<Type> X_age_mmc; // Design matrix for the stratification random effects in the medical circumcision hazard rate
   density::SparseMatrix<Type> X_space_mmc; // Design matrix for the stratification random effects in the medical circumcision hazard rate
   density::SparseMatrix<Type> X_agetime_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
-  density::SparseMatrix<Type> X_agespace_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
   density::SparseMatrix<Type> X_spacetime_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+  density::SparseMatrix<Type> X_agespace_mmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
   density::SparseMatrix<Type> X_fixed_tmc; // Design matrix for the fixed effects in the traditional circumcision hazard rate
   density::SparseMatrix<Type> X_age_tmc; // Design matrix for the stratification random effects in the traditional circumcision hazard rate
   density::SparseMatrix<Type> X_space_tmc; // Design matrix for the stratification random effects in the medical circumcision hazard rate
   density::SparseMatrix<Type> X_agespace_tmc; // Design matrix for the interaction random effects in the medical circumcision hazard rate
+
+  // For model with paediatric age cutoff
+  density::SparseMatrix<Type> X_fixed_mmc_paed; // Design matrix for the fixed effects in the medical circumcision hazard rate (under specified age)
+  density::SparseMatrix<Type> X_age_mmc_paed; 
+  density::SparseMatrix<Type> X_space_mmc_paed; 
+  density::SparseMatrix<Type> X_agespace_mmc_paed;
 
   // for model with no type
   density::SparseMatrix<Type> X_fixed;    // Design matrix for the fixed effects
@@ -288,6 +295,79 @@ class Threemc_rw : virtual public Threemc<Type> {
 };
 
 #endif
+
+// Model with type split and random walk (not autoregressive) temporal prior
+
+// #ifndef THREEMC_PAED_DEF
+// #define THREEMC_PAED_DEF
+// 
+// // Model with no type split and a paed_age_cutoff
+// template<class Type>
+// class Threemc_paed : virtual public Threemc<Type> {
+// 
+//   protected:
+// 
+//     using Threemc<Type>::nll;
+//     using Threemc<Type>::haz_mmc;
+//     using Threemc<Type>::haz_tmc;
+//     using Threemc<Type>::haz;
+//     using Threemc<Type>::inc_mmc;
+//     using Threemc<Type>::inc_tmc;
+//     using Threemc<Type>::inc;
+//     using Threemc<Type>::cum_inc_mmc;
+//     using Threemc<Type>::cum_inc_tmc;
+//     using Threemc<Type>::cum_inc;
+//     using Threemc<Type>::surv;
+//     using Threemc<Type>::surv_lag;
+//     using Threemc<Type>::leftcens;
+//  
+//   public:
+// 
+//     // Default Constructor
+//     Threemc_rw();
+// 
+//     // Default virtual Destructor
+//     virtual ~Threemc_rw();
+// 
+//     // Base functions
+//     // TODO: Remove functions we overload here!
+//     using Threemc<Type>::fix_eff_p;
+//     using Threemc<Type>::rand_eff_age_p;
+//     using Threemc<Type>::rand_eff_space_p;
+//     using Threemc<Type>::rand_eff_interact_p;
+//     using Threemc<Type>::calc_haz;
+//     using Threemc<Type>::calc_surv;
+//     using Threemc<Type>::calc_inc;
+//     using Threemc<Type>::likelihood;
+//     using Threemc<Type>::get_nll;
+// 
+//     void rand_eff_time_p(density::SparseMatrix<Type> Q_time,
+//                          vector<Type> u_time,
+//                          Type logsigma_time,
+//                          Type sigma_time);
+// 
+//     void rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
+//                              density::SparseMatrix<Type> Q_time,
+//                              array<Type> u_agespace,
+//                              array<Type> u_agetime,
+//                              array<Type> u_spacetime,
+//                              Type logsigma_agespace,
+//                              Type sigma_agespace,
+//                              Type logsigma_agetime,
+//                              Type sigma_agetime,
+//                              Type logsigma_spacetime,
+//                              Type sigma_spacetime,
+//                              Type logitrho_age2,
+//                              Type rho_age2,
+//                              Type logitrho_age3,
+//                              Type rho_age3);
+// 
+//     void calc_nll(struct Threemc_data<Type> threemc_data,
+//                   objective_function<Type>* obj);
+// };
+// 
+// #endif
+
 
 #ifndef THREEMC_NT_DEF
 #define THREEMC_NT_DEF

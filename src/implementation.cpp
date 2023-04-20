@@ -32,10 +32,9 @@ template<class Type>
 Threemc_data<Type>::Threemc_data(SEXP x) {
 
   // indicators
-  // Does model include type or not? 
   is_type  = CppAD::Integer(asVector<Type>(getListElement(x, "is_type"))[0]);
-  // Use AR1 (0) or RW (1) temporal prior
   rw_order = CppAD::Integer(asVector<Type>(getListElement(x, "rw_order"))[0]);
+  paed_age_cutoff = CppAD::Integer(asVector<Type>(getListElement(x, "paed_age_cutoff"))[0]);
   
   // common to all
   A_mc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_mc"));
@@ -76,6 +75,13 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
 
   if (rw_order == 1) {
     Q_time = tmbutils::asSparseMatrix<Type>(getListElement(x, "Q_time"));
+  }
+
+  if (paed_age_cutoff == 1) {
+    X_fixed_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time_mmc_paed")); 
+    X_age_mmc_paed      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_mmc_paed")); 
+    X_space_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_mmc_paed")); 
+    X_agespace_mmc_paed = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_mmc_paed")); 
   }
 }
 
