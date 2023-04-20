@@ -31,7 +31,10 @@ Type geninvlogit(Type x, Type a, Type b){
 template<class Type>
 Threemc_data<Type>::Threemc_data(SEXP x) {
 
+  // indicators
+  // Does model include type or not? 
   is_type  = CppAD::Integer(asVector<Type>(getListElement(x, "is_type"))[0]);
+  // Use AR1 (0) or RW (1) temporal prior
   rw_order = CppAD::Integer(asVector<Type>(getListElement(x, "rw_order"))[0]);
   
   // common to all
@@ -1222,6 +1225,15 @@ void Threemc_nt_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   REPORT(inc);         // Total circumcision incidence rate
   REPORT(cum_inc);     // Total circumcision cumulative incidence rate
   REPORT(surv);        // Survival probabilities
+}
+
+// Function to perform boilerplate within switch in objective fun
+template<class Type, class Threemc_class>
+Type test(Type nll, Threemc_data<Type> threemc_data, objective_function<Type>* obj) {
+  Threemc_class threemc;
+  threemc.calc_nll(threemc_data, obj);
+  nll = threemc.get_nll();
+  return(nll);
 }
 
 // redefine TMB_OBJECTIVE_PTR so parameters can be accessed in main function

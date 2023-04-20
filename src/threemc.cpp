@@ -5,6 +5,10 @@
 #include "threemc.h"
 #include "implementation.cpp"
 
+// convert conditions to a bit, concatenate these bits into an int to switch on
+#define TYPE (1 << 0)
+#define RW (1 << 1)
+
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
@@ -17,33 +21,21 @@ Type objective_function<Type>::operator() ()
   // initialise nll
   Type nll = Type(0);
 
-  // model with type info, no paed age cutoff and no time TMC effect
-  // TODO: Change all of these nested ifs into a switch statement, very ugly!!
-  if (threemc_data.is_type == 1) {
-    if (threemc_data.rw_order == 1) {
-      Threemc_rw<Type> threemc;
-      // std::cout << "Message about model selection" << std::endl;
-      threemc.calc_nll(threemc_data, this);
-      nll = threemc.get_nll();
-    } else {
-      Threemc<Type> threemc;
-      // std::cout << "Message about model selection" << std::endl;
-      threemc.calc_nll(threemc_data, this);
-      nll = threemc.get_nll();
-     }
-    // class for model with no type
-  } else if (threemc_data.is_type == 0) {
-    if (threemc_data.rw_order == 1) {
-      Threemc_nt_rw<Type> threemc;
-    //   // std::cout << "Message about model selection" << std::endl;
-      threemc.calc_nll(threemc_data, this);
-      nll = threemc.get_nll();
-    } else {
-      Threemc_nt<Type> threemc;
-      // std::cout << "Message about model selection" << std::endl;
-      threemc.calc_nll(threemc_data, this);
-      nll = threemc.get_nll();
-    }
+  // Switch statement where particular form of model is decided
+  switch((threemc_data.is_type? TYPE : 0) | (threemc_data.rw_order? RW : 0)) {
+    case 0: // no type
+      nll = test<Type, Threemc_nt<Type>>(nll, threemc_data, this);
+      break;      
+    case RW: // no type, RW temporal prior
+      nll = test<Type, Threemc_nt_rw<Type>>(nll, threemc_data, this);
+      break;      
+    case TYPE: // "default" model with type information
+      nll = test<Type, Threemc<Type>>(nll, threemc_data, this);
+      break;      
+    case TYPE + RW: // RW temporal prior
+      nll = test<Type, Threemc_rw<Type>>(nll, threemc_data, this);
+      break;      
   }
+
   return nll;
 }
