@@ -35,6 +35,7 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
   is_type  = CppAD::Integer(asVector<Type>(getListElement(x, "is_type"))[0]);
   rw_order = CppAD::Integer(asVector<Type>(getListElement(x, "rw_order"))[0]);
   paed_age_cutoff = CppAD::Integer(asVector<Type>(getListElement(x, "paed_age_cutoff"))[0]);
+  inc_time_tmc = CppAD::Integer(asVector<Type>(getListElement(x, "inc_time_tmc"))[0]);
   
   // common to all
   A_mc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_mc"));
@@ -78,10 +79,16 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
   }
 
   if (paed_age_cutoff == 1) {
-     X_fixed_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed_mmc_paed")); 
-     X_age_mmc_paed      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_mmc_paed")); 
-     X_space_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_mmc_paed")); 
-     X_agespace_mmc_paed = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_mmc_paed")); 
+    X_fixed_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed_mmc_paed")); 
+    X_age_mmc_paed      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_mmc_paed")); 
+    X_space_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_mmc_paed")); 
+    X_agespace_mmc_paed = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_mmc_paed")); 
+  }
+
+  if (inc_time_tmc == 1) {
+    X_time_tmc      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time_tmc")); 
+    X_agetime_tmc   = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agetime_tmc")); 
+    X_spacetime_tmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_spacetime_tmc"));
   }
 }
 
