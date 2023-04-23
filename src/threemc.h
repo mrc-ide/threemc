@@ -182,7 +182,8 @@ class Threemc {
                   Type sigma_space,
                   Type sigma_agetime,
                   Type sigma_agespace,
-                  Type sigma_spacetime);
+                  Type sigma_spacetime,
+                  int paed_age_cutoff);
 
     // For TMC: 
     void calc_haz(density::SparseMatrix<Type> X_fixed,
@@ -300,78 +301,70 @@ class Threemc_rw : virtual public Threemc<Type> {
 
 #endif
 
-// Model with type split and random walk (not autoregressive) temporal prior
+#ifndef THREEMC_PAED_DEF
+#define THREEMC_PAED_DEF
 
-// #ifndef THREEMC_PAED_DEF
-// #define THREEMC_PAED_DEF
-// 
-// // Model with no type split and a paed_age_cutoff
-// template<class Type>
-// class Threemc_paed : virtual public Threemc<Type> {
-// 
-//   protected:
-// 
-//     using Threemc<Type>::nll;
-//     using Threemc<Type>::haz_mmc;
-//     using Threemc<Type>::haz_tmc;
-//     using Threemc<Type>::haz;
-//     using Threemc<Type>::inc_mmc;
-//     using Threemc<Type>::inc_tmc;
-//     using Threemc<Type>::inc;
-//     using Threemc<Type>::cum_inc_mmc;
-//     using Threemc<Type>::cum_inc_tmc;
-//     using Threemc<Type>::cum_inc;
-//     using Threemc<Type>::surv;
-//     using Threemc<Type>::surv_lag;
-//     using Threemc<Type>::leftcens;
-//  
-//   public:
-// 
-//     // Default Constructor
-//     Threemc_rw();
-// 
-//     // Default virtual Destructor
-//     virtual ~Threemc_rw();
-// 
-//     // Base functions
-//     // TODO: Remove functions we overload here!
-//     using Threemc<Type>::fix_eff_p;
-//     using Threemc<Type>::rand_eff_age_p;
-//     using Threemc<Type>::rand_eff_space_p;
-//     using Threemc<Type>::sum_to_zero;
-//     using Threemc<Type>::rand_eff_interact_p;
-//     using Threemc<Type>::calc_haz;
-//     using Threemc<Type>::calc_surv;
-//     using Threemc<Type>::calc_inc;
-//     using Threemc<Type>::likelihood;
-//     using Threemc<Type>::get_nll;
-// 
-//     void rand_eff_time_p(density::SparseMatrix<Type> Q_time,
-//                          vector<Type> u_time,
-//                          Type logsigma_time,
-//                          Type sigma_time);
-// 
-//     void rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
-//                              density::SparseMatrix<Type> Q_time,
-//                              array<Type> u_agespace,
-//                              array<Type> u_agetime,
-//                              array<Type> u_spacetime,
-//                              Type logsigma_agespace,
-//                              Type sigma_agespace,
-//                              Type logsigma_agetime,
-//                              Type sigma_agetime,
-//                              Type logsigma_spacetime,
-//                              Type sigma_spacetime,
-//                              Type logitrho_age2,
-//                              Type rho_age2,
-//                              Type logitrho_age3,
-//                              Type rho_age3);
-// 
-//     void calc_nll(struct Threemc_data<Type> threemc_data,
-//                   objective_function<Type>* obj);
-// };
-// 
-// #endif
+// Model with paediatric age cutoff for MMC
+template<class Type>
+class Threemc_paed : virtual public Threemc<Type> {
+
+  protected:
+
+    using Threemc<Type>::nll;
+    using Threemc<Type>::haz_mmc;
+    using Threemc<Type>::haz_tmc;
+    using Threemc<Type>::haz;
+    using Threemc<Type>::inc_mmc;
+    using Threemc<Type>::inc_tmc;
+    using Threemc<Type>::inc;
+    using Threemc<Type>::cum_inc_mmc;
+    using Threemc<Type>::cum_inc_tmc;
+    using Threemc<Type>::cum_inc;
+    using Threemc<Type>::surv;
+    using Threemc<Type>::surv_lag;
+    using Threemc<Type>::leftcens;
+ 
+  public:
+
+    // Default Constructor
+    Threemc_paed();
+
+    // Default virtual Destructor
+    virtual ~Threemc_paed();
+
+    // Base functions
+    using Threemc<Type>::fix_eff_p;
+    using Threemc<Type>::rand_eff_time_p;
+    using Threemc<Type>::rand_eff_age_p;
+    using Threemc<Type>::rand_eff_space_p;
+    using Threemc<Type>::sum_to_zero;
+    using Threemc<Type>::rand_eff_interact_p;
+    using Threemc<Type>::calc_haz; // only using TMC version of this function
+    using Threemc<Type>::calc_surv;
+    using Threemc<Type>::calc_inc;
+    using Threemc<Type>::likelihood;
+    using Threemc<Type>::get_nll;
+
+    // Hazard for paedaitric MMC: 
+    void calc_haz(density::SparseMatrix<Type> X_fixed, 
+                  density::SparseMatrix<Type> X_age, 
+                  density::SparseMatrix<Type> X_space,
+                  density::SparseMatrix<Type> X_agespace,
+                  vector<Type> u_fixed,
+                  vector<Type> u_age,
+                  vector<Type> u_space,
+                  array<Type> u_agespace,
+                  Type sigma_age,
+                  Type sigma_space,
+                  Type sigma_agespace,
+                  // only required to overload identical function in Threemc for haz_tmc
+                  int paed_age_cutoff);
+
+    void calc_nll(struct Threemc_data<Type> threemc_data,
+                  objective_function<Type>* obj);
+};
+
+#endif
 
 
 #ifndef THREEMC_NT_DEF
@@ -488,4 +481,66 @@ class Threemc_nt_rw : public Threemc_nt<Type>, public Threemc_rw<Type> {
 };
 
 #endif
+
+// 
+// template<class Type>
+// class Threemc_paed : virtual public Threemc<Type> {
+
+//   protected:
+
+//     using Threemc<Type>::nll;
+//     using Threemc<Type>::haz_mmc;
+//     using Threemc<Type>::haz_tmc;
+//     using Threemc<Type>::haz;
+//     using Threemc<Type>::inc_mmc;
+//     using Threemc<Type>::inc_tmc;
+//     using Threemc<Type>::inc;
+//     using Threemc<Type>::cum_inc_mmc;
+//     using Threemc<Type>::cum_inc_tmc;
+//     using Threemc<Type>::cum_inc;
+//     using Threemc<Type>::surv;
+//     using Threemc<Type>::surv_lag;
+//     using Threemc<Type>::leftcens;
+ 
+//   public:
+
+//     // Default Constructor
+//     Threemc_paed();
+
+//     // Default virtual Destructor
+//     virtual ~Threemc_paed();
+
+//     // Base functions
+//     using Threemc<Type>::fix_eff_p;
+//     using Threemc<Type>::rand_eff_time_p;
+//     using Threemc<Type>::rand_eff_age_p;
+//     using Threemc<Type>::rand_eff_space_p;
+//     using Threemc<Type>::sum_to_zero;
+//     using Threemc<Type>::rand_eff_interact_p;
+//     using Threemc<Type>::calc_haz; // only using TMC version of this function
+//     using Threemc<Type>::calc_surv;
+//     using Threemc<Type>::calc_inc;
+//     using Threemc<Type>::likelihood;
+//     using Threemc<Type>::get_nll;
+
+//     // Hazard for paedaitric MMC: 
+//     void calc_haz(density::SparseMatrix<Type> X_fixed, 
+//                   density::SparseMatrix<Type> X_age, 
+//                   density::SparseMatrix<Type> X_space,
+//                   density::SparseMatrix<Type> X_agespace,
+//                   vector<Type> u_fixed,
+//                   vector<Type> u_age,
+//                   vector<Type> u_space,
+//                   array<Type> u_agespace,
+//                   Type sigma_age,
+//                   Type sigma_space,
+//                   Type sigma_agespace,
+//                   // only required to overload identical function in Threemc for haz_tmc
+//                   int paed_age_cutoff);
+
+//     void calc_nll(struct Threemc_data<Type> threemc_data,
+//                   objective_function<Type>* obj);
+// };
+
+// #endif
 
