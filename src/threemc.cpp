@@ -41,10 +41,10 @@ Type objective_function<Type>::operator() ()
     case TYPE + PAED: // type info, paediatric age cutoff for MMC
       nll = nll_switch<Type, Threemc_paed<Type>>(nll, threemc_data, this);
       break;
-    // case RW + PAED: 
-    // case TYPE + RW + PAED: // RW temporal prior, paediatric age cutoff for MMC
-    //   nll = nll_switch<Type, Threemc_rw_paed<Type>>(nll, threemc_data, this);
-    //   break;
+    case RW + PAED: 
+    case TYPE + RW + PAED: // RW temporal prior, paediatric age cutoff for MMC
+      nll = nll_switch<Type, Threemc_paed_rw<Type>>(nll, threemc_data, this);
+      break;
   }
 
   return nll;

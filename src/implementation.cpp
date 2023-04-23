@@ -580,6 +580,19 @@ void Threemc_paed<Type>::calc_haz(density::SparseMatrix<Type> X_fixed,
   haz_mmc = invlogit_vec(haz_mmc);
 }
 
+//// Threemc_paed_rw class, Threemc with type info & paedaitric MMC cutoff ////
+
+// Constructor
+template<class Type> 
+Threemc_paed_rw<Type>::Threemc_paed_rw() {
+  Type nll = Type(0);
+}
+
+// Destructor
+template<class Type> 
+Threemc_paed_rw<Type>::~Threemc_paed_rw() {
+}
+
 
 //// Threemc_nw_rw class, Threemc with no type split & RW temporal prior ////
 
@@ -1145,6 +1158,241 @@ void Threemc_paed<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
                       rho_tmc_age2);
 
   // Calculate report values (hazard, (cumulative) incidence) ////
+
+  // Calculate hazards
+  calc_haz(threemc_data.X_fixed_mmc, 
+           threemc_data.X_time_mmc,
+           threemc_data.X_age_mmc, 
+           threemc_data.X_space_mmc,
+           threemc_data.X_agetime_mmc, 
+           threemc_data.X_agespace_mmc,
+           threemc_data.X_spacetime_mmc, 
+           u_fixed_mmc, 
+           u_age_mmc,
+           u_time_mmc,
+           u_space_mmc, 
+           u_agetime_mmc,
+           u_agespace_mmc,
+           u_spacetime_mmc,
+           sigma_age_mmc,
+           sigma_time_mmc,
+           sigma_space_mmc,
+           sigma_agetime_mmc,
+           sigma_agespace_mmc,
+           sigma_spacetime_mmc,
+           threemc_data.paed_age_cutoff);
+
+  calc_haz(threemc_data.X_fixed_mmc_paed, 
+           threemc_data.X_age_mmc_paed, 
+           threemc_data.X_space_mmc_paed,
+           threemc_data.X_agespace_mmc_paed,
+           u_fixed_mmc_paed, 
+           u_age_mmc_paed,
+           u_space_mmc_paed, 
+           u_agespace_mmc_paed,
+           sigma_age_mmc_paed,
+           sigma_space_mmc_paed,
+           sigma_agespace_mmc_paed,
+           threemc_data.paed_age_cutoff);
+
+  calc_haz(threemc_data.X_fixed_tmc, 
+           threemc_data.X_age_tmc, 
+           threemc_data.X_space_tmc,
+           threemc_data.X_agespace_tmc,
+           u_fixed_tmc, 
+           u_age_tmc,
+           u_space_tmc, 
+           u_agespace_tmc,
+           sigma_age_tmc,
+           sigma_space_tmc,
+           sigma_agespace_tmc);
+
+  calc_haz();
+
+  // calculate survival probabilities
+  calc_surv(threemc_data.IntMat1, threemc_data.IntMat2);
+
+  // calculate incidences and cumulative incidences
+  calc_inc(threemc_data.IntMat1, threemc_data.is_type); 
+
+  //// Calculate likelihood ////
+  likelihood(threemc_data.A_mmc, inc_mmc); // medical circumcisions
+  likelihood(threemc_data.A_tmc, inc_tmc); // traditional circumcisions
+  likelihood(threemc_data.A_mc, inc);      // circs of unknown type
+  likelihood(threemc_data.B, surv);        // right censored (i.e. uncircumcised)
+  likelihood(threemc_data.C, leftcens);    // left censored (i.e. unknown circ age)
+
+  //// report hazard rates, incidence and cumulative incidence ////
+  REPORT(haz_mmc);     // Medical hazard rate
+  REPORT(haz_tmc);     // Traditional hazard rate
+  REPORT(haz);         // Total hazard rate
+  REPORT(inc_mmc);     // Medical circumcision incidence rate
+  REPORT(inc_tmc);     // Traditional circumcision incidence rate
+  REPORT(inc);         // Total circumcision incidence rate
+  REPORT(cum_inc_mmc); // Medical circumcision cumulative incidence rate
+  REPORT(cum_inc_tmc); // Traditional circumcision cumulative incidence rate
+  REPORT(cum_inc);     // Total circumcision cumulative incidence rate
+  REPORT(surv);        // Survival probabilities
+}
+
+// For model with RW temporal prior and MMC paedaitric age cutoff
+template<class Type> 
+void Threemc_paed_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
+                             objective_function<Type>* obj) {
+
+  // Parameters
+
+  // Fixed Effects
+  PARAMETER_VECTOR(u_fixed_mmc);
+  PARAMETER_VECTOR(u_fixed_mmc_paed);
+  PARAMETER_VECTOR(u_fixed_tmc);
+
+  // Age random effect
+  PARAMETER_VECTOR(u_age_mmc); 
+  PARAMETER_VECTOR(u_age_mmc_paed); 
+  PARAMETER_VECTOR(u_age_tmc); 
+  
+  // Temporal random effects 
+  PARAMETER_VECTOR(u_time_mmc);
+  
+  // Spatial random effects
+  PARAMETER_VECTOR(u_space_mmc);
+  PARAMETER_VECTOR(u_space_mmc_paed);
+  PARAMETER_VECTOR(u_space_tmc);
+  
+  // Interactions
+  PARAMETER_ARRAY(u_agetime_mmc);
+  PARAMETER_ARRAY(u_agespace_mmc);
+  PARAMETER_ARRAY(u_agespace_mmc_paed);
+  PARAMETER_ARRAY(u_spacetime_mmc);
+  PARAMETER_ARRAY(u_agespace_tmc);
+  
+  // Standard deviations 
+  PARAMETER(logsigma_age_mmc);       
+  PARAMETER(logsigma_age_mmc_paed);       
+  PARAMETER(logsigma_time_mmc);      
+  PARAMETER(logsigma_space_mmc);     
+  PARAMETER(logsigma_space_mmc_paed);     
+  PARAMETER(logsigma_agetime_mmc);   
+  PARAMETER(logsigma_agespace_mmc);  
+  PARAMETER(logsigma_agespace_mmc_paed);  
+  PARAMETER(logsigma_spacetime_mmc); 
+  PARAMETER(logsigma_age_tmc);       
+  PARAMETER(logsigma_space_tmc);     
+  PARAMETER(logsigma_agespace_tmc);  
+
+  Type sigma_age_mmc           = exp(logsigma_age_mmc);
+  Type sigma_age_mmc_paed      = exp(logsigma_age_mmc_paed);
+  Type sigma_time_mmc          = exp(logsigma_time_mmc);
+  Type sigma_space_mmc         = exp(logsigma_space_mmc);
+  Type sigma_space_mmc_paed    = exp(logsigma_space_mmc_paed);
+  Type sigma_agetime_mmc       = exp(logsigma_agetime_mmc);
+  Type sigma_agespace_mmc      = exp(logsigma_agespace_mmc);
+  Type sigma_agespace_mmc_paed = exp(logsigma_agespace_mmc_paed);
+  Type sigma_spacetime_mmc     = exp(logsigma_spacetime_mmc);
+  Type sigma_age_tmc           = exp(logsigma_age_tmc);
+  Type sigma_space_tmc         = exp(logsigma_space_tmc);
+  Type sigma_agespace_tmc      = exp(logsigma_agespace_tmc);
+
+  // Autocorrelation parameters 
+  // PARAMETER(logitrho_mmc_time1);
+  // PARAMETER(logitrho_mmc_time2);
+  // PARAMETER(logitrho_mmc_time3);
+  PARAMETER(logitrho_mmc_age1);
+  PARAMETER(logitrho_mmc_paed_age1);
+  PARAMETER(logitrho_mmc_age2);
+  PARAMETER(logitrho_mmc_paed_age2);
+  PARAMETER(logitrho_mmc_age3);
+  PARAMETER(logitrho_tmc_age1);
+  PARAMETER(logitrho_tmc_age2);
+
+  // Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
+  // Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
+  // Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
+  Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
+  Type rho_mmc_paed_age1 = geninvlogit(logitrho_mmc_paed_age1, Type(-1.0), Type(1.0));
+  Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
+  Type rho_mmc_paed_age2 = geninvlogit(logitrho_mmc_paed_age2, Type(-1.0), Type(1.0));
+  Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
+  Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
+  Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
+
+  //// Priors ////
+
+  // Apply prior on fixed effects
+  fix_eff_p(u_fixed_mmc);
+  fix_eff_p(u_fixed_mmc_paed);
+  fix_eff_p(u_fixed_tmc);
+
+  // prior on temporal random effects
+  rand_eff_time_p(threemc_data.Q_time,
+                  u_time_mmc,
+                  logsigma_time_mmc,
+                  sigma_time_mmc);
+
+  // prior on the age random effects
+  rand_eff_age_p(u_age_mmc,
+                 logsigma_age_mmc,
+                 sigma_age_mmc,
+                 logitrho_mmc_age1,
+                 rho_mmc_age1);
+  rand_eff_age_p(u_age_mmc_paed,
+                 logsigma_age_mmc_paed,
+                 sigma_age_mmc_paed,
+                 logitrho_mmc_paed_age1,
+                 rho_mmc_age1);
+  rand_eff_age_p(u_age_tmc,
+                 logsigma_age_tmc,
+                 sigma_age_tmc,
+                 logitrho_tmc_age1,
+                 rho_tmc_age1);
+
+  // prior on spatial random effects
+  rand_eff_space_p(threemc_data.Q_space,
+                   u_space_mmc,
+                   logsigma_space_mmc,
+                   sigma_space_mmc);
+  rand_eff_space_p(threemc_data.Q_space,
+                   u_space_mmc_paed,
+                   logsigma_space_mmc_paed,
+                   sigma_space_mmc_paed);
+  rand_eff_space_p(threemc_data.Q_space,
+                   u_space_tmc,
+                   logsigma_space_tmc,
+                   sigma_space_tmc);
+
+  // prior on interaction random effects
+  rand_eff_interact_p(threemc_data.Q_space,
+                      threemc_data.Q_time,
+                      u_agespace_mmc,
+                      u_agetime_mmc,
+                      u_spacetime_mmc,
+                      logsigma_agespace_mmc,
+                      sigma_agespace_mmc,
+                      logsigma_agetime_mmc,
+                      sigma_agetime_mmc,
+                      logsigma_spacetime_mmc,
+                      sigma_spacetime_mmc,
+                      logitrho_mmc_age2,
+                      rho_mmc_age2,
+                      logitrho_mmc_age3,
+                      rho_mmc_age3);
+
+  rand_eff_interact_p(threemc_data.Q_space,
+                      u_agespace_mmc_paed,
+                      logsigma_agespace_mmc_paed,
+                      sigma_agespace_mmc_paed,
+                      logitrho_mmc_paed_age2,
+                      rho_mmc_paed_age2);
+
+  rand_eff_interact_p(threemc_data.Q_space,
+                      u_agespace_tmc,
+                      logsigma_agespace_tmc,
+                      sigma_agespace_tmc,
+                      logitrho_tmc_age2,
+                      rho_tmc_age2);
+
+  //// Calculate report values (hazard, (cumulative) incidence) ////
 
   // Calculate hazards
   calc_haz(threemc_data.X_fixed_mmc, 
