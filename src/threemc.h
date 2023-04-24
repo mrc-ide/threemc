@@ -164,10 +164,6 @@ class Threemc {
                              Type rho_tmc_age2);
 
     // Function to calculate report values 
-    // TODO: This will change depending on whether type information is included
-    // Need to just overload this function
-    // TODO: Can definitely design this function better to avoid repitition
-    // Can pass reference to haz to do this (should work!)
     // For MMC: 
     void calc_haz(vector<Type> &hazard,
                   density::SparseMatrix<Type> X_fixed, 
@@ -219,15 +215,9 @@ class Threemc {
                    density::SparseMatrix<Type> IntMat2);
 
     // Function to calculate incidence & cumulative incidence
-    // TODO: This code is reused, find a way to change e.g inc_mmc while referring to inc here
-    // Actually works well here with if statement, but may not scale well with more models
     void calc_inc(density::SparseMatrix<Type> IntMat1, int is_type);
-    // void calc_inc(density::SparseMatrix<Type> IntMat1);
-    // void calc_inc(density::SparseMatrix<Type> IntMat1, int is_type);
 
     // Function to calculate likelihood
-    // TODO: Can make an enum (or something?) pointer to iterate over for this
-    // (will be different for each model)
     void likelihood(density::SparseMatrix<Type> Mat,
                     vector<Type> report_val);
 

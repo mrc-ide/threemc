@@ -887,23 +887,17 @@ void Threemc_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
 
   // Autocorrelation parameters 
-  // PARAMETER(logitrho_mmc_time1);
-  // PARAMETER(logitrho_mmc_time2);
-  // PARAMETER(logitrho_mmc_time3);
   PARAMETER(logitrho_mmc_age1);
   PARAMETER(logitrho_mmc_age2);
   PARAMETER(logitrho_mmc_age3);
   PARAMETER(logitrho_tmc_age1);
   PARAMETER(logitrho_tmc_age2);
 
-  // Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
-  // Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
-  // Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
-  Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
-  Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
-  Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
-  Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
-  Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
+  Type rho_mmc_age1 = geninvlogit(logitrho_mmc_age1, Type(-1.0), Type(1.0));
+  Type rho_mmc_age2 = geninvlogit(logitrho_mmc_age2, Type(-1.0), Type(1.0));
+  Type rho_mmc_age3 = geninvlogit(logitrho_mmc_age3, Type(-1.0), Type(1.0));
+  Type rho_tmc_age1 = geninvlogit(logitrho_tmc_age1, Type(-1.0), Type(1.0));
+  Type rho_tmc_age2 = geninvlogit(logitrho_tmc_age2, Type(-1.0), Type(1.0));
 
   //// Priors ////
 
@@ -2479,12 +2473,12 @@ void Threemc_nt<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   PARAMETER(logitrho_age2);
   PARAMETER(logitrho_age3);
 
-  Type rho_time1  = geninvlogit(logitrho_time1, Type(-1.0), Type(1.0));
-  Type rho_time2  = geninvlogit(logitrho_time2, Type(-1.0), Type(1.0));
-  Type rho_time3  = geninvlogit(logitrho_time3, Type(-1.0), Type(1.0));
-  Type rho_age1   = geninvlogit(logitrho_age1,  Type(-1.0), Type(1.0));
-  Type rho_age2   = geninvlogit(logitrho_age2,  Type(-1.0), Type(1.0));
-  Type rho_age3   = geninvlogit(logitrho_age3,  Type(-1.0), Type(1.0));
+  Type rho_time1 = geninvlogit(logitrho_time1, Type(-1.0), Type(1.0));
+  Type rho_time2 = geninvlogit(logitrho_time2, Type(-1.0), Type(1.0));
+  Type rho_time3 = geninvlogit(logitrho_time3, Type(-1.0), Type(1.0));
+  Type rho_age1  = geninvlogit(logitrho_age1, Type(-1.0), Type(1.0));
+  Type rho_age2  = geninvlogit(logitrho_age2, Type(-1.0), Type(1.0));
+  Type rho_age3  = geninvlogit(logitrho_age3, Type(-1.0), Type(1.0));
 
   //// Priors ////
 
@@ -2556,7 +2550,7 @@ void Threemc_nt<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            sigma_agespace,
            sigma_spacetime,
            1,  // scale on [0, 1]
-           1); // initialise haz_mmc
+           1); // initialise haz
 
   // calculate survival probabilities
   calc_surv(threemc_data.IntMat1, threemc_data.IntMat2);
@@ -2619,9 +2613,9 @@ void Threemc_nt_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   PARAMETER(logitrho_age2);
   PARAMETER(logitrho_age3);
 
-  Type rho_age1 = geninvlogit(logitrho_age1,  Type(-1.0), Type(1.0));
-  Type rho_age2 = geninvlogit(logitrho_age2,  Type(-1.0), Type(1.0));
-  Type rho_age3 = geninvlogit(logitrho_age3,  Type(-1.0), Type(1.0));
+  Type rho_age1 = geninvlogit(logitrho_age1, Type(-1.0), Type(1.0));
+  Type rho_age2 = geninvlogit(logitrho_age2, Type(-1.0), Type(1.0));
+  Type rho_age3 = geninvlogit(logitrho_age3, Type(-1.0), Type(1.0));
 
   //// Priors ////
 
