@@ -54,18 +54,18 @@ Type objective_function<Type>::operator() ()
     case TYPE + TIME_TMC: // Model with time TMC effect
       nll = nll_switch<Type, Threemc_time_tmc<Type>>(nll, threemc_data, this);
       break;
-      // case TIME_TMC + RW:
-      // case TYPE + TIME_TMC + RW:
-      // nll = nll_switch<Type, Threemc_rw_time_tmc<Type>>(nll, threemc_data, this);
-      // break;
+    case TIME_TMC + RW:
+    case TYPE + TIME_TMC + RW:
+      nll = nll_switch<Type, Threemc_rw_time_tmc<Type>>(nll, threemc_data, this);
+      break;
     case TIME_TMC + PAED: 
     case TYPE + TIME_TMC + PAED: 
       nll = nll_switch<Type, Threemc_paed_time_tmc<Type>>(nll, threemc_data, this);
       break;
-      // case TIME_TMC + RW + PAED:
-      // case TYPE + TIME_TMC + RW + PAED:
-      //   nll = nll_switch<Type, Threemc_paed_rw_time_tmc<Type>>(nll, threemc_data, this);
-      //   break;
+    case TIME_TMC + RW + PAED:
+    case TYPE + TIME_TMC + RW + PAED:
+      nll = nll_switch<Type, Threemc_paed_rw_time_tmc<Type>>(nll, threemc_data, this);
+      break;
   }
 
   return nll;
