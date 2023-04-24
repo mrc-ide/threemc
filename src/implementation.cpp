@@ -425,54 +425,6 @@ template<class Type>
 Threemc_nt<Type>::~Threemc_nt() {
 }
 
-// Calculate haz for model with no type (so only MMC)
-// TODO: Repitition here from function for MMC, redesign (with template?) to avoid this
-// template<class Type>
-// void Threemc_nt<Type>::calc_haz(density::SparseMatrix<Type> X_fixed, 
-//                                 density::SparseMatrix<Type> X_time,
-//                                 density::SparseMatrix<Type> X_age, 
-//                                 density::SparseMatrix<Type> X_space,
-//                                 density::SparseMatrix<Type> X_agetime, 
-//                                 density::SparseMatrix<Type> X_agespace,
-//                                 density::SparseMatrix<Type> X_spacetime, 
-//                                 // Integration matrix
-//                                 density::SparseMatrix<Type> IntMat1,
-//                                 density::SparseMatrix<Type> IntMat2,
-//                                 // parameters
-//                                 vector<Type> u_fixed, 
-//                                 vector<Type> u_age,
-//                                 vector<Type> u_time,
-//                                 vector<Type> u_space, 
-//                                 array<Type> u_agetime,
-//                                 array<Type> u_agespace,
-//                                 array<Type> u_spacetime,
-//                                 Type sigma_age,
-//                                 Type sigma_time,
-//                                 Type sigma_space,
-//                                 Type sigma_agetime,
-//                                 Type sigma_agespace,
-//                                 Type sigma_spacetime) {
-// 
-//   // Vector the interaction terms
-//   vector<Type> u_agespace_v(u_agespace);
-//   vector<Type> u_agetime_v(u_agetime);
-//   vector<Type> u_spacetime_v(u_spacetime);
-// 
-//   /// Estimate hazard rate ///
-//   /// TODO: Break this down into functions as well!
-//   // Medical hazard rate
-//   haz = X_fixed * u_fixed +
-//     X_age * u_age * sigma_age +
-//     X_space * u_space * sigma_space +
-// 		X_time * u_time * sigma_time +
-// 		X_agetime * u_agetime_v * sigma_agetime +
-// 		X_agespace * u_agespace_v * sigma_agespace +
-// 		X_spacetime * u_spacetime_v * sigma_spacetime;
-// 
-//   // Rates on [0,1] scale
-//   haz = invlogit_vec(haz);
-// }
-
 
 //// Threemc_rw class, Threemc with RW temporal prior ////
 
@@ -570,39 +522,6 @@ template<class Type>
 Threemc_paed<Type>::~Threemc_paed() {
 }
 
-// Calc hazard with paedaitric MMC component
-// TODO: This is the same as for TMC, so maybe find a way to change haz_mmc member with that fun!
-// For TMC: 
-// template<class Type> 
-// void Threemc_paed<Type>::calc_haz(density::SparseMatrix<Type> X_fixed, 
-//                                   density::SparseMatrix<Type> X_age, 
-//                                   density::SparseMatrix<Type> X_space,
-//                                   density::SparseMatrix<Type> X_agespace,
-//                                   // parameters
-//                                   vector<Type> u_fixed,
-//                                   vector<Type> u_age,
-//                                   vector<Type> u_space,
-//                                   array<Type> u_agespace,
-//                                   Type sigma_age,
-//                                   Type sigma_space,
-//                                   Type sigma_agespace,
-//                                   int paed_age_cutoff) {
-// 
-//   // Vectorise interaction terms
-//   vector<Type> u_agespace_v(u_agespace);
-// 
-//   // Add paediatric contribution to medical hazard rate
-//   // TODO: Initialise report values in constructors
-//   // Then have this function the same as TMC function
-//   // Need some way to change what report val member is modified
-//   haz_mmc += X_fixed * u_fixed +
-//     X_space * u_space * sigma_space +
-//     X_age * u_age * sigma_age +
-//     X_agespace * u_agespace_v * sigma_agespace;
-// 
-//   // Rates on [0,1] scale
-//   haz_mmc = invlogit_vec(haz_mmc);
-// }
 
 //// Threemc_paed_rw class, Threemc with type info & paedaitric MMC cutoff ////
 

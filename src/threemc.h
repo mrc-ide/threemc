@@ -351,21 +351,6 @@ class Threemc_paed : virtual public Threemc<Type> {
     using Threemc<Type>::likelihood;
     using Threemc<Type>::get_nll;
 
-    // Hazard for paedaitric MMC (don't think this is required now?): 
-    // void calc_haz(density::SparseMatrix<Type> X_fixed, 
-    //               density::SparseMatrix<Type> X_age, 
-    //               density::SparseMatrix<Type> X_space,
-    //               density::SparseMatrix<Type> X_agespace,
-    //               vector<Type> u_fixed,
-    //               vector<Type> u_age,
-    //               vector<Type> u_space,
-    //               array<Type> u_agespace,
-    //               Type sigma_age,
-    //               Type sigma_space,
-    //               Type sigma_agespace,
-    //               // only required to overload identical function in Threemc for haz_tmc
-    //               int paed_age_cutoff);
-
     void calc_nll(struct Threemc_data<Type> threemc_data,
                   objective_function<Type>* obj);
 };
@@ -463,33 +448,6 @@ class Threemc_nt : virtual public Threemc<Type> {
     using Threemc<Type>::likelihood;
     using Threemc<Type>::get_nll;
  
-
-    // TODO: Repitition here from function for MMC, redesign (with template?) to avoid this
-    // void calc_haz(density::SparseMatrix<Type> X_fixed, 
-    //               density::SparseMatrix<Type> X_time,
-    //               density::SparseMatrix<Type> X_age, 
-    //               density::SparseMatrix<Type> X_space,
-    //               density::SparseMatrix<Type> X_agetime, 
-    //               density::SparseMatrix<Type> X_agespace,
-    //               density::SparseMatrix<Type> X_spacetime, 
-    //               // Integration matrix
-    //               density::SparseMatrix<Type> IntMat1,
-    //               density::SparseMatrix<Type> IntMat2,
-    //               // parameters
-    //               vector<Type> u_fixed, 
-    //               vector<Type> u_age,
-    //               vector<Type> u_time,
-    //               vector<Type> u_space, 
-    //               array<Type> u_agetime,
-    //               array<Type> u_agespace,
-    //               array<Type> u_spacetime,
-    //               Type sigma_age,
-    //               Type sigma_time,
-    //               Type sigma_space,
-    //               Type sigma_agetime,
-    //               Type sigma_agespace,
-    //               Type sigma_spacetime);
-
     void calc_nll(struct Threemc_data<Type> threemc_data,
                   objective_function<Type>* obj);
 };
@@ -540,66 +498,4 @@ class Threemc_nt_rw : virtual public Threemc_nt<Type>, virtual public Threemc_rw
 };
 
 #endif
-
-// 
-// template<class Type>
-// class Threemc_paed : virtual public Threemc<Type> {
-
-//   protected:
-
-//     using Threemc<Type>::nll;
-//     using Threemc<Type>::haz_mmc;
-//     using Threemc<Type>::haz_tmc;
-//     using Threemc<Type>::haz;
-//     using Threemc<Type>::inc_mmc;
-//     using Threemc<Type>::inc_tmc;
-//     using Threemc<Type>::inc;
-//     using Threemc<Type>::cum_inc_mmc;
-//     using Threemc<Type>::cum_inc_tmc;
-//     using Threemc<Type>::cum_inc;
-//     using Threemc<Type>::surv;
-//     using Threemc<Type>::surv_lag;
-//     using Threemc<Type>::leftcens;
- 
-//   public:
-
-//     // Default Constructor
-//     Threemc_paed();
-
-//     // Default virtual Destructor
-//     virtual ~Threemc_paed();
-
-//     // Base functions
-//     using Threemc<Type>::fix_eff_p;
-//     using Threemc<Type>::rand_eff_time_p;
-//     using Threemc<Type>::rand_eff_age_p;
-//     using Threemc<Type>::rand_eff_space_p;
-//     using Threemc<Type>::sum_to_zero;
-//     using Threemc<Type>::rand_eff_interact_p;
-//     using Threemc<Type>::calc_haz; // only using TMC version of this function
-//     using Threemc<Type>::calc_surv;
-//     using Threemc<Type>::calc_inc;
-//     using Threemc<Type>::likelihood;
-//     using Threemc<Type>::get_nll;
-
-//     // Hazard for paedaitric MMC: 
-//     void calc_haz(density::SparseMatrix<Type> X_fixed, 
-//                   density::SparseMatrix<Type> X_age, 
-//                   density::SparseMatrix<Type> X_space,
-//                   density::SparseMatrix<Type> X_agespace,
-//                   vector<Type> u_fixed,
-//                   vector<Type> u_age,
-//                   vector<Type> u_space,
-//                   array<Type> u_agespace,
-//                   Type sigma_age,
-//                   Type sigma_space,
-//                   Type sigma_agespace,
-//                   // only required to overload identical function in Threemc for haz_tmc
-//                   int paed_age_cutoff);
-
-//     void calc_nll(struct Threemc_data<Type> threemc_data,
-//                   objective_function<Type>* obj);
-// };
-
-// #endif
 
