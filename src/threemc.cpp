@@ -1,6 +1,6 @@
 /// @file threemc.cpp
 #define TMB_LIB_INIT R_init_threemc
-// #include <iostream>
+#include <iostream>
 #include <TMB.hpp>
 #include "threemc.h"
 #include "implementation.cpp"
@@ -9,7 +9,7 @@
 #define TYPE (1 << 0)
 #define RW (1 << 1)
 #define PAED (1 << 2)
-#define TIME_TMC (1 << 2)
+#define TIME_TMC (1 << 3)
 
 template<class Type>
 Type objective_function<Type>::operator() ()
@@ -51,18 +51,21 @@ Type objective_function<Type>::operator() ()
       nll = nll_switch<Type, Threemc_paed_rw<Type>>(nll, threemc_data, this);
       break;
     case TIME_TMC:
-  case TYPE + TIME_TMC: // Model with time TMC effect
+    case TYPE + TIME_TMC: // Model with time TMC effect
       nll = nll_switch<Type, Threemc_time_tmc<Type>>(nll, threemc_data, this);
       break;
-      // case TYPE + TIME_TMC + RW:
-      //   nll = nll_switch<Type, Threemc_rw_time_tmc<Type>>(nll, threemc_data, this);
-      //   break;
-      // case TYPE + TIME_TMC + PAED: 
-      //   nll = nll_switch<Type, Threemc_paed_time_tmc<Type>>(nll, threemc_data, this);
-      //   break;
-      // case TYPE + TIME_TMC + RW + PAED:
-      //   nll = nll_switch<Type, Threemc_paed_rw_time_tmc<Type>>(nll, threemc_data, this);
-      //   break;
+    case TIME_TMC + RW:
+    case TYPE + TIME_TMC + RW:
+      nll = nll_switch<Type, Threemc_rw_time_tmc<Type>>(nll, threemc_data, this);
+      break;
+    case TIME_TMC + PAED: 
+    case TYPE + TIME_TMC + PAED: 
+      nll = nll_switch<Type, Threemc_paed_time_tmc<Type>>(nll, threemc_data, this);
+      break;
+    case TIME_TMC + RW + PAED:
+    case TYPE + TIME_TMC + RW + PAED:
+      nll = nll_switch<Type, Threemc_paed_rw_time_tmc<Type>>(nll, threemc_data, this);
+      break;
   }
 
   return nll;
