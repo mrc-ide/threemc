@@ -35,6 +35,7 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
   is_type  = CppAD::Integer(asVector<Type>(getListElement(x, "is_type"))[0]);
   rw_order = CppAD::Integer(asVector<Type>(getListElement(x, "rw_order"))[0]);
   paed_age_cutoff = CppAD::Integer(asVector<Type>(getListElement(x, "paed_age_cutoff"))[0]);
+  inc_time_tmc = CppAD::Integer(asVector<Type>(getListElement(x, "inc_time_tmc"))[0]);
   
   // common to all
   A_mc    = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_mc"));
@@ -78,10 +79,16 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
   }
 
   if (paed_age_cutoff == 1) {
-     X_fixed_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed_mmc_paed")); 
-     X_age_mmc_paed      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_mmc_paed")); 
-     X_space_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_mmc_paed")); 
-     X_agespace_mmc_paed = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_mmc_paed")); 
+    X_fixed_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed_mmc_paed")); 
+    X_age_mmc_paed      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_mmc_paed")); 
+    X_space_mmc_paed    = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_mmc_paed")); 
+    X_agespace_mmc_paed = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_mmc_paed")); 
+  }
+
+  if (inc_time_tmc == 1) {
+    X_time_tmc      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time_tmc")); 
+    X_agetime_tmc   = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agetime_tmc")); 
+    X_spacetime_tmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_spacetime_tmc"));
   }
 }
 
@@ -245,9 +252,10 @@ void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
 // Function to calculate report values 
 // Need to just overload this function
 // TODO: Can definitely design this function better to avoid repitition
-// For MMC: 
+// For MMC (and TMC with a time effect): 
 template<class Type> 
-void Threemc<Type>::calc_haz(density::SparseMatrix<Type> X_fixed, 
+void Threemc<Type>::calc_haz(vector<Type> &hazard,
+                             density::SparseMatrix<Type> X_fixed, 
                              density::SparseMatrix<Type> X_time,
                              density::SparseMatrix<Type> X_age, 
                              density::SparseMatrix<Type> X_space,
@@ -268,7 +276,8 @@ void Threemc<Type>::calc_haz(density::SparseMatrix<Type> X_fixed,
                              Type sigma_agetime,
                              Type sigma_agespace,
                              Type sigma_spacetime,
-                             int paed_age_cutoff) {
+                             int scale,
+                             int init) {
 
   // Vector the interaction terms
   vector<Type> u_agespace_v(u_agespace);
@@ -279,7 +288,12 @@ void Threemc<Type>::calc_haz(density::SparseMatrix<Type> X_fixed,
   /// TODO: Break this down into functions as well!
   // Medical hazard rate
   // TODO: How to change haz_mmc to haz, but effect haz_mmc member??
-  haz_mmc = X_fixed * u_fixed +
+  if (init) {
+    hazard = X_fixed * u_fixed;
+  } else {
+    hazard += X_fixed * u_fixed;
+  }
+  hazard += // X_fixed * u_fixed +
     X_time * u_time * sigma_time +
     X_space * u_space * sigma_space +
     X_age * u_age * sigma_age +
@@ -288,14 +302,15 @@ void Threemc<Type>::calc_haz(density::SparseMatrix<Type> X_fixed,
     X_spacetime * u_spacetime_v * sigma_spacetime;
 
   // Rates on [0,1] scale (only do if not also modelling with paediatric MMC cutoff)
-  if (paed_age_cutoff == 0) {
-    haz_mmc = invlogit_vec(haz_mmc);
+  if (scale) {
+    hazard = invlogit_vec(hazard);
   }
 }
 
-// For TMC: 
+// For TMC with no time TMC effect (also works for paediatric MMC): 
 template<class Type> 
-void Threemc<Type>::calc_haz(density::SparseMatrix<Type> X_fixed, 
+void Threemc<Type>::calc_haz(vector<Type> &hazard,
+                             density::SparseMatrix<Type> X_fixed, 
                              density::SparseMatrix<Type> X_age, 
                              density::SparseMatrix<Type> X_space,
                              density::SparseMatrix<Type> X_agespace,
@@ -306,19 +321,28 @@ void Threemc<Type>::calc_haz(density::SparseMatrix<Type> X_fixed,
                              array<Type> u_agespace,
                              Type sigma_age,
                              Type sigma_space,
-                             Type sigma_agespace) {
+                             Type sigma_agespace,
+                             int scale,
+                             int init) {
 
   // Vectorise interaction terms
   vector<Type> u_agespace_v(u_agespace);
 
   /// Estimate hazard rate ///
-  haz_tmc = X_fixed * u_fixed +
+  if (init) {
+    hazard = X_fixed * u_fixed;
+  } else {
+    hazard += X_fixed * u_fixed;
+  }
+  hazard += // X_fixed * u_fixed +
     X_space * u_space * sigma_space +
     X_age * u_age * sigma_age +
     X_agespace * u_agespace_v * sigma_agespace;
 
   // Rates on [0,1] scale
-  haz_tmc = invlogit_vec(haz_tmc);
+  if (scale) {
+    hazard = invlogit_vec(hazard);
+  }
 }
 
 // final calculation of total report vals (e.g. haz = haz_mmc + haz_tmc)
@@ -403,51 +427,51 @@ Threemc_nt<Type>::~Threemc_nt() {
 
 // Calculate haz for model with no type (so only MMC)
 // TODO: Repitition here from function for MMC, redesign (with template?) to avoid this
-template<class Type>
-void Threemc_nt<Type>::calc_haz(density::SparseMatrix<Type> X_fixed, 
-                                density::SparseMatrix<Type> X_time,
-                                density::SparseMatrix<Type> X_age, 
-                                density::SparseMatrix<Type> X_space,
-                                density::SparseMatrix<Type> X_agetime, 
-                                density::SparseMatrix<Type> X_agespace,
-                                density::SparseMatrix<Type> X_spacetime, 
-                                // Integration matrix
-                                density::SparseMatrix<Type> IntMat1,
-                                density::SparseMatrix<Type> IntMat2,
-                                // parameters
-                                vector<Type> u_fixed, 
-                                vector<Type> u_age,
-                                vector<Type> u_time,
-                                vector<Type> u_space, 
-                                array<Type> u_agetime,
-                                array<Type> u_agespace,
-                                array<Type> u_spacetime,
-                                Type sigma_age,
-                                Type sigma_time,
-                                Type sigma_space,
-                                Type sigma_agetime,
-                                Type sigma_agespace,
-                                Type sigma_spacetime) {
-
-  // Vector the interaction terms
-  vector<Type> u_agespace_v(u_agespace);
-  vector<Type> u_agetime_v(u_agetime);
-  vector<Type> u_spacetime_v(u_spacetime);
-
-  /// Estimate hazard rate ///
-  /// TODO: Break this down into functions as well!
-  // Medical hazard rate
-  haz = X_fixed * u_fixed +
-    X_age * u_age * sigma_age +
-    X_space * u_space * sigma_space +
-		X_time * u_time * sigma_time +
-		X_agetime * u_agetime_v * sigma_agetime +
-		X_agespace * u_agespace_v * sigma_agespace +
-		X_spacetime * u_spacetime_v * sigma_spacetime;
-
-  // Rates on [0,1] scale
-  haz = invlogit_vec(haz);
-}
+// template<class Type>
+// void Threemc_nt<Type>::calc_haz(density::SparseMatrix<Type> X_fixed, 
+//                                 density::SparseMatrix<Type> X_time,
+//                                 density::SparseMatrix<Type> X_age, 
+//                                 density::SparseMatrix<Type> X_space,
+//                                 density::SparseMatrix<Type> X_agetime, 
+//                                 density::SparseMatrix<Type> X_agespace,
+//                                 density::SparseMatrix<Type> X_spacetime, 
+//                                 // Integration matrix
+//                                 density::SparseMatrix<Type> IntMat1,
+//                                 density::SparseMatrix<Type> IntMat2,
+//                                 // parameters
+//                                 vector<Type> u_fixed, 
+//                                 vector<Type> u_age,
+//                                 vector<Type> u_time,
+//                                 vector<Type> u_space, 
+//                                 array<Type> u_agetime,
+//                                 array<Type> u_agespace,
+//                                 array<Type> u_spacetime,
+//                                 Type sigma_age,
+//                                 Type sigma_time,
+//                                 Type sigma_space,
+//                                 Type sigma_agetime,
+//                                 Type sigma_agespace,
+//                                 Type sigma_spacetime) {
+// 
+//   // Vector the interaction terms
+//   vector<Type> u_agespace_v(u_agespace);
+//   vector<Type> u_agetime_v(u_agetime);
+//   vector<Type> u_spacetime_v(u_spacetime);
+// 
+//   /// Estimate hazard rate ///
+//   /// TODO: Break this down into functions as well!
+//   // Medical hazard rate
+//   haz = X_fixed * u_fixed +
+//     X_age * u_age * sigma_age +
+//     X_space * u_space * sigma_space +
+// 		X_time * u_time * sigma_time +
+// 		X_agetime * u_agetime_v * sigma_agetime +
+// 		X_agespace * u_agespace_v * sigma_agespace +
+// 		X_spacetime * u_spacetime_v * sigma_spacetime;
+// 
+//   // Rates on [0,1] scale
+//   haz = invlogit_vec(haz);
+// }
 
 
 //// Threemc_rw class, Threemc with RW temporal prior ////
@@ -549,36 +573,36 @@ Threemc_paed<Type>::~Threemc_paed() {
 // Calc hazard with paedaitric MMC component
 // TODO: This is the same as for TMC, so maybe find a way to change haz_mmc member with that fun!
 // For TMC: 
-template<class Type> 
-void Threemc_paed<Type>::calc_haz(density::SparseMatrix<Type> X_fixed, 
-                                  density::SparseMatrix<Type> X_age, 
-                                  density::SparseMatrix<Type> X_space,
-                                  density::SparseMatrix<Type> X_agespace,
-                                  // parameters
-                                  vector<Type> u_fixed,
-                                  vector<Type> u_age,
-                                  vector<Type> u_space,
-                                  array<Type> u_agespace,
-                                  Type sigma_age,
-                                  Type sigma_space,
-                                  Type sigma_agespace,
-                                  int paed_age_cutoff) {
-
-  // Vectorise interaction terms
-  vector<Type> u_agespace_v(u_agespace);
-
-  // Add paediatric contribution to medical hazard rate
-  // TODO: Initialise report values in constructors
-  // Then have this function the same as TMC function
-  // Need some way to change what report val member is modified
-  haz_mmc += X_fixed * u_fixed +
-    X_space * u_space * sigma_space +
-    X_age * u_age * sigma_age +
-    X_agespace * u_agespace_v * sigma_agespace;
-
-  // Rates on [0,1] scale
-  haz_mmc = invlogit_vec(haz_mmc);
-}
+// template<class Type> 
+// void Threemc_paed<Type>::calc_haz(density::SparseMatrix<Type> X_fixed, 
+//                                   density::SparseMatrix<Type> X_age, 
+//                                   density::SparseMatrix<Type> X_space,
+//                                   density::SparseMatrix<Type> X_agespace,
+//                                   // parameters
+//                                   vector<Type> u_fixed,
+//                                   vector<Type> u_age,
+//                                   vector<Type> u_space,
+//                                   array<Type> u_agespace,
+//                                   Type sigma_age,
+//                                   Type sigma_space,
+//                                   Type sigma_agespace,
+//                                   int paed_age_cutoff) {
+// 
+//   // Vectorise interaction terms
+//   vector<Type> u_agespace_v(u_agespace);
+// 
+//   // Add paediatric contribution to medical hazard rate
+//   // TODO: Initialise report values in constructors
+//   // Then have this function the same as TMC function
+//   // Need some way to change what report val member is modified
+//   haz_mmc += X_fixed * u_fixed +
+//     X_space * u_space * sigma_space +
+//     X_age * u_age * sigma_age +
+//     X_agespace * u_agespace_v * sigma_agespace;
+// 
+//   // Rates on [0,1] scale
+//   haz_mmc = invlogit_vec(haz_mmc);
+// }
 
 //// Threemc_paed_rw class, Threemc with type info & paedaitric MMC cutoff ////
 
@@ -746,7 +770,8 @@ void Threemc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   //// Calculate report values (hazard, (cumulative) incidence) ////
 
   // Calculate hazards
-  calc_haz(threemc_data.X_fixed_mmc, 
+  calc_haz(haz_mmc,
+           threemc_data.X_fixed_mmc, 
            threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
            threemc_data.X_space_mmc,
@@ -766,9 +791,11 @@ void Threemc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            sigma_agetime_mmc,
            sigma_agespace_mmc,
            sigma_spacetime_mmc,
-           threemc_data.paed_age_cutoff);
+           1,  // scale on [0, 1]
+           1); // initialise haz_mmc
 
-  calc_haz(threemc_data.X_fixed_tmc, 
+  calc_haz(haz_tmc,
+           threemc_data.X_fixed_tmc, 
            threemc_data.X_age_tmc, 
            threemc_data.X_space_tmc,
            threemc_data.X_agespace_tmc,
@@ -778,7 +805,9 @@ void Threemc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            u_agespace_tmc,
            sigma_age_tmc,
            sigma_space_tmc,
-           sigma_agespace_tmc);
+           sigma_agespace_tmc,
+           1,
+           1);
 
   calc_haz();
 
@@ -937,7 +966,8 @@ void Threemc_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   //// Calculate report values (hazard, (cumulative) incidence) ////
 
   // Calculate hazards
-  calc_haz(threemc_data.X_fixed_mmc, 
+  calc_haz(haz_mmc,
+           threemc_data.X_fixed_mmc, 
            threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
            threemc_data.X_space_mmc,
@@ -957,9 +987,11 @@ void Threemc_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            sigma_agetime_mmc,
            sigma_agespace_mmc,
            sigma_spacetime_mmc,
-           threemc_data.paed_age_cutoff);
+           1,  // scale on [0, 1]
+           1); // initialise haz_mmc
 
-  calc_haz(threemc_data.X_fixed_tmc, 
+  calc_haz(haz_tmc,
+           threemc_data.X_fixed_tmc, 
            threemc_data.X_age_tmc, 
            threemc_data.X_space_tmc,
            threemc_data.X_agespace_tmc,
@@ -969,7 +1001,9 @@ void Threemc_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            u_agespace_tmc,
            sigma_age_tmc,
            sigma_space_tmc,
-           sigma_agespace_tmc);
+           sigma_agespace_tmc,
+           1,
+           1);
 
   calc_haz();
 
@@ -1160,7 +1194,8 @@ void Threemc_paed<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   // Calculate report values (hazard, (cumulative) incidence) ////
 
   // Calculate hazards
-  calc_haz(threemc_data.X_fixed_mmc, 
+  calc_haz(haz_mmc,
+           threemc_data.X_fixed_mmc, 
            threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
            threemc_data.X_space_mmc,
@@ -1180,9 +1215,11 @@ void Threemc_paed<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            sigma_agetime_mmc,
            sigma_agespace_mmc,
            sigma_spacetime_mmc,
-           threemc_data.paed_age_cutoff);
+           0,  // don't scale on [0, 1] before adding paed MMC first
+           1); // initialise haz_mmc
 
-  calc_haz(threemc_data.X_fixed_mmc_paed, 
+  calc_haz(haz_mmc,
+           threemc_data.X_fixed_mmc_paed, 
            threemc_data.X_age_mmc_paed, 
            threemc_data.X_space_mmc_paed,
            threemc_data.X_agespace_mmc_paed,
@@ -1193,9 +1230,11 @@ void Threemc_paed<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            sigma_age_mmc_paed,
            sigma_space_mmc_paed,
            sigma_agespace_mmc_paed,
-           threemc_data.paed_age_cutoff);
+           1, // want to scale haz_mmc this time
+           0); 
 
-  calc_haz(threemc_data.X_fixed_tmc, 
+  calc_haz(haz_tmc,
+           threemc_data.X_fixed_tmc, 
            threemc_data.X_age_tmc, 
            threemc_data.X_space_tmc,
            threemc_data.X_agespace_tmc,
@@ -1205,7 +1244,9 @@ void Threemc_paed<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            u_agespace_tmc,
            sigma_age_tmc,
            sigma_space_tmc,
-           sigma_agespace_tmc);
+           sigma_agespace_tmc,
+           1,
+           1); 
 
   calc_haz();
 
@@ -1395,7 +1436,8 @@ void Threemc_paed_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   //// Calculate report values (hazard, (cumulative) incidence) ////
 
   // Calculate hazards
-  calc_haz(threemc_data.X_fixed_mmc, 
+  calc_haz(haz_mmc,
+           threemc_data.X_fixed_mmc, 
            threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
            threemc_data.X_space_mmc,
@@ -1415,9 +1457,11 @@ void Threemc_paed_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            sigma_agetime_mmc,
            sigma_agespace_mmc,
            sigma_spacetime_mmc,
-           threemc_data.paed_age_cutoff);
+           0,  // don't scale on [0, 1] before adding paed MMC first
+           1); // initialise haz_mmc
 
-  calc_haz(threemc_data.X_fixed_mmc_paed, 
+  calc_haz(haz_mmc,
+           threemc_data.X_fixed_mmc_paed, 
            threemc_data.X_age_mmc_paed, 
            threemc_data.X_space_mmc_paed,
            threemc_data.X_agespace_mmc_paed,
@@ -1428,9 +1472,11 @@ void Threemc_paed_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            sigma_age_mmc_paed,
            sigma_space_mmc_paed,
            sigma_agespace_mmc_paed,
-           threemc_data.paed_age_cutoff);
+           1,
+           0);
 
-  calc_haz(threemc_data.X_fixed_tmc, 
+  calc_haz(haz_tmc,
+           threemc_data.X_fixed_tmc, 
            threemc_data.X_age_tmc, 
            threemc_data.X_space_tmc,
            threemc_data.X_agespace_tmc,
@@ -1440,7 +1486,9 @@ void Threemc_paed_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            u_agespace_tmc,
            sigma_age_tmc,
            sigma_space_tmc,
-           sigma_agespace_tmc);
+           sigma_agespace_tmc,
+           1,
+           1);
 
   calc_haz();
 
@@ -1572,15 +1620,14 @@ void Threemc_nt<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   //// Calculate report values (hazard, (cumulative) incidence) ////
     
   // Calculate hazards
-  calc_haz(threemc_data.X_fixed, 
+  calc_haz(haz,
+           threemc_data.X_fixed, 
            threemc_data.X_time,
            threemc_data.X_age, 
            threemc_data.X_space,
            threemc_data.X_agetime, 
            threemc_data.X_agespace,
            threemc_data.X_spacetime, 
-           threemc_data.IntMat1,
-           threemc_data.IntMat2,
            u_fixed, 
            u_age,
            u_time,
@@ -1593,7 +1640,9 @@ void Threemc_nt<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            sigma_space,
            sigma_agetime,
            sigma_agespace,
-           sigma_spacetime);
+           sigma_spacetime,
+           1,  // scale on [0, 1]
+           1); // initialise haz_mmc
 
   // calculate survival probabilities
   calc_surv(threemc_data.IntMat1, threemc_data.IntMat2);
@@ -1704,15 +1753,15 @@ void Threemc_nt_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   //// Calculate report values (hazard, (cumulative) incidence) ////
    
   // Calculate hazards
-  calc_haz(threemc_data.X_fixed, 
+  // haz = Type(0);
+  calc_haz(haz,
+           threemc_data.X_fixed, 
            threemc_data.X_time,
            threemc_data.X_age, 
            threemc_data.X_space,
            threemc_data.X_agetime, 
            threemc_data.X_agespace,
            threemc_data.X_spacetime, 
-           threemc_data.IntMat1,
-           threemc_data.IntMat2,
            u_fixed, 
            u_age,
            u_time,
@@ -1725,7 +1774,9 @@ void Threemc_nt_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
            sigma_space,
            sigma_agetime,
            sigma_agespace,
-           sigma_spacetime);
+           sigma_spacetime,
+           1,
+           1);
 
   // calculate survival probabilities
   calc_surv(threemc_data.IntMat1, threemc_data.IntMat2);

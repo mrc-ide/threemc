@@ -9,6 +9,7 @@
 #define TYPE (1 << 0)
 #define RW (1 << 1)
 #define PAED (1 << 2)
+#define TIME_TMC (1 << 2)
 
 template<class Type>
 Type objective_function<Type>::operator() ()
@@ -23,8 +24,12 @@ Type objective_function<Type>::operator() ()
   Type nll = Type(0);
 
   // Switch statement where particular form of model is decided
-  switch((threemc_data.is_type? TYPE : 0) | (threemc_data.rw_order? RW : 0) |
-         (threemc_data.paed_age_cutoff? PAED : 0)) {
+  // switch((threemc_data.is_type? TYPE : 0) | (threemc_data.rw_order? RW : 0) |
+  //        (threemc_data.paed_age_cutoff? PAED : 0)) {
+  switch((threemc_data.is_type? TYPE : 0) |
+         (threemc_data.rw_order? RW : 0) |
+         (threemc_data.paed_age_cutoff? PAED : 0) |
+         (threemc_data.inc_time_tmc? TIME_TMC : 0)) {
     case 0: // no type
       nll = nll_switch<Type, Threemc_nt<Type>>(nll, threemc_data, this);
       break;
@@ -45,6 +50,19 @@ Type objective_function<Type>::operator() ()
     case TYPE + RW + PAED: // RW temporal prior, paediatric age cutoff for MMC
       nll = nll_switch<Type, Threemc_paed_rw<Type>>(nll, threemc_data, this);
       break;
+    case TIME_TMC:
+  case TYPE + TIME_TMC: // Model with time TMC effect
+      nll = nll_switch<Type, Threemc_time_tmc<Type>>(nll, threemc_data, this);
+      break;
+      // case TYPE + TIME_TMC + RW:
+      //   nll = nll_switch<Type, Threemc_rw_time_tmc<Type>>(nll, threemc_data, this);
+      //   break;
+      // case TYPE + TIME_TMC + PAED: 
+      //   nll = nll_switch<Type, Threemc_paed_time_tmc<Type>>(nll, threemc_data, this);
+      //   break;
+      // case TYPE + TIME_TMC + RW + PAED:
+      //   nll = nll_switch<Type, Threemc_paed_rw_time_tmc<Type>>(nll, threemc_data, this);
+      //   break;
   }
 
   return nll;
