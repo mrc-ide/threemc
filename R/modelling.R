@@ -70,8 +70,6 @@ threemc_fit_model <- function(fit = NULL,
     DLL = mod
   )
  
- >>>>>>> master_comp_mod
-  
   # for specified "smaller fit" object (i.e. fit which requires resampling)
   if (!is.null(fit)) {
     if (!is.null(fit$sample)) {
@@ -254,7 +252,7 @@ circ_sample_tmb <- function(fit = NULL,
                             sdreport = FALSE,
                             nsample = 1000,
                             ...) {
-<
+  
   # Get TMB into "Naomi" format to sample from using naomi
   if (is.null(fit)) {
     opt$par.fixed <- opt$par
