@@ -20,15 +20,20 @@ create_shell_dataset(
 )
 }
 \arguments{
-\item{survey_circumcision}{Information on male circumcision status from
-surveys.}
+\item{survey_circumcision}{\itemize{
+\item Information on male circumcision status from
+surveys. If this is a list or contains more than one country, the function
+is performed for each country present, returning a list.
+}}
 
-\item{populations}{Single age male population counts by space and time.}
+\item{populations}{\code{data.frame} containing populations for each
+region in tmb fits.}
 
 \item{areas}{\code{sf} shapefiles for specific country/region.}
 
-\item{area_lev}{PSNU area level for specific country. Defaults to the
-maximum area level found in \code{areas} if not supplied.}
+\item{area_lev}{\itemize{
+\item Desired admin boundary level to perform the analysis on.
+}}
 
 \item{start_year}{First year in shell dataset.}
 
@@ -41,7 +46,7 @@ forecast/model until, Default: 2021}
 Default: "time2"}
 
 \item{strat}{Variable to stratify by in using a 3D hazard function,
-Default: "space"}
+Default: NULL}
 
 \item{age}{\itemize{
 \item Variable with age circumcised or censored. Default: "age"

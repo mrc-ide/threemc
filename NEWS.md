@@ -1,3 +1,76 @@
+# threemc 0.1.41
+
+- Use `tmb.ad.framework = "TMBad"`, rather than the default "CPPad". This 
+framework performs sparse hessian compression, which leads to significantly 
+lower memory usage (particularly in the "spike" experienced at the "optimising 
+tape..." optimisation stage) during model fit. 
+
+
+# threemc 0.1.40
+
+- Remove dependencies on non-CRAN packages (i.e. `naomi`), by adding necessary 
+R and C functions from `naomi` and `TMB` to the package. 
+
+# threemc 0.1.39
+
+- Add extensive developer notes to `README.md` (mostly just as a reminder to 
+myself!)
+
+# threemc 0.1.38
+
+- Fix bug in `threemc_ppc`. Weighted mean is calculated using `circ_status` and 
+`indweight`. However, this ignores `circ_type`. For `type %in% c("MMC", "TMC")`,
+need to have `circ_status == 0` for all `circ_type == "Missing"`. This does not 
+apply to `type == "MC"`, as we do not need to know `circ_type` to still count it 
+amongst `MC` circumcisions.
+
+# threec 0.1.37
+
+- In `create_shell_dataset`, replace missing populations for less granular areas
+with their respective child areas' populations. 
+
+# threemc 0.1.36
+
+- Add optional penalised time spline, by specifying a non-null value for the 
+`k_dt_time` argument of `threemc_prepare_model_data`.
+
+# threemc 0.1.35
+
+- Adds models 
+("Surv_SpaceAgeTime_ByType_withUnknownType_RW_MMC2" and 
+"Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2") which use 
+a random walk temporal prior for MMC, but an AR 1 temporal prior for TMC.
+
+
+# threemc 0.1.34 
+
+- Version 0.1.27 introduced filling in missing population data in 
+`create_shell_dataset`; this update decouples this behaviour from this function 
+into a separate internal function `fill_downup_populations`, and this 
+functionality has been added to `threemc_aggregate` as well. 
+
+# threemc 0.1.33
+
+- `threemc_ppc` rewritten in `data.table` for significant speed and memory 
+efficicency increase.
+
+# threemc 0.1.32 
+
+- Add initial introductory vignette.
+
+# threemc 0.1.31
+
+* Add TMB model for every iteration of: 
+  - Including a time effect for TMC or not, 
+  - Including a constant peadiatric MMC rate or not, and 
+  - Using a random walk, rather than AR 1 prior
+Urgent need to functionalise all of this to greatly decrease code complexity 
+and package compilation time. 
+
+# threemc 0.1.30
+
+* Have verbose output on function progress from `threemc_fit_model` as default.
+
 # threemc 0.1.29
 
 * Can have `threemc_fit_model` choose `mod` itself based on parameters in 

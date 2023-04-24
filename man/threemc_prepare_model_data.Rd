@@ -10,7 +10,8 @@ threemc_prepare_model_data(
   area_lev = NULL,
   aggregated = TRUE,
   weight = "population",
-  k_dt = 5,
+  k_dt_age = 5,
+  k_dt_time = NULL,
   paed_age_cutoff = NULL,
   rw_order = NULL,
   inc_time_tmc = FALSE,
@@ -34,7 +35,10 @@ object, allowing for the use of surveys for lower area hierarchies.
 \item{weight}{variable to weigh circumcisions by when aggregating for
 lower area hierarchies (only applicable for \code{aggregated = TRUE})}
 
-\item{k_dt}{Age knot spacing in spline definitions, Default: 5}
+\item{k_dt_age}{Age knot spacing in spline definitions, Default: 5}
+
+\item{k_dt_time}{Time knot spacing in spline definitions, set to NULL to
+disable temporal splines, Default: NULL}
 
 \item{paed_age_cutoff}{Age at which to split MMC design matrices between
 paediatric and non-paediatric populations, the former of which are constant

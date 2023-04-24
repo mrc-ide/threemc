@@ -25,8 +25,7 @@ unique record.}
 
 \item{areas}{\code{sf} shapefiles for specific country/region.}
 
-\item{area_lev}{PSNU area level for specific country. Defaults to the
-maximum area level found in \code{areas} if not supplied.}
+\item{area_lev}{PSNU area level for specific country.}
 
 \item{time1}{Variable name for time of birth, Default: "time1"}
 
@@ -38,7 +37,7 @@ Default: "time2"}
 }}
 
 \item{strat}{Variable to stratify by in using a 3D hazard function,
-Default: "space"}
+Default: NULL}
 
 \item{aggregated}{\code{agggregated = FALSE} treats every area_id as its own
 object, allowing for the use of surveys for lower area hierarchies.

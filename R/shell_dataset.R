@@ -6,21 +6,12 @@
 #' circumcisions, known traditional circumcisions, censored survey entries
 #' (i.e. where surveyed individuals had not been circumcised) and left-censored
 #'  survey entries (i.e. where circumcision occurred at an unknown age).
-#' @param survey_circumcision Information on male circumcision status from
-#' surveys.
-#' @param populations Single age male population counts by space and time.
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' maximum area level found in `areas` if not supplied.
+#' @inheritParams prepare_survey_data
+#' @inheritParams create_integration_matrices
+#' @inheritParams threemc_aggregate
 #' @param start_year First year in shell dataset.
 #' @param end_year Last year in shell dataset, which is also the year to
 #' forecast/model until, Default: 2021
-#' @param time1 Variable name for time of birth, Default: "time1"
-#' @param time2 Variable name for time circumcised or censored,
-#' Default: "time2"
-#' @param strat Variable to stratify by in using a 3D hazard function,
-#' Default: "space"
-#' @param age - Variable with age circumcised or censored. Default: "age"
 #' @param circ Variables with circumcision matrix, Default: "indweight_st"
 #' @param ...  Further arguments passed to or from other methods.
 #' @seealso
@@ -59,33 +50,55 @@ create_shell_dataset <- function(survey_circumcision,
   #        based on the theoretical maximum circumcision age that we want
   #        outputs for, rather than the maximum observed age; but not 100%
   #        sure.
-
+  
   if (is.null(area_lev)) {
     message("area_lev arg missing, taken as maximum area level in areas")
     area_lev <- max(areas$area_level, na.rm = TRUE)
   }
+  
+  # test that data has been provided correctly (i.e. with > 0 rows)
+  stopifnot(nrow(survey_circumcision) > 0)
+  stopifnot(nrow(populations) > 0)
+  stopifnot(nrow(areas) > 0)
+ 
+  # check that populations and areas haven't been provided "backwards"!
+  stopifnot("population" %in% names(populations))
+  stopifnot("area_id" %in% names(areas))
+  
+  # check that areas$space == 0:nrow(areas)
+  stopifnot(all(sort(areas$space) == seq_len(nrow(areas))))
 
+  # check for area_ids with duplicated area_names
+  pop_duplicates <- populations %>% 
+    dplyr::distinct(.data$area_id, .data$area_name) %>% 
+    dplyr::group_by(.data$area_id) %>% 
+    dplyr::summarise(n = dplyr::n()) %>% 
+    dplyr::arrange(dplyr::desc(.data$n)) %>% 
+    dplyr::filter(.data$n > 1)
+  
+  if (nrow(pop_duplicates) > 0) {
+    
+    message("populations has multiple names for the following area_ids:")
+    message(paste0(utils::capture.output(
+      data.frame(pop_duplicates)), collapse = "\n"
+    ))
+    message("Removing area_name and treating these as single areas")
+    # remove area_name from pops and take unique vals to avoid duplication
+    populations <- populations %>% 
+      dplyr::select(-.data$area_name) %>% 
+      dplyr::distinct()
+  }
+  
   # check that there is a population for every year
   min_pop_year <- min(populations$year)
   if (start_year < min_pop_year) {
-    message(paste0(
-      "`min(populations$year) > start_year`;\n",
-      "Filling missing populations with earliest known population",
-      " for each area_id and age"
-    ))
-    missing_years <- seq(start_year, min_pop_year - 1)
-    missing_rows <- tidyr::crossing(
-      dplyr::select(populations, -c(.data$year, .data$population)),
-      "year"       = missing_years,
-      "population" = NA
+    populations <- fill_downup_populations(
+      populations, 
+      start_year, 
+      min_pop_year
     )
-    populations <- dplyr::bind_rows(populations, missing_rows) %>%
-      dplyr::arrange(.data$area_id, .data$age, .data$year) %>%
-      dplyr::group_by(.data$area_id, .data$age) %>%
-      tidyr::fill(.data$population, .direction = "downup") %>%
-      dplyr::ungroup()
   }
-
+ 
   # remove spatial elements from areas, take only specified/highest area level
   if (inherits(areas, "sf")) {
     areas_model <- sf::st_drop_geometry(areas)
@@ -94,37 +107,116 @@ create_shell_dataset <- function(survey_circumcision,
   }
 
   areas_model <- areas_model %>%
+    dplyr::mutate(iso3 = substr(.data$area_id, 0, 3)) %>% 
     dplyr::filter(
       .data$area_level <= area_lev,
-      # be sure not to include other countries (loop if > 1 country required)
-      substr(.data$area_id, 0, 3) %chin% substr(
-        survey_circumcision$area_id, 0, 3
-      )
+      # be sure not to include other countries 
+      .data$iso3 %chin% substr(survey_circumcision$area_id, 0, 3)
     ) %>%
-    dplyr::select(.data$area_id, .data$area_name, .data$area_level, .data$space)
+    dplyr::select(
+      .data$area_id, 
+      .data$area_name, 
+      dplyr::contains("parent_area"),
+      .data$area_level, 
+      .data$space
+    )
+  
+  # "manually" add in parent_area_name, if not in areas
+  if (!"parent_area_name" %in% names(areas_model)) {
+    parent_areas <- areas_model %>% 
+      dplyr::select(
+        parent_area_id   = .data$area_id, 
+        parent_area_name = .data$area_name
+      )
+    areas_model <- areas_model %>% 
+      dplyr::left_join(parent_areas, by = "parent_area_id") %>% 
+      dplyr::relocate(.data$parent_area_name, .after = .data$parent_area_id)
+  }
 
   # create skeleton dataset with row for every unique area_id, area_name,
   # space, year and circ_age
-  out <- tidyr::crossing(areas_model,
+  out <- tidyr::crossing(
+    dplyr::select(areas_model, -dplyr::contains("parent_area")),
     "year"     = seq(start_year, end_year, by = 1),
     "circ_age" = c(0, seq_len(max(survey_circumcision$circ_age, na.rm = TRUE)))
   ) %>%
     # Get time and age variable
     dplyr::mutate(
       time = .data$year - start_year + 1,
-      age = .data$circ_age + 1
+      age  = .data$circ_age + 1
     ) %>%
     # Sort dataset
-    dplyr::arrange(.data$space, .data$age, .data$time) %>%
-    # Add population data on to merge
+    dplyr::arrange(.data$space, .data$age, .data$time)
+  n <- nrow(out) # pull n rows for later testing
+  
+  # Add population data on to merge
+  out <- out %>% 
     dplyr::left_join(
       populations %>%
         dplyr::select(
-          .data$area_id, .data$year,
-          circ_age = .data$age, .data$population
+          .data$area_id, 
+          .data$year,
+          circ_age = .data$age, 
+          .data$population
         ),
       by = c("area_id", "year", "circ_age")
     )
+  
+  # fill in NAs for populations with populations of child areas 
+  # TODO: expand to have work for area_level differences > 1
+  parent_areas_na_pops <- out %>% 
+    dplyr::filter(is.na(.data$population), .data$area_level < area_lev) %>% 
+    dplyr::distinct(.data$area_id) %>% 
+    dplyr::pull()
+  
+  if (length(parent_areas_na_pops) != 0) {
+    
+    message(paste0(
+      "Populations missing for ", 
+      paste(parent_areas_na_pops, collapse = ", "), 
+      ", filling in using populations of child areas"
+    ))
+    
+    # find areas which have parent areas with missing populations
+    areas_child_pops <- areas_model %>% 
+      dplyr::filter(.data$parent_area_id %in% parent_areas_na_pops) %>% 
+      dplyr::select(.data$area_id, .data$parent_area_id, .data$parent_area_name)
+    
+    # Pull populations for child areas, aggregate to parent area_ids
+    missing_pops <- out %>% 
+      dplyr::filter(.data$area_id %in% areas_child_pops$area_id) %>% 
+      dplyr::left_join(areas_child_pops, by = "area_id") %>% 
+      dplyr::mutate(
+        area_id   = .data$parent_area_id, 
+        area_name = .data$parent_area_name
+      ) %>% 
+      dplyr::select(-dplyr::contains("parent")) %>% 
+      dplyr::group_by(
+        .data$area_id, .data$year, .data$circ_age, .data$time, .data$age
+      ) %>% 
+      dplyr::summarise(missing_pops = sum(.data$population), .groups = "drop")
+    
+    # replace missing populations in skeleton dataset
+    out <- out %>% 
+      dplyr::left_join(
+        missing_pops, 
+        by = c("area_id", "year", "circ_age", "time", "age")
+      ) %>% 
+      dplyr::mutate(
+        population = ifelse(
+          is.na(.data$population), missing_pops, .data$population
+        )
+      ) %>% 
+      dplyr::select(-.data$missing_pops)
+  }
+   
+  # give warning about duplicated rows from left_join
+  if (n != nrow(out)) {
+    message(paste0(
+      "Some rows duplicated by left-joining in populations, function may ",
+      "fail below"
+    ))
+  }
 
   # Fail if still missing pops, as will lead to more obscure matrix errors
   stopifnot(!all(is.na(out$population)))
@@ -184,6 +276,13 @@ create_shell_dataset <- function(survey_circumcision,
     )
   })
   agetime_hazard_matrices <- lapply(agetime_hazard_matrices, Matrix::colSums)
+  
+  if (all(unlist(agetime_hazard_matrices[1:3]) == 0)) {
+    stop(paste0(
+      "No uncensored circumcisions present in surveys, check for valid ",
+      "circ_status and/or circ_age"
+    ))
+  }
 
   # add to out:
   out[, empirical_circ_cols] <- agetime_hazard_matrices
@@ -197,11 +296,8 @@ create_shell_dataset <- function(survey_circumcision,
 #' \link[threemc]{create_shell_dataset} and returns the empirical circumcision
 #' rates for each row, aggregated to age groups from single ages. Also converts
 #' from wide format to long format.
+#' @inheritParams create_shell_dataset
 #' @param out Shell dataset outputted by \link[threemc]{create_shell_dataset}
-#' @param areas `sf` shapefiles for specific country/region.
-#' @param area_lev  PSNU area level for specific country. Defaults to the
-#' maximum area level found in `areas` if not supplied.
-#' @param populations Single age male population counts by space and time.
 #' @param age_groups Age groups to aggregate by, Default:
 #' c("0-4",   "5-9",   "10-14", "15-19",
 #'   "20-24", "25-29", "30-34", "35-39",

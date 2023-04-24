@@ -20,3 +20,11 @@ threemc.Rproj
 .#*
 R/.#*
 ..Rcheck
+
+# vignettes: Ignore csvs and .rds files
+vignettes/*.csv.gz
+vignettes/*.csv
+vignettes/*.rds
+
+# ignore misc directory, which contains scripts for generating example data, etc
+misc/

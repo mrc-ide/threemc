@@ -20,8 +20,7 @@ with a row for every unique record in circumcision survey data for a given
 area. Also includes empirical estimates for circumcision estimates for each
 unique record.}
 
-\item{area_lev}{PSNU area level for specific country. Defaults to the
-Defaults to the maximum area level found in \code{dat} if not supplied.}
+\item{area_lev}{PSNU area level for specific country.}
 
 \item{time1}{Variable name for time of birth, Default: "time1"}
 

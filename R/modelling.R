@@ -60,6 +60,17 @@ threemc_fit_model <- function(fit = NULL,
                               ...) {
 
   mod <- "threemc"
+   
+  # config options 
+  TMB::config(
+    # should reduce memory usage https://tinyurl.com/5cuxmm4t
+    tmbad.sparse_hessian_compress = 1, 
+    # Reduce memory peak of a parallel model by creating tapes in serial
+    tape.parallel = 0, 
+    DLL = mod
+  )
+ 
+ >>>>>>> master_comp_mod
   
   # for specified "smaller fit" object (i.e. fit which requires resampling)
   if (!is.null(fit)) {
@@ -78,7 +89,9 @@ threemc_fit_model <- function(fit = NULL,
     parameters <- split(fit$par.full, names(fit$par.full))
     init_params <- fit$par_init
     # pull different pars depending on whether the model has mmc/tmc split
+
     if (dat_tmb$is_type == FALSE) {
+
       fit$par_init <- fit$par_init[names(fit$par_init) %in% names(parameters)]
       parameters <- parameters[names(fit$par_init)]
       
@@ -148,9 +161,9 @@ threemc_fit_model <- function(fit = NULL,
     message("Removing NULL parameters, check specification...")
     parameters <- parameters[!null_pars]
   }
-  
+
   if (verbose) message("Creating TMB object with `TMB::MakeADFun`...")
-  
+
   # Create TMB object
   obj <- TMB::MakeADFun(
     list("threemc_data" = dat_tmb),
@@ -159,12 +172,12 @@ threemc_fit_model <- function(fit = NULL,
     map = maps,
     method = "BFGS",
     hessian = TRUE,
-    DLL = "threemc",
+    DLL = mod,
     ...
   )
+  
   # for specified fit, simply resample and return
   if (!is.null(fit)) {
-    
     if (verbose) message("Resampling from `fit`...")
     fit$obj <- obj
     fit$obj$fn()
@@ -189,6 +202,9 @@ threemc_fit_model <- function(fit = NULL,
     )
   }
   
+  # release memory allocated on C++ side from MakeADFun
+  if (sample == FALSE) TMB::FreeADFun(obj)
+
   # sample from TMB fit
   if (sample == TRUE) {
     if (verbose) message("Sampling...")
@@ -196,17 +212,7 @@ threemc_fit_model <- function(fit = NULL,
       obj = obj, opt = opt, nsample = N, sdreport = sdreport
     )
     
-    # clean up sample names, if required (e.g. threemc.get_inc() -> inc)
-    if (all(grepl("threemc", names(fit$sample)))) {
-      names(fit$sample) <- stringr::str_remove_all(
-        names(fit$sample), 
-        "threemc.get_"
-      )
-      names(fit$sample) <- stringr::str_remove_all(
-        names(fit$sample),
-        "\\(\\)" 
-      )
-    }
+    TMB::FreeADFun(obj)
     
     # return smaller fit object
     if (smaller_fit_obj == TRUE) {
@@ -222,15 +228,17 @@ threemc_fit_model <- function(fit = NULL,
 #### circ_sample_tmb ####
 
 #' @title Sample TMB fit for Circumcision Model
-#' @description  Sample from TMB object, using \link[naomi]{sample_tmb}. Saves
-#' changing object to "Naomi" format. Also produces and returns standard
-#' deviation report outputted by \link[TMB]{sdreport}.
+#' @description  Sample from TMB object, using \code{naomi::sample_tmb}. Saves
+#' changing object to \code{naomi} format. Also produces and returns standard
+#' deviation report outputted by \link[TMB]{sdreport}, if desired.
 #'
 #' @param obj TMB object/AD model outputted by \link[TMB]{MakeADFun}.
 #' @param opt Optimised TMB model, outputted by optimisation function such
 #' as \link[stats]{nlminb} or \link[stats]{optim}.
+#' @param sdreport Boolean of whether to produce \code{TMB::sdreport}, Default:
+#' FALSE
 #' @param nsample Number of samples to be generated, Default: 1000
-#' @param ...  Further arguments passed to \link[naomi]{sample_tmb}.
+#' @param ...  Further arguments passed to \code{naomi::sample_tmb}.
 #' @return Object of class "naomi_fit", containing the original TMB object
 #' ("obj"), the standard deviation report for optimised AD model (from
 #' \link[TMB]{sdreport}) and `n_samples` samples for the (cumulative) incidence
@@ -238,7 +246,6 @@ threemc_fit_model <- function(fit = NULL,
 #'
 #' @seealso
 #'  \code{\link[TMB]{sdreport}}
-#'  \code{\link[naomi]{sample_tmb}}
 #' @rdname circ_sample_tmb
 #' @keywords internal
 circ_sample_tmb <- function(fit = NULL,
@@ -247,7 +254,7 @@ circ_sample_tmb <- function(fit = NULL,
                             sdreport = FALSE,
                             nsample = 1000,
                             ...) {
-  
+<
   # Get TMB into "Naomi" format to sample from using naomi
   if (is.null(fit)) {
     opt$par.fixed <- opt$par
@@ -260,10 +267,10 @@ circ_sample_tmb <- function(fit = NULL,
   if (sdreport == TRUE) {
     fit$sdreport <- TMB::sdreport(fit$obj, fit$par, getJointPrecision = TRUE)
   }
-  
+
   # Generate samples
-  fit <- naomi::sample_tmb(fit, nsample = nsample, ...)
-  
+  fit <- sample_tmb(fit, nsample = nsample, ...)
+
   # ensure names for MC columns in fit have the suffix "_mc"
   fit$sample <- append_mc_name(fit$sample)
   
@@ -296,6 +303,9 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
 #' object for later aggregation.
 #' @inheritParams threemc_fit_model
 #' @inheritParams threemc_prepare_model_data
+#' @param rw_order_tmc_ar Whether to use an AR 1 temporal prior for TMC, 
+#' regardless of whether you are using a RW temporal prior for TMC or not, 
+#' Default: FALSE
 #' @param custom_init named \code{list} of custom fixed and random
 #' model parameters you want to supersede "hardcoded" defaults, default = NULL.
 #' @return Named \code{list} of intial (hyper)parameters for
@@ -305,6 +315,7 @@ minimise_fit_obj <- function(fit, dat_tmb, parameters) {
 threemc_initial_pars <- function(dat_tmb,
                                  custom_init = NULL,
                                  rw_order = NULL,
+                                 rw_order_tmc_ar = FALSE,
                                  paed_age_cutoff = NULL,
                                  inc_time_tmc = FALSE) {
   
@@ -412,6 +423,17 @@ threemc_initial_pars <- function(dat_tmb,
       )
     }
     parameters <- parameters[!grepl("logitrho_mmc_time", names(parameters))]
+    
+    # if using an AR 1 temporal prior for TMC, only remove MMC autocorr pars
+    remove_pars <- c("logitrho_mmc_time")
+    if (rw_order_tmc_ar == FALSE) {
+      remove_pars <- c(remove_pars, "logitrho_tmc_time")
+    }
+    
+    parameters <- parameters[!grepl(
+      paste(remove_pars, collapse = "|"),
+      names(parameters)
+    )]
   }
   
   # remove time tmc terms, if not fitting model with non-constant tmc over time

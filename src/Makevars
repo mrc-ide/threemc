@@ -15,3 +15,13 @@ strippedLib: $(SHLIB)
 	if test -e "/usr/bin/strip"; then /usr/bin/strip --strip-debug $(SHLIB); fi
 
 .phony: strippedLib
+
+# Use ccache to speed up package installation
+VER=
+CCACHE=ccache
+CC=$(CCACHE) gcc$(VER)
+CXX=$(CCACHE) g++$(VER)
+CXX11=$(CCACHE) g++$(VER)
+CXX14=$(CCACHE) g++$(VER)
+FC=$(CCACHE) gfortran$(VER)
+F77=$(CCACHE) gfortran$(VER)

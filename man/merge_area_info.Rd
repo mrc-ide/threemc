@@ -2,7 +2,7 @@
 % Please edit documentation in R/aggregation.R
 \name{merge_area_info}
 \alias{merge_area_info}
-\title{Merge Regional Informatoin on Dataset}
+\title{Merge Regional Information On Dataset}
 \usage{
 merge_area_info(results, areas)
 }
