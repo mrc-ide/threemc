@@ -8,7 +8,6 @@ optimised model fit.}
 threemc_fit_model(
   fit = NULL,
   dat_tmb = NULL,
-  mod = NULL,
   parameters = NULL,
   maps = NULL,
   randoms = c("u_time_mmc", "u_age_mmc", "u_space_mmc", "u_agetime_mmc",
@@ -41,11 +40,6 @@ Survival matrices for MMC, TMC, censored and left censored}
 \item{Q_space}{Precision/Adjacency matrix for the spatial random effects.
 }
 }}
-
-\item{mod}{TMB model, one of either
-"Surv_SpaceAgeTime_ByType_withUnknownType" or "Surv_SpaceAgeTime" if the
-surveys for the country in question make no distinction between circumcision
-type (i.e whether they were performed in a medical or traditional setting).}
 
 \item{parameters}{\code{list} of fixed and random model parameters.}
 

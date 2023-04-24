@@ -61,6 +61,7 @@ Suggests:
     scales (>= 1.2.1),
     goodpractice (>= 1.0.4)
 LinkingTo: 
+    Rcpp (>= 1.0.9),
     TMB (>= 1.7.22),
     RcppEigen (>= 0.3.3.9.1),
 Config/testthat/edition: 3
