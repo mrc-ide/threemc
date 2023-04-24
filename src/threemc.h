@@ -487,10 +487,63 @@ class Threemc_paed_rw : virtual public Threemc_rw<Type>, virtual public Threemc_
 #endif
 
 
+// Model with time effect for TMC and paediatric age cutoff for MMC 
+#ifndef THREEMC_PAED_TIME_TMC_DEF
+#define THREEMC_PAED_TIME_TMC_DEF
+
+template<class Type>
+class Threemc_paed_time_tmc : virtual public Threemc_paed<Type>,
+                              virtual public Threemc_time_tmc<Type> {
+
+  protected:
+
+    using Threemc<Type>::nll;
+    using Threemc<Type>::haz_mmc;
+    using Threemc<Type>::haz_tmc;
+    using Threemc<Type>::haz;
+    using Threemc<Type>::inc_mmc;
+    using Threemc<Type>::inc_tmc;
+    using Threemc<Type>::inc;
+    using Threemc<Type>::cum_inc_mmc;
+    using Threemc<Type>::cum_inc_tmc;
+    using Threemc<Type>::cum_inc;
+    using Threemc<Type>::surv;
+    using Threemc<Type>::surv_lag;
+    using Threemc<Type>::leftcens;
+ 
+  public:
+
+    // Default Constructor
+    Threemc_paed_time_tmc();
+
+    // Default virtual Destructor
+    virtual ~Threemc_paed_time_tmc();
+
+    // Base functions
+    using Threemc<Type>::fix_eff_p;
+    using Threemc<Type>::rand_eff_age_p;
+    using Threemc<Type>::rand_eff_time_p; // run for TMC as for MMC
+    using Threemc<Type>::rand_eff_space_p;
+    using Threemc<Type>::sum_to_zero;
+    using Threemc<Type>::rand_eff_interact_p;
+    using Threemc<Type>::calc_haz;
+    using Threemc_time_tmc<Type>::calc_haz;
+    using Threemc<Type>::calc_surv;
+    using Threemc<Type>::calc_inc;
+    using Threemc<Type>::likelihood;
+    using Threemc<Type>::get_nll;
+
+    void calc_nll(struct Threemc_data<Type> threemc_data,
+                  objective_function<Type>* obj);
+};
+
+#endif
+
+
+// Model with no type split, no paed age cutoff or time TMC effect
 #ifndef THREEMC_NT_DEF
 #define THREEMC_NT_DEF
 
-// Model with no type split, no paed age cutoff or time TMC effect
 template<class Type>
 class Threemc_nt : virtual public Threemc<Type> {
 
