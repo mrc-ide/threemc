@@ -1,6 +1,5 @@
 /// @file threemc.cpp
 #define TMB_LIB_INIT R_init_threemc
-#include <iostream>
 #include <TMB.hpp>
 #include "threemc.h"
 #include "implementation.cpp"
