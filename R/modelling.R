@@ -88,7 +88,7 @@ threemc_fit_model <- function(fit = NULL,
     init_params <- fit$par_init
     # pull different pars depending on whether the model has mmc/tmc split
 
-    if (dat_tmb$is_type == FALSE) {
+    if (dat_tmb$is_type == TRUE) {
 
       fit$par_init <- fit$par_init[names(fit$par_init) %in% names(parameters)]
       parameters <- parameters[names(fit$par_init)]
