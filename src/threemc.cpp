@@ -23,8 +23,6 @@ Type objective_function<Type>::operator() ()
   Type nll = Type(0);
 
   // Switch statement where particular form of model is decided
-  // switch((threemc_data.is_type? TYPE : 0) | (threemc_data.rw_order? RW : 0) |
-  //        (threemc_data.paed_age_cutoff? PAED : 0)) {
   switch((threemc_data.is_type? TYPE : 0) |
          (threemc_data.rw_order? RW : 0) |
          (threemc_data.paed_age_cutoff? PAED : 0) |
@@ -69,3 +67,4 @@ Type objective_function<Type>::operator() ()
 
   return nll;
 }
+

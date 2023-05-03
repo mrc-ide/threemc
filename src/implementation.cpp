@@ -1546,9 +1546,6 @@ void Threemc_paed_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   Type sigma_agespace_tmc      = exp(logsigma_agespace_tmc);
 
   // Autocorrelation parameters 
-  // PARAMETER(logitrho_mmc_time1);
-  // PARAMETER(logitrho_mmc_time2);
-  // PARAMETER(logitrho_mmc_time3);
   PARAMETER(logitrho_mmc_age1);
   PARAMETER(logitrho_mmc_paed_age1);
   PARAMETER(logitrho_mmc_age2);
@@ -1557,9 +1554,6 @@ void Threemc_paed_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   PARAMETER(logitrho_tmc_age1);
   PARAMETER(logitrho_tmc_age2);
 
-  // Type rho_mmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
-  // Type rho_mmc_time2  = geninvlogit(logitrho_mmc_time2, Type(-1.0), Type(1.0));
-  // Type rho_mmc_time3  = geninvlogit(logitrho_mmc_time3, Type(-1.0), Type(1.0));
   Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
   Type rho_mmc_paed_age1 = geninvlogit(logitrho_mmc_paed_age1, Type(-1.0), Type(1.0));
   Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
