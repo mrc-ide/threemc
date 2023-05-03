@@ -254,8 +254,8 @@ void Threemc<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
 template<class Type> 
 void Threemc<Type>::calc_haz(vector<Type> &hazard,
                              density::SparseMatrix<Type> X_fixed, 
-                             density::SparseMatrix<Type> X_time,
                              density::SparseMatrix<Type> X_age, 
+                             density::SparseMatrix<Type> X_time, 
                              density::SparseMatrix<Type> X_space,
                              density::SparseMatrix<Type> X_agetime, 
                              density::SparseMatrix<Type> X_agespace,
@@ -551,8 +551,8 @@ void Threemc_time_tmc<Type>::calc_haz(vector<Type> &hazard,
     hazard += X_fixed * u_fixed;
   }
   hazard += // X_fixed * u_fixed +
-    X_time * u_time * sigma_time + 
     X_space * u_space * sigma_space +
+    X_time * u_time * sigma_time + 
     X_age * u_age * sigma_age +
     X_agespace * u_agespace_v * sigma_agespace;
 
@@ -760,6 +760,7 @@ void Threemc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
                       rho_mmc_time2,
                       logitrho_mmc_time3,
                       rho_mmc_time3);
+
   rand_eff_interact_p(threemc_data.Q_space,
                       u_agespace_tmc,
                       logsigma_agespace_tmc,
@@ -772,8 +773,8 @@ void Threemc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   // Calculate hazards
   calc_haz(haz_mmc,
            threemc_data.X_fixed_mmc, 
-           threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
+           threemc_data.X_time_mmc,
            threemc_data.X_space_mmc,
            threemc_data.X_agetime_mmc, 
            threemc_data.X_agespace_mmc,
@@ -962,8 +963,8 @@ void Threemc_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   // Calculate hazards
   calc_haz(haz_mmc,
            threemc_data.X_fixed_mmc, 
-           threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
+           threemc_data.X_time_mmc,
            threemc_data.X_space_mmc,
            threemc_data.X_agetime_mmc, 
            threemc_data.X_agespace_mmc,
@@ -1132,7 +1133,7 @@ void Threemc_paed<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
                  logsigma_age_mmc_paed,
                  sigma_age_mmc_paed,
                  logitrho_mmc_paed_age1,
-                 rho_mmc_age1);
+                 rho_mmc_paed_age1);
   rand_eff_age_p(u_age_tmc,
                  logsigma_age_tmc,
                  sigma_age_tmc,
@@ -1172,12 +1173,14 @@ void Threemc_paed<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
                       rho_mmc_time2,
                       logitrho_mmc_time3,
                       rho_mmc_time3);
+
   rand_eff_interact_p(threemc_data.Q_space,
                       u_agespace_mmc_paed,
                       logsigma_agespace_mmc_paed,
                       sigma_agespace_mmc_paed,
                       logitrho_mmc_paed_age2,
                       rho_mmc_paed_age2);
+
   rand_eff_interact_p(threemc_data.Q_space,
                       u_agespace_tmc,
                       logsigma_agespace_tmc,
@@ -1190,8 +1193,8 @@ void Threemc_paed<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   // Calculate hazards
   calc_haz(haz_mmc,
            threemc_data.X_fixed_mmc, 
-           threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
+           threemc_data.X_time_mmc,
            threemc_data.X_space_mmc,
            threemc_data.X_agetime_mmc, 
            threemc_data.X_agespace_mmc,
@@ -1415,8 +1418,8 @@ void Threemc_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   // Calculate hazards
   calc_haz(haz_mmc,
            threemc_data.X_fixed_mmc, 
-           threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
+           threemc_data.X_time_mmc,
            threemc_data.X_space_mmc,
            threemc_data.X_agetime_mmc, 
            threemc_data.X_agespace_mmc,
@@ -1588,7 +1591,7 @@ void Threemc_paed_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
                  logsigma_age_mmc_paed,
                  sigma_age_mmc_paed,
                  logitrho_mmc_paed_age1,
-                 rho_mmc_age1);
+                 rho_mmc_paed_age1);
   rand_eff_age_p(u_age_tmc,
                  logsigma_age_tmc,
                  sigma_age_tmc,
@@ -1645,8 +1648,8 @@ void Threemc_paed_rw<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   // Calculate hazards
   calc_haz(haz_mmc,
            threemc_data.X_fixed_mmc, 
-           threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
+           threemc_data.X_time_mmc,
            threemc_data.X_space_mmc,
            threemc_data.X_agetime_mmc, 
            threemc_data.X_agespace_mmc,
@@ -1840,7 +1843,7 @@ void Threemc_paed_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_dat
                  logsigma_age_mmc_paed,
                  sigma_age_mmc_paed,
                  logitrho_mmc_paed_age1,
-                 rho_mmc_age1);
+                 rho_mmc_paed_age1);
   rand_eff_age_p(u_age_tmc,
                  logsigma_age_tmc,
                  sigma_age_tmc,
@@ -1900,8 +1903,8 @@ void Threemc_paed_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_dat
   // Calculate hazards
   calc_haz(haz_mmc,
            threemc_data.X_fixed_mmc, 
-           threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
+           threemc_data.X_time_mmc,
            threemc_data.X_space_mmc,
            threemc_data.X_agetime_mmc, 
            threemc_data.X_agespace_mmc,
@@ -2103,7 +2106,7 @@ void Threemc_rw_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
                       logitrho_mmc_age3,
                       rho_mmc_age3);
 
-    rand_eff_interact_p(threemc_data.Q_space,
+  rand_eff_interact_p(threemc_data.Q_space,
                       u_agespace_tmc,
                       logsigma_agespace_tmc,
                       sigma_agespace_tmc,
@@ -2115,8 +2118,8 @@ void Threemc_rw_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   // Calculate hazards
   calc_haz(haz_mmc,
            threemc_data.X_fixed_mmc, 
-           threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
+           threemc_data.X_time_mmc,
            threemc_data.X_space_mmc,
            threemc_data.X_agetime_mmc, 
            threemc_data.X_agespace_mmc,
@@ -2140,13 +2143,16 @@ void Threemc_rw_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   calc_haz(haz_tmc,
            threemc_data.X_fixed_tmc, 
            threemc_data.X_age_tmc, 
+           threemc_data.X_time_tmc, 
            threemc_data.X_space_tmc,
            threemc_data.X_agespace_tmc,
            u_fixed_tmc, 
            u_age_tmc,
+           u_time_tmc,
            u_space_tmc, 
            u_agespace_tmc,
            sigma_age_tmc,
+           sigma_time_tmc,
            sigma_space_tmc,
            sigma_agespace_tmc,
            1,
@@ -2286,7 +2292,7 @@ void Threemc_paed_rw_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_
                  logsigma_age_mmc_paed,
                  sigma_age_mmc_paed,
                  logitrho_mmc_paed_age1,
-                 rho_mmc_age1);
+                 rho_mmc_paed_age1);
   rand_eff_age_p(u_age_tmc,
                  logsigma_age_tmc,
                  sigma_age_tmc,
@@ -2343,8 +2349,8 @@ void Threemc_paed_rw_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_
   // Calculate hazards
   calc_haz(haz_mmc,
            threemc_data.X_fixed_mmc, 
-           threemc_data.X_time_mmc,
            threemc_data.X_age_mmc, 
+           threemc_data.X_time_mmc,
            threemc_data.X_space_mmc,
            threemc_data.X_agetime_mmc, 
            threemc_data.X_agespace_mmc,
