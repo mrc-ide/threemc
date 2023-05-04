@@ -117,7 +117,7 @@ threemc_prepare_model_data <- function(out,
   # Precision/Adjacency matrix for the spatial random effects
   if (nrow(areas) == 1) {
     # for only one area (like for national level), Q_space == 1
-    Q_space <- list("Q_space" = new(
+    Q_space <- list("Q_space" = methods::new(
       "dgTMatrix", 
       i = 0L, 
       j = 0L, 
@@ -248,7 +248,7 @@ create_design_matrices <- function(dat,
   X_agespace <- mgcv::tensor.prod.model.matrix(list(X_space, X_age))
   if (is.null(k_dt_time)) {
     space_time_fct <- dat %>%
-      dplyr::group_by(space, time) %>%
+      dplyr::group_by(.data$space, .data$time) %>%
       dplyr::group_indices() %>%
       as.factor()
     X_spacetime <- Matrix::sparse.model.matrix(
