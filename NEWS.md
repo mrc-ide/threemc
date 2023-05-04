@@ -1,3 +1,10 @@
+# threemc 0.2.00
+
+- TMB code significantly refactered to only require one file to be compiled 
+upon installing the package. Model choice is now done within TMB, not in 
+`threemc_fit_model`. This significantly speeds up installation time, as well as 
+debugging and further TMB development. 
+
 # threemc 0.1.41
 
 - Use `tmb.ad.framework = "TMBad"`, rather than the default "CPPad". This 
