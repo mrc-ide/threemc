@@ -52,8 +52,8 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
     A_tmc = tmbutils::asSparseMatrix<Type>(getListElement(x, "A_tmc"));
 
     X_fixed_mmc     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed_mmc"));
-    X_time_mmc      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time_mmc")); 
     X_age_mmc       = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age_mmc")); 
+    X_time_mmc      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time_mmc")); 
     X_space_mmc     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space_mmc")); 
     X_agetime_mmc   = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agetime_mmc")); 
     X_agespace_mmc  = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace_mmc")); 
@@ -66,8 +66,8 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
   // for model with no type
   } else {
     X_fixed     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_fixed"));
-    X_time      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time")); 
     X_age       = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_age")); 
+    X_time      = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_time")); 
     X_space     = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_space")); 
     X_agetime   = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agetime")); 
     X_agespace  = tmbutils::asSparseMatrix<Type>(getListElement(x, "X_agespace")); 
@@ -2524,8 +2524,8 @@ void Threemc_nt<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   // Calculate hazards
   calc_haz(haz,
            threemc_data.X_fixed, 
-           threemc_data.X_time,
            threemc_data.X_age, 
+           threemc_data.X_time,
            threemc_data.X_space,
            threemc_data.X_agetime, 
            threemc_data.X_agespace,
