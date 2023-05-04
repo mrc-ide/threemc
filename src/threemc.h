@@ -167,8 +167,8 @@ class Threemc {
     // For MMC: 
     void calc_haz(vector<Type> &hazard,
                   density::SparseMatrix<Type> X_fixed, 
-                  density::SparseMatrix<Type> X_time,
                   density::SparseMatrix<Type> X_age, 
+                  density::SparseMatrix<Type> X_time,
                   density::SparseMatrix<Type> X_space,
                   density::SparseMatrix<Type> X_agetime, 
                   density::SparseMatrix<Type> X_agespace,
