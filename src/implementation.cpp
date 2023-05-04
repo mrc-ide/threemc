@@ -96,7 +96,7 @@ Threemc_data<Type>::Threemc_data(SEXP x) {
 // Constructor
 template<class Type> 
 Threemc<Type>::Threemc() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
@@ -406,7 +406,7 @@ void Threemc<Type>::likelihood(density::SparseMatrix<Type> Mat,
 // Constructor
 template<class Type> 
 Threemc_nt<Type>::Threemc_nt() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
@@ -420,7 +420,7 @@ Threemc_nt<Type>::~Threemc_nt() {
 // Constructor
 template<class Type> 
 Threemc_rw<Type>::Threemc_rw() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
@@ -492,7 +492,7 @@ void Threemc_rw<Type>::rand_eff_interact_p(density::SparseMatrix<Type> Q_space,
 // Constructor
 template<class Type> 
 Threemc_paed<Type>::Threemc_paed() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
@@ -506,7 +506,7 @@ Threemc_paed<Type>::~Threemc_paed() {
 // Constructor
 template<class Type> 
 Threemc_time_tmc<Type>::Threemc_time_tmc() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
@@ -562,7 +562,7 @@ void Threemc_time_tmc<Type>::calc_haz(vector<Type> &hazard,
 // Constructor
 template<class Type> 
 Threemc_paed_rw<Type>::Threemc_paed_rw() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
@@ -576,7 +576,7 @@ Threemc_paed_rw<Type>::~Threemc_paed_rw() {
 // Constructor
 template<class Type> 
 Threemc_paed_time_tmc<Type>::Threemc_paed_time_tmc() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
@@ -589,7 +589,7 @@ Threemc_paed_time_tmc<Type>::~Threemc_paed_time_tmc() {
 // Constructor
 template<class Type> 
 Threemc_rw_time_tmc<Type>::Threemc_rw_time_tmc() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
@@ -603,7 +603,7 @@ Threemc_rw_time_tmc<Type>::~Threemc_rw_time_tmc() {
 // Constructor
 template<class Type> 
 Threemc_paed_rw_time_tmc<Type>::Threemc_paed_rw_time_tmc() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
@@ -617,7 +617,7 @@ Threemc_paed_rw_time_tmc<Type>::~Threemc_paed_rw_time_tmc() {
 // Constructor
 template<class Type> 
 Threemc_nt_rw<Type>::Threemc_nt_rw() {
-  Type nll = Type(0);
+  nll = Type(0);
 }
 
 // Destructor
