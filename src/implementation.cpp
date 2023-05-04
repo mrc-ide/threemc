@@ -435,11 +435,8 @@ void Threemc_rw<Type>::rand_eff_time_p(density::SparseMatrix<Type> Q_time,
                                        vector<Type> u_time,
                                        Type logsigma_time,
                                        Type sigma_time) {
-                                       // Type logitrho_time1,
-                                       // Type rho_time1) {
 
   // density::AR1 Process
-  // nll += density::AR1(rho_time1)(u_time);
   nll += GMRF(Q_time)(u_time);
 
   // Sum to zero constraint
@@ -447,9 +444,6 @@ void Threemc_rw<Type>::rand_eff_time_p(density::SparseMatrix<Type> Q_time,
 
   // Prior on the standard deviation for the temporal random effects
   nll -= dexp(sigma_time, Type(1), true) + logsigma_time;
-
-  // Prior on the logit autocorrelation parameters
-  // nll -= dnorm(logitrho_time1, Type(3), Type(3), true);
 }
 
 // Prior on the interaction random effects for either MMC or MC (for model w/ no type)
@@ -1322,7 +1316,7 @@ void Threemc_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   Type sigma_age_tmc       = exp(logsigma_age_tmc);
   Type sigma_time_tmc      = exp(logsigma_time_tmc);
   Type sigma_space_tmc     = exp(logsigma_space_tmc);
-  Type sigma_agespace_tmc  = exp(logsigma_agespace_mmc);
+  Type sigma_agespace_tmc  = exp(logsigma_agespace_tmc);
 
   // Autocorrelation parameters 
   PARAMETER(logitrho_mmc_time1);
@@ -1341,7 +1335,7 @@ void Threemc_time_tmc<Type>::calc_nll(struct Threemc_data<Type> threemc_data,
   Type rho_mmc_age1   = geninvlogit(logitrho_mmc_age1,  Type(-1.0), Type(1.0));
   Type rho_mmc_age2   = geninvlogit(logitrho_mmc_age2,  Type(-1.0), Type(1.0));
   Type rho_mmc_age3   = geninvlogit(logitrho_mmc_age3,  Type(-1.0), Type(1.0));
-  Type rho_tmc_time1  = geninvlogit(logitrho_mmc_time1, Type(-1.0), Type(1.0));
+  Type rho_tmc_time1  = geninvlogit(logitrho_tmc_time1, Type(-1.0), Type(1.0));
   Type rho_tmc_age1   = geninvlogit(logitrho_tmc_age1,  Type(-1.0), Type(1.0));
   Type rho_tmc_age2   = geninvlogit(logitrho_tmc_age2,  Type(-1.0), Type(1.0));
 
