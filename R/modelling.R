@@ -135,6 +135,7 @@ threemc_fit_model <- function(fit = NULL,
   
   # config options 
   TMB::config(
+    tmbad.sparse_hessian_compress = 1,
     # Reduce memory peak of a parallel model by creating tapes in serial
     tape.parallel = 0, 
     DLL = mod
