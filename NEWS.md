@@ -1,6 +1,6 @@
 # threemc 0.1.41
 
-- Use `tmb.ad.framework = "TMBad"`, rather than the default "CPPad". This 
+- Use `tmb.ad.framework = "TMBad"`, rather than the default "CppAD". This 
 framework performs sparse hessian compression, which leads to significantly 
 lower memory usage (particularly in the "spike" experienced at the "optimising 
 tape..." optimisation stage) during model fit. 
