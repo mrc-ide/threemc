@@ -1,7 +1,31 @@
-all: threemc.dll
+all: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC.dll Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW.dll Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC2.dll  Surv_SpaceAgeTime_ByType_withUnknownType.dll Surv_SpaceAgeTime_ByType_withUnknownType_RW.dll Surv_SpaceAgeTime_ByType_withUnknownType_RW2.dll Surv_SpaceAgeTime_ByType_withUnknownType_RW_MMC2.dll Surv_SpaceAgeTime_ByType_withUnknownType2.dll Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2.dll Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.dll Surv_SpaceAgeTime.dll Surv_SpaceAgeTime_RW.dll threemc.dll
 	# Comment here preserves the prior tab
+Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC.dll: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW.dll: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC2.dll: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC2.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC2.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType.dll: Surv_SpaceAgeTime_ByType_withUnknownType.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType_RW.dll: Surv_SpaceAgeTime_ByType_withUnknownType_RW.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_RW.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType_RW2.dll: Surv_SpaceAgeTime_ByType_withUnknownType_RW2.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_RW2.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType2.dll: Surv_SpaceAgeTime_ByType_withUnknownType2.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType2.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2.dll: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW2.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType_RW_MMC2.dll: Surv_SpaceAgeTime_ByType_withUnknownType_RW_MMC2.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_RW_MMC2.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.dll: Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_ByType_withUnknownType_Const_Paed_MMC_RW_MMC2.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime.dll: Surv_SpaceAgeTime.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime.cpp', framework = 'TMBad', DLLFLAGS='')"
+Surv_SpaceAgeTime_RW.dll: Surv_SpaceAgeTime_RW.cpp
+	Rscript --vanilla -e "TMB::compile('Surv_SpaceAgeTime_RW.cpp', framework = 'TMBad', DLLFLAGS='')"
 threemc.dll: threemc.cpp
-	Rscript --vanilla -e "TMB::compile('threemc.cpp', framework = 'TMBad', '-I"/src" -O1 -g', DLLFLAGS='')"
+	Rscript --vanilla -e "TMB::compile('threemc.cpp', framework = 'TMBad', DLLFLAGS='')"
 
 clean:
 	rm -rf *.dll
