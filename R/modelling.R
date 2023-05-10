@@ -63,6 +63,8 @@ threemc_fit_model <- function(fit = NULL,
    
   # config options 
   TMB::config(
+    # should reduce memory usage https://tinyurl.com/5cuxmm4t
+    tmbad.sparse_hessian_compress = 1, 
     # Reduce memory peak of a parallel model by creating tapes in serial
     tape.parallel = 0, 
     DLL = mod
@@ -84,8 +86,8 @@ threemc_fit_model <- function(fit = NULL,
     dat_tmb <- fit$tmb_data
     parameters <- split(fit$par.full, names(fit$par.full))
     init_params <- fit$par_init
+    
     # pull different pars depending on whether the model has mmc/tmc split
-
     if (dat_tmb$is_type == TRUE) {
 
       fit$par_init <- fit$par_init[names(fit$par_init) %in% names(parameters)]
@@ -171,17 +173,11 @@ threemc_fit_model <- function(fit = NULL,
     DLL = mod,
     ...
   )
-  
+ 
   # for specified fit, simply resample and return
   if (!is.null(fit)) {
     if (verbose) message("Resampling from `fit`...")
-    fit$obj <- obj
-    fit$obj$fn()
-    fit <- circ_sample_tmb(
-      fit = fit, obj = obj, nsample = N, sdreport = sdreport
-    )
-    fit$tmb_data <- fit$par_init <- NULL # make fit object smaller for saving
-    return(fit)
+    return(threemc_resample(fit, obj, N, sdreport))
   }
   
   # Run optimiser (use optim if all pars are fixed, nlminb otherwise)
@@ -221,14 +217,41 @@ threemc_fit_model <- function(fit = NULL,
   }
 }
 
-#### circ_sample_tmb ####
 
-#' @title Sample TMB fit for Circumcision Model
+#### threemc_resample ####
+
+#' @title Resample from minimal TMB fit 
 #' @description  Sample from TMB object, using \code{naomi::sample_tmb}. Saves
 #' changing object to \code{naomi} format. Also produces and returns standard
 #' deviation report outputted by \link[TMB]{sdreport}, if desired.
 #'
+#' @inheritParams threemc_fit_model
 #' @param obj TMB object/AD model outputted by \link[TMB]{MakeADFun}.
+#' @return Object of class "naomi_fit", containing the original TMB object
+#' ("obj"), the standard deviation report for optimised AD model (from
+#' \link[TMB]{sdreport}) and `n_samples` samples for the (cumulative) incidence
+#' and hazard rate of circumcision for the region(s) in question.
+#' @rdname threemc_resample
+#' @keywords internal
+threemc_resample <- function(fit, obj, N = 1000, sdreport = FALSE) {
+  fit$obj <- obj
+  fit$obj$fn()
+  fit <- circ_sample_tmb(
+    fit = fit, obj = obj, nsample = N, sdreport = sdreport
+  )
+  fit$tmb_data <- fit$par_init <- NULL # make fit object smaller for saving
+  return(fit)
+}
+
+
+#### circ_sample_tmb ####
+
+#' @title Sample TMB fit for Circumcision Model
+#' @description  Sample from TMB object, using \code{threemc:::sample_tmb}. 
+#' Saves changing object to \code{naomi} format. Also produces and returns 
+#' standard deviation report outputted by \link[TMB]{sdreport}, if desired.
+#'
+#' @inheritParams threemc_resample
 #' @param opt Optimised TMB model, outputted by optimisation function such
 #' as \link[stats]{nlminb} or \link[stats]{optim}.
 #' @param sdreport Boolean of whether to produce \code{TMB::sdreport}, Default:
