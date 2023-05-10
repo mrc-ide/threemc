@@ -14,6 +14,10 @@ circ_sample_tmb(
 )
 }
 \arguments{
+\item{fit}{Optional "small" fit object with no \code{sample}. Specifying \code{fit}
+means you do not need to specify \code{dat_tmb} or \code{parameters}, as argument
+specifications will be overridden by those stored in \code{fit}.}
+
 \item{obj}{TMB object/AD model outputted by \link[TMB]{MakeADFun}.}
 
 \item{opt}{Optimised TMB model, outputted by optimisation function such
@@ -33,9 +37,9 @@ Object of class "naomi_fit", containing the original TMB object
 and hazard rate of circumcision for the region(s) in question.
 }
 \description{
-Sample from TMB object, using \code{naomi::sample_tmb}. Saves
-changing object to \code{naomi} format. Also produces and returns standard
-deviation report outputted by \link[TMB]{sdreport}, if desired.
+Sample from TMB object, using \code{threemc:::sample_tmb}.
+Saves changing object to \code{naomi} format. Also produces and returns
+standard deviation report outputted by \link[TMB]{sdreport}, if desired.
 }
 \seealso{
 \code{\link[TMB]{sdreport}}
