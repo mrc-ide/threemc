@@ -276,13 +276,6 @@ create_shell_dataset <- function(survey_circumcision,
     )
   })
   agetime_hazard_matrices <- lapply(agetime_hazard_matrices, Matrix::colSums)
-  
-  if (all(unlist(agetime_hazard_matrices[1:3]) == 0)) {
-    stop(paste0(
-      "No uncensored circumcisions present in surveys, check for valid ",
-      "circ_status and/or circ_age"
-    ))
-  }
 
   # add to out:
   out[, empirical_circ_cols] <- agetime_hazard_matrices
