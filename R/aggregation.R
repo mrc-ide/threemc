@@ -18,6 +18,8 @@
 #' @param N Number of samples to be generated, Default: 100
 #' @param prev_year If type == "prevalence", choose year to compare prevalence
 #' with.
+#' @param probs Percentiles to provide quantiles at. Set to NULL to skip
+#' computing quantiles.
 #' @param ... Further arguments to internal functions.
 #' @return \code{data.frame} with samples aggregated by \code{aggr_cols} and
 #' weighted by population.
@@ -35,19 +37,23 @@ threemc_aggregate <- function(
   area_lev,
   N = 100,
   prev_year = 2008,
+  probs = c(0.025, 0.5, 0.975),
   ...
   ) {
   
   # produce error if fit does not contain samples
   stopifnot("sample" %in% names(fit))
   
+  # produce error if age_var not correctly specified
+  stopifnot(length(age_var) == 1 && age_var %in% c("age", "age_group"))
+  
   # copy data.table datasets so destructive operations don't change global vars
   .data <- data.table::copy(.data)
   areas <- data.table::copy(areas)
-
+  
   # global bindings for data.table non-standard evaluation
-  space <- NULL
-
+  space <- age <- NULL
+  
   #### Prepare location/shapefile information ####
   if (inherits(areas, "sf")) {
     areas <- sf::st_drop_geometry(areas)
@@ -128,7 +134,7 @@ threemc_aggregate <- function(
       use.names = TRUE
     )
   }
-  .data <- posterior_summary_fun(.data, ...)
+  .data <- posterior_summary_fun(.data, probs = probs)
 
   # Merge regional information on the dataset (i.e. parent area info) & return
   .data <- merge_area_info(.data, areas)
@@ -358,10 +364,11 @@ aggregate_sample <- function(.data,
                                "age", "age_group", "model", "type"
                              ),
                              num_cols,
+                             ages = 0:60, 
                              ...) {
 
   # global bindings for data.table non-standard evaluation
-  .SD <- population <- NULL
+  .SD <- population <- age <- NULL
 
   # convert .data from list to data.frame, if required
   if (!inherits(.data, "data.frame")) {
@@ -372,6 +379,9 @@ aggregate_sample <- function(.data,
       ...
     )
   }
+  
+  # only keep specified ages
+  .data <- .data[age %in% ages,]
   
   # remove population from num_cols, if present 
   num_cols <- num_cols[!num_cols == "population"]
@@ -444,7 +454,7 @@ aggregate_sample_age_group <- function(
 ) {
 
   # global bindings for `data.table` non-standard evaluation
-  .SD <- population <- type <- NULL
+  .SD <- population <- type <- age_group <- NULL
 
   # bind list objects if required
   results <- results_list
@@ -482,6 +492,9 @@ aggregate_sample_age_group <- function(
     # allow duplication of records falling in multiple age groups
     allow.cartesian = TRUE
   )[, !c("age")]
+  
+  # remove missing age groups
+  results <- results[!is.na(age_group), ]
 
   if (!"age_group" %chin% aggr_cols) aggr_cols <- c(aggr_cols, "age_group")
 
@@ -637,9 +650,8 @@ n_circumcised <- function(results) {
 #' @title Calculate Summary Statistics From Samples
 #' @description Takes samples and calculates summary statistics (mean, standard
 #' deviation, and quantiles (if desired)).
+#' @inheritParams threemc_aggregate
 #' @param .data \code{data.frame} with samples to be summarised.
-#' @param probs Percentiles to provide quantiles at. Set to NULL to skip
-#' computing quantiles.
 #' @importFrom dplyr %>%
 #' @importFrom rlang :=
 #' @rdname posterior_summary_fun

@@ -14,6 +14,7 @@ threemc_aggregate(
   area_lev,
   N = 100,
   prev_year = 2008,
+  probs = c(0.025, 0.5, 0.975),
   ...
 )
 }
@@ -41,6 +42,9 @@ to aggregate for. Can be one of "probability", "incidence" or "prevalence".}
 
 \item{prev_year}{If type == "prevalence", choose year to compare prevalence
 with.}
+
+\item{probs}{Percentiles to provide quantiles at. Set to NULL to skip
+computing quantiles.}
 
 \item{...}{Further arguments to internal functions.}
 }
