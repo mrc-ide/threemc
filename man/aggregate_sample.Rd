@@ -8,6 +8,7 @@ aggregate_sample(
   .data,
   aggr_cols = c("area_id", "area_name", "year", "age", "age_group", "model", "type"),
   num_cols,
+  ages = 0:60,
   ...
 )
 }
