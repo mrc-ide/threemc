@@ -59,7 +59,7 @@ threemc_ppc2 <- function(
   mmc_prop <- fit$sample$cum_inc_mmc
   
   # Assign row index to output frame -> identify rows in samples
-  out_idx <- out_spec %>%
+  out_idx <- out %>%
     dplyr::select(area_id, year, age) %>%
     dplyr::mutate(idx = row_number())
   
