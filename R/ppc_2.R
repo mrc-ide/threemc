@@ -209,19 +209,18 @@ threemc_ppc2 <- function(
   }
   
   # Calculate coverage by survey x district x age 15-49 
-  mccov_district_15to49 <- survey_sim %>%
-    dplyr::filter(age %in% 15:49) %>%
-    dplyr::mutate(iso3 = cntry) %>% 
+  mccov_district_15to59 <- survey_sim %>%
+    dplyr::filter(age %in% 15:59) %>%
     dplyr::summarise(
       dplyr::across(
         c(obs, starts_with("sim")), ~ stats::weighted.mean(.x, indweight)
       ),
-      .by = c(type, survey_id, iso3, area_id)
+      .by = c(type, survey_id, area_id)
     ) 
   
-  ppd_district_15to49 <- mccov_district_15to49 %>%
+  ppd_district_15to59 <- mccov_district_15to59 %>%
     dplyr::filter(!is.na(obs)) %>% 
-    dplyr::rowwise(type, survey_id, iso3, area_id, obs) %>%
+    dplyr::rowwise(type, survey_id, area_id, obs) %>%
     dplyr::summarise(
       ppd_mean = mean(dplyr::c_across(starts_with("sim"))),
       crps = ifelse(
@@ -251,18 +250,18 @@ threemc_ppc2 <- function(
         right = FALSE
       )
     ) %>%
-    dplyr::mutate(iso3 = cntry) %>% 
+    # dplyr::mutate(iso3 = cntry) %>% 
     dplyr::summarise(
       dplyr::across(
         c(obs, starts_with("sim")), ~ stats::weighted.mean(.x, indweight)
       ),
-      .by = c(type, survey_id, iso3, area_id, age_group)
+      .by = c(type, survey_id, area_id, age_group)
     ) 
   
   ppd_district_5year <- mccov_district_5year %>%
     dplyr::filter(!is.na(obs)) %>% 
     dplyr::rowwise(
-      type, survey_id, iso3, area_id, age_group, obs
+      type, survey_id, area_id, age_group, obs
     ) %>%
     dplyr::summarise(
       ppd_mean = mean(dplyr::c_across(starts_with("sim"))),
@@ -284,7 +283,7 @@ threemc_ppc2 <- function(
     )
   
   # PPD coverage by district x 15-49 years
-  # ppd_district_15to49 %>%
+  # ppd_district_15to59 %>%
   #   dplyr::summarise(
   #     dplyr::across(crps, sum),
   #     dplyr::across(c(mae, rmse, starts_with("CI")),  ~ mean(.x, na.rm = TRUE)),
