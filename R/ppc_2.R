@@ -63,7 +63,7 @@ threemc_ppc2 <- function(
     dplyr::select(area_id, year, age) %>%
     dplyr::mutate(idx = row_number())
   
-  survey_obs <- survey_circumcision %>% 
+  survey_obs <- survey_circumcision_test %>% 
     dplyr::rename(circ = circ_status)
   
   # Remove if missing circumcision status, age, or weight
