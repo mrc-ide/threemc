@@ -1,3 +1,10 @@
+# threemc 0.1.42
+
+- Add `threemc_ppc2` function to implement method from Matt's paper for 
+posterior predictive checks, gives better results than `threemc_ppc`, 
+particularly for MC coverage. The function code itself still requires 
+tidying up. 
+
 # threemc 0.1.41
 
 - Use `tmb.ad.framework = "TMBad"`, rather than the default "CppAD". This 
