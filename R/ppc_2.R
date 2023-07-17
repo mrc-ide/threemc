@@ -58,6 +58,10 @@ threemc_ppc2 <- function(
   tmc_prop <- fit$sample$cum_inc_tmc
   mmc_prop <- fit$sample$cum_inc_mmc
   
+  # check for type information
+  type_info <- TRUE
+  if (is.null(mmc_prop) && is.null(tmc_prop)) type_info <- FALSE
+  
   # Assign row index to output frame -> identify rows in samples
   out_idx <- out %>%
     dplyr::select(area_id, year, age) %>%
@@ -66,13 +70,19 @@ threemc_ppc2 <- function(
   survey_obs <- survey_circumcision_test %>% 
     dplyr::rename(circ = circ_status)
   
-  # Remove if missing circumcision status, age, or weight
+  # impute type info with "Missing" (i.e. have non-NA)
+  if (type_info == FALSE) {
+    survey_obs$circ_who <- survey_obs$circ_where <- "Missing"
+  }
+  
+  # Remove if missing circumcision status, age, weight or area_id
   survey_obs <- survey_obs %>%
     dplyr::filter(
       !is.na(circ),
       !is.na(age),
       !is.na(indweight),
-      ! (circ == 1 & is.na(circ_where) & is.na(circ_who))
+      !is.na(area_id),
+      !(circ == 1 & is.na(circ_where) & is.na(circ_who))
     )
   
   # Assign survey year
@@ -135,24 +145,26 @@ threemc_ppc2 <- function(
   survey_sim_mc <- matrix(survey_sim_mc, nrow = nrow(survey_mc_prop))
   
   # Get probability of being MMC given circumcised (MMC or TMC)
-  survey_mmctype_prop <- mmc_prop[survey_obs$idx, ] / 
-    (tmc_prop[survey_obs$idx, ] + mmc_prop[survey_obs$idx, ])
+  if (type_info) {
+    survey_mmctype_prop <- mmc_prop[survey_obs$idx, ] / 
+      (tmc_prop[survey_obs$idx, ] + mmc_prop[survey_obs$idx, ])
   
-  # Simulate whether MMC _if_ they were circumcised
-  # NOTE: This is a bit inefficient because it samples for _all_ respondents
-  #       rather than only those who are circumcised.
-  survey_sim_mmctype <- rbinom(
-    length(survey_mmctype_prop), 1, survey_mmctype_prop
-  )
-  survey_sim_mmctype <- matrix(
-    survey_sim_mmctype, nrow = nrow(survey_mmctype_prop)
-  )
-  
-  # Construct matrices for simulated MMC and TMC
-  survey_sim_mmc <- survey_sim_mc == 1 & survey_sim_mmctype == 1
-  survey_sim_mmc[] <- as.integer(survey_sim_mmc)
-  survey_sim_tmc <- survey_sim_mc == 1 & survey_sim_mmctype == 0
-  survey_sim_tmc[] <- as.integer(survey_sim_tmc)
+    # Simulate whether MMC _if_ they were circumcised
+    # NOTE: This is a bit inefficient because it samples for _all_ respondents
+    #       rather than only those who are circumcised.
+    survey_sim_mmctype <- rbinom(
+      length(survey_mmctype_prop), 1, survey_mmctype_prop
+    )
+    survey_sim_mmctype <- matrix(
+      survey_sim_mmctype, nrow = nrow(survey_mmctype_prop)
+    )
+    
+    # Construct matrices for simulated MMC and TMC
+    survey_sim_mmc <- survey_sim_mc == 1 & survey_sim_mmctype == 1
+    survey_sim_mmc[] <- as.integer(survey_sim_mmc)
+    survey_sim_tmc <- survey_sim_mc == 1 & survey_sim_mmctype == 0
+    survey_sim_tmc[] <- as.integer(survey_sim_tmc)
+  }
   
   # Construct data frame with all outputs for observed and simulated
   # MC, MMC, and TMC
@@ -172,20 +184,28 @@ threemc_ppc2 <- function(
     )
   
   # Altering column names
+  # TODO: Functionalise!
   colnames(survey_sim_mc) <- sprintf(
     "mc_sim%04d", seq_len(ncol(survey_sim_mc))
   )
-  colnames(survey_sim_mmc) <- sprintf(
-    "mmc_sim%04d", seq_len(ncol(survey_sim_mmc))
-  )
-  colnames(survey_sim_tmc) <- sprintf(
-    "tmc_sim%04d", seq_len(ncol(survey_sim_tmc))
-  )
+  if (type_info) {
+    colnames(survey_sim_mmc) <- sprintf(
+      "mmc_sim%04d", seq_len(ncol(survey_sim_mmc))
+    )
+    colnames(survey_sim_tmc) <- sprintf(
+      "tmc_sim%04d", seq_len(ncol(survey_sim_tmc))
+    )
+  }
   
-  # Appending togetherwith the observations
+  # Appending together with the observations
   survey_sim <- dplyr::bind_cols(
-    survey_sim_obs, survey_sim_mc, survey_sim_mmc, survey_sim_tmc
+    survey_sim_obs, survey_sim_mc
   )
+  if (type_info) {
+    survey_sim <- dplyr::bind_cols(
+     survey_sim, survey_sim_mmc, survey_sim_tmc
+    )
+  }
   
   # Pivot longer with column for circumcision type
   survey_sim <- survey_sim %>%
