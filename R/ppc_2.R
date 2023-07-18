@@ -205,7 +205,7 @@ threemc_ppc2 <- function(
     survey_sim <- dplyr::bind_cols(
      survey_sim, survey_sim_mmc, survey_sim_tmc
     )
-  }
+  } 
   
   # Pivot longer with column for circumcision type
   survey_sim <- survey_sim %>%
@@ -214,6 +214,11 @@ threemc_ppc2 <- function(
       names_pattern = "(.*)_(.*)",
       names_to = c("type", ".value")
     )
+  
+  if (type_info == FALSE) {
+    survey_sim <- survey_sim %>% 
+      filter(!type %in% c("mmc", "tmc"))
+  }
   
   
   #### Summarise samples, get outputs ####
