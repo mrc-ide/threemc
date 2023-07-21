@@ -52,6 +52,12 @@ threemc_ppc2 <- function(
     seed = 123
   ) {
   
+  # Take sample matrix rows that are kept in out from original skeleton data
+  if ("n" %in% names(out)) {
+    fit$sample <- lapply(fit$sample, function(x) x[out$n, ])
+    out$n <- NULL
+  } 
+  
   # Extracting samples of probabilities from both models
   # Full == fit with program data, which we don't have!
   mc_prop <- 1.0 - fit$sample$surv_mc
