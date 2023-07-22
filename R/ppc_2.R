@@ -52,6 +52,12 @@ threemc_ppc2 <- function(
     seed = 123
   ) {
   
+  # Take sample matrix rows that are kept in out from original skeleton data
+  if ("n" %in% names(out)) {
+    fit$sample <- lapply(fit$sample, function(x) x[out$n, ])
+    out$n <- NULL
+  } 
+  
   # Extracting samples of probabilities from both models
   # Full == fit with program data, which we don't have!
   mc_prop <- 1.0 - fit$sample$surv_mc
@@ -205,7 +211,7 @@ threemc_ppc2 <- function(
     survey_sim <- dplyr::bind_cols(
      survey_sim, survey_sim_mmc, survey_sim_tmc
     )
-  }
+  } 
   
   # Pivot longer with column for circumcision type
   survey_sim <- survey_sim %>%
@@ -214,6 +220,11 @@ threemc_ppc2 <- function(
       names_pattern = "(.*)_(.*)",
       names_to = c("type", ".value")
     )
+  
+  if (type_info == FALSE) {
+    survey_sim <- survey_sim %>% 
+      filter(!type %in% c("mmc", "tmc"))
+  }
   
   
   #### Summarise samples, get outputs ####
