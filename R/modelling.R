@@ -74,8 +74,10 @@ threemc_fit_model <- function(fit = NULL,
       param_names <- names(parameters)
     } else if (!is.null(fit)) {
       param_names <- names(fit$par)
-      # add mapped parameters which won't be in fit$par, if appropriate
-      if (!is.null(maps)) param_names <- c(param_names, names(maps))
+      # par_init, saved parameters object, has names(fit$par) & `randoms`
+      if ("par_init" %in% names(fit)) param_names <- names(fit$par_init)
+      # add mapped parameters which may not be in param_names, if appropriate
+      if (!is.null(maps)) param_names <- unique(c(param_names, names(maps)))
     } else {
       stop("Please provide one of `parameters` or `fit`")
     }
