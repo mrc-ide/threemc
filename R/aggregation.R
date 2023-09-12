@@ -381,7 +381,7 @@ aggregate_sample <- function(.data,
   }
   
   # only keep specified ages
-  .data <- .data[age %in% ages,]
+  .data <- .data[age %in% ages, ]
   
   # remove population from num_cols, if present 
   num_cols <- num_cols[!num_cols == "population"]
