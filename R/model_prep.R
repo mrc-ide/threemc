@@ -55,6 +55,7 @@ threemc_prepare_model_data <- function(out,
                                        paed_age_cutoff = NULL,
                                        rw_order = NULL,
                                        inc_time_tmc = FALSE,
+                                       type_info = NULL,
                                        ...) {
   if (is.null(area_lev)) {
     message(
@@ -62,11 +63,13 @@ threemc_prepare_model_data <- function(out,
     )
     area_lev <- max(out$area_level, na.rm = TRUE)
   }
- 
-  type_info <- TRUE
-  if (all(out$obs_mmc == 0) && all(out$obs_tmc == 0)) {
+
+  # test whether type info is specified; if not, infer from skeleton dataset
+  if (is.null(type_info) && all(out$obs_mmc == 0) && all(out$obs_tmc == 0)) {
     message("No circumcision type information present in `out`")
     type_info <- FALSE
+  } else if (is.null(type_info)) {
+    type_info <- TRUE
   }
 
   # check that areas$space == 1:nrow(areas)
@@ -75,10 +78,10 @@ threemc_prepare_model_data <- function(out,
   # Create design matrices for fixed effects and temporal, age, space and
   # interaction random effects
   design_matrices <- create_design_matrices(
-    dat          = out, 
-    area_lev     = area_lev, 
-    k_dt_age     = k_dt_age, 
-    k_dt_time    = k_dt_time, 
+    dat          = out,
+    area_lev     = area_lev,
+    k_dt_age     = k_dt_age,
+    k_dt_time    = k_dt_time,
     inc_time_tmc = inc_time_tmc
   )
 
@@ -117,7 +120,7 @@ threemc_prepare_model_data <- function(out,
   # Precision/Adjacency matrix for the spatial random effects
   if (nrow(areas) == 1) {
     # for only one area (like for national level), Q_space == 1
-    Q_space = list("Q_space" = methods::new(
+    Q_space <- list("Q_space" = methods::new(
       "dgTMatrix", 
       i = 0L, 
       j = 0L, 
