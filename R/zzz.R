@@ -2,4 +2,3 @@
   message("Setting spdep::set.ZeroPolicyOption(TRUE)")
   spdep::set.ZeroPolicyOption(TRUE)
 }
-
