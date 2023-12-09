@@ -1,3 +1,7 @@
+# threemc 0.1.43
+
+- Add `on.Load.R` function to set `spdep::set.ZeroPolicyOption(TRUE)`. This avoids error whereby shapefiles with areas with no neighbours (e.g. islands) do not result in errors. 
+
 # threemc 0.1.42
 
 - Add `threemc_ppc2` function to implement method from Matt's paper for 
