@@ -15,6 +15,7 @@ threemc_prepare_model_data(
   paed_age_cutoff = NULL,
   rw_order = NULL,
   inc_time_tmc = FALSE,
+  type_info = NULL,
   ...
 )
 }

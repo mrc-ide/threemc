@@ -2,13 +2,19 @@
 % Please edit documentation in R/util.R
 \name{fill_downup_populations}
 \alias{fill_downup_populations}
-\title{Assume constant historical populations}
+\title{Assume constant historical and future populations}
 \usage{
-fill_downup_populations(populations, start_year, min_pop_year = NULL)
+fill_downup_populations(
+  populations,
+  start_year,
+  end_year,
+  min_pop_year = NULL,
+  max_pop_year = NULL
+)
 }
 \description{
-Fills populations for historical years not present in
-populations dataset with earliest known population for each unique area_id -
-age combination.
+Fills populations for historical/future years not present in
+populations dataset with earliest/latest known population for each unique
+area_id - age combination.
 }
 \keyword{internal}
