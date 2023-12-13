@@ -1,3 +1,8 @@
+# threemc 0.1.44
+
+- Fill future as well as historical populations in and 
+`threemc_fill_downup_populations`, to allow for forecasts past 2021.
+
 # threemc 0.1.43
 
 - Add `on.Load.R` function to set `spdep::set.ZeroPolicyOption(TRUE)`. This avoids error whereby shapefiles with areas with no neighbours (e.g. islands) do not result in errors. 

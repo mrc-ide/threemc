@@ -146,7 +146,7 @@ threemc_ppc <- function(fit,
   # change type not matching the specified argument type to Missing
   survey_circumcision_test[,
     type := ifelse(
-      type %chin% check_types,
+      type %chin% check_types & circ_status == 1,
       paste(type, "coverage"),
       "Missing"
     )
@@ -159,6 +159,15 @@ threemc_ppc <- function(fit,
         type == "Missing",
         0,
         circ_status
+      )
+    ]  
+  # convert all type to MC
+  } else {
+    survey_circumcision_test[,
+      type := ifelse(
+        circ_status == 1,
+        "MC coverage",
+        type
       )
     ]  
   }

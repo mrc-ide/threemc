@@ -59,14 +59,18 @@ threemc_aggregate <- function(
     areas <- sf::st_drop_geometry(areas)
   }
   
-  # fill in missing populations for historical years not in data, if required
+  # fill missing pops for historical/future years not in data, if required
   start_year <- min(.data$year)
+  end_year <- max(.data$year)
   min_pop_year <- min(populations$year)
-  if (start_year < min_pop_year) {
+  max_pop_year <- max(populations$year)
+  if (start_year < min_pop_year || end_year > max_pop_year) {
     populations <- fill_downup_populations(
       populations, 
       start_year, 
-      min_pop_year
+      end_year,
+      min_pop_year,
+      max_pop_year
     )
   }
   
@@ -301,13 +305,18 @@ prepare_sample_data <- function(N = 100,
     ) %>%
       dplyr::relocate(.data$population, .before = .data$samp_1)
 
-    # filter out na populations, with an appropriate message
+    # filter out NA pops, return appropriate message
     if (any(is.na(tmp$population)) == TRUE) {
+      # original number of rows and years
       n1 <- nrow(tmp)
+      years <- unique(tmp$year)
       tmp <- dplyr::filter(tmp, !is.na(.data$population))
       n2 <- nrow(tmp)
       if (n2 == 0) stop("No populations present in data")
-      message(paste0("Missing population for ", n1 - n2, " records"))
+      years_pop <- unique(tmp$year)
+      years_no_pop <- years[!years %in% years_pop]
+      message(paste0("Missing population for ", n1 - n2, " records\n"))
+      message(paste0("Years removed: ", paste(years_no_pop, collapse = ", ")))
     }
 
     return(tmp)
@@ -399,17 +408,23 @@ aggregate_sample <- function(.data,
   sd_cols <- grep(
     paste(c("population", num_cols), collapse = "|"), names(.data)
   )
-  .data <- .data[,
+  # .data <- .data[,
+  .data[,
     lapply(.SD, sum, na.rm = TRUE),
     by = c(aggr_cols),
     .SDcols = sd_cols
   ]
 
   # divide by population to population weight
-  .data <- .data[,
-                 (num_cols) := lapply(.SD, function(x) x / population),
-                 .SDcols = num_cols
+  .data[,
+          (num_cols) := lapply(.SD, function(x) {
+            data.table::fifelse(
+              grepl("performed", type), x, x / population
+            )
+          }),
+          .SDcols = num_cols
   ]
+
   return(.data)
 }
 
@@ -509,15 +524,10 @@ aggregate_sample_age_group <- function(
   # create dummy type column, if required
   if (!"type" %chin% names(results)) results$type <- "dummy"
 
-  # Multiply by population to population weight
+  # Divide by population to population weight
   # (don't do this for type ~ "N performed", if present)
   results[,
-          (num_cols) := lapply(.SD, function(x) {
-            data.table::fifelse(
-              grepl("performed", type), x, x / population
-            )
-          }),
-          .SDcols = num_cols
+    (num_cols) := lapply(.SD, function(x) x / population), .SDcols = num_cols
   ]
 
   # remove dummy column

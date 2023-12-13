@@ -89,13 +89,16 @@ create_shell_dataset <- function(survey_circumcision,
       dplyr::distinct()
   }
   
-  # check that there is a population for every year
+  # check that there is a population for every year (historical and future)
   min_pop_year <- min(populations$year)
-  if (start_year < min_pop_year) {
+  max_pop_year <- max(populations$year)
+  if (start_year < min_pop_year || end_year > max_pop_year) {
     populations <- fill_downup_populations(
       populations, 
-      start_year, 
-      min_pop_year
+      start_year   = start_year, 
+      end_year     = end_year,
+      min_pop_year = min_pop_year,
+      max_pop_year = max_pop_year
     )
   }
  

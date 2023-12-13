@@ -553,24 +553,38 @@ patterns <- function(..., cols = character(0L)) {
 
 #### fill_downup_populations ####
 
-#' @title Assume constant historical populations
-#' @description Fills populations for historical years not present in 
-#' populations dataset with earliest known population for each unique area_id - 
-#' age combination. 
+#' @title Assume constant historical and future populations
+#' @description Fills populations for historical/future years not present in 
+#' populations dataset with earliest/latest known population for each unique 
+#' area_id - age combination. 
 #' @rdname fill_downup_populations
 #' @keywords internal
 fill_downup_populations <- function(
-    populations, start_year, min_pop_year = NULL
+    populations, start_year, end_year, min_pop_year = NULL, max_pop_year = NULL
 ) {
   message(paste0(
     "Filling missing populations with earliest known population",
     " for each area_id and age"
   ))
   
-  # calculate minimum year in populations if not provided
+  # calculate minimum and maximum year in populations if not provided
   if (is.null(min_pop_year)) min_pop_year <- min(populations$year)
+  if (is.null(max_pop_year)) max_pop_year <- max(populations$year)
+  
   # find years from provided start_year and min_pop_year
-  missing_years <- seq(start_year, min_pop_year - 1)
+  missing_prev_years <- seq(start_year, min_pop_year - 1)
+  missing_future_years <- seq(max_pop_year + 1, end_year)
+  # add missing hostorical and future years to missing_years
+  missing_years <- missing_prev_years
+  if (missing_prev_years[2] < missing_prev_years[1]) {
+    missing_years <- NULL
+  }
+  if (length(missing_future_years) > 1 && 
+      (missing_future_years[2] < missing_future_years[1])) {
+    missing_future_years <- NULL    
+  }
+  missing_years <- c(missing_years, missing_future_years)
+  
   # create df matching populations columns for missing_years
   missing_rows <- tidyr::crossing(
     dplyr::select(populations, -c(.data$year, .data$population)),

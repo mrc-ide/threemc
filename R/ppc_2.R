@@ -47,7 +47,6 @@ threemc_ppc2 <- function(
       "20-24", "25-29", "30-34", "35-39",
       "40-44", "45-49", "50-54", "54-59" 
     ),
-    # CI_range = c(0.5, 0.8, 0.95),
     N = 1000,
     seed = 123
   ) {
@@ -312,15 +311,6 @@ threemc_ppc2 <- function(
       mean = obs,
       .groups = "drop"
     )
-  
-  # PPD coverage by district x 15-49 years
-  # ppd_district_15to59 %>%
-  #   dplyr::summarise(
-  #     dplyr::across(crps, sum),
-  #     dplyr::across(c(mae, rmse, starts_with("CI")),  ~ mean(.x, na.rm = TRUE)),
-  #     .by = c(type)) %>%
-  #   identity()
-  # "~/imperial_repos/threemc-orderly/ken_paed_cutoff_no_time_tmc_ppc_age.csv"
   
   # PPD coverage by district x 15-49 years
   ppd_district_5year <- ppd_district_5year %>%
