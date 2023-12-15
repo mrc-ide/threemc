@@ -408,24 +408,22 @@ aggregate_sample <- function(.data,
   sd_cols <- grep(
     paste(c("population", num_cols), collapse = "|"), names(.data)
   )
-  # .data <- .data[,
-  .data[,
+  .data <- .data[,
     lapply(.SD, sum, na.rm = TRUE),
     by = c(aggr_cols),
     .SDcols = sd_cols
   ]
 
   # divide by population to population weight
-  .data[,
+  return(.data[,
           (num_cols) := lapply(.SD, function(x) {
-            data.table::fifelse(
-              grepl("performed", type), x, x / population
-            )
+            # data.table::fifelse(
+            #   grepl("performed", type), x, x / population
+            # )
+            x / population
           }),
           .SDcols = num_cols
-  ]
-
-  return(.data)
+  ])
 }
 
 #### aggregate_sample_age_group ####
@@ -525,7 +523,6 @@ aggregate_sample_age_group <- function(
   if (!"type" %chin% names(results)) results$type <- "dummy"
 
   # Divide by population to population weight
-  # (don't do this for type ~ "N performed", if present)
   results[,
     (num_cols) := lapply(.SD, function(x) x / population), .SDcols = num_cols
   ]
