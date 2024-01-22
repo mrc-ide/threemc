@@ -1,3 +1,7 @@
+# threemc 0.1.45
+
+- Update `data/datapack_psnu_area_level.RData` so that SWZ is modelled at the Tinkundla (level 2), rather than Region (level 1) area level.
+
 # threemc 0.1.44
 
 - Fill future as well as historical populations in and 
