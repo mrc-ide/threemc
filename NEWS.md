@@ -1,6 +1,7 @@
 # threemc 0.1.45
 
 - Update `data/datapack_psnu_area_level.RData` so that SWZ is modelled at the Tinkundla (level 2), rather than Region (level 1) area level.
+- Update `data/datapack_psnu_area_level.RData` so that MOZ is modelled at area level 3, rather than area level 2. 
 
 # threemc 0.1.44
 
