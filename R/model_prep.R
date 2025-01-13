@@ -131,9 +131,7 @@ threemc_prepare_model_data <- function(out,
     ))
   } else {
     Q_space <- list(
-      "Q_space" = create_icar_prec_matrix(
-        sf_obj = areas, area_lev = area_lev, row.names = "space"
-      )
+      "Q_space" = create_icar_prec_matrix(sf_obj = areas, area_lev = area_lev)
     )
   }
 
@@ -951,11 +949,17 @@ create_icar_prec_matrix <- function(sf_obj    = NULL,
 
   sf_obj <- sf_obj %>%
     dplyr::filter(.data$area_level == area_lev)
+  
+  if (is.null(row.names)) {
+    row.names <- row.names(sf_obj)
+  }
 
   # if nrow(sf_obj) == 1, adjacency matrix is a 1x1 matrix with single entry 0
   if (nrow(sf_obj) > 1) {
     # Create neighbourhood structure
-    Q_space <- spdep::poly2nb(sf_obj, row.names = sf_obj[, row.names])
+    Q_space <- spdep::poly2nb(
+      sf_obj, row.names = row.names(sf_obj[row.names, ])
+    )
     # Convert to adjacency matrix
     Q_space <- spdep::nb2mat(Q_space, style = "B", zero.policy = TRUE)
 
